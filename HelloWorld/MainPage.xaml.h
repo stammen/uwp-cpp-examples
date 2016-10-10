@@ -33,7 +33,7 @@ namespace HelloWorld
         void TestFilePicker(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void PickImageAsync_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void PickImageAwait_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
-        Concurrency::task<void> PickImageAwait();
+        concurrency::task<void> PickImageAwait();
         void DeleteFile_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void DeleteWithTasksHandleErrors(Platform::String^ fileName);
 

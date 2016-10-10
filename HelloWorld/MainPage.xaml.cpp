@@ -261,8 +261,8 @@ void MainPage::PickImageAsync_Click(Platform::Object^ sender, Windows::UI::Xaml:
     picker->SuggestedStartLocation = PickerLocationId::PicturesLibrary;
 
     auto getFileTask = create_task(picker->PickSingleFileAsync());
-
-    getFileTask.then([this](StorageFile^ file) {
+    getFileTask.then([this](StorageFile^ file) 
+    {
         if (file == nullptr)
         {
             // user cancelled operation
@@ -329,6 +329,27 @@ void MainPage::PickImage_Click(Platform::Object^ sender, Windows::UI::Xaml::Rout
             }));
         }
     });
+}
+#endif
+
+#if 0
+// C# version
+private async void OnLoadImageClick(object sender, RoutedEventArgs e)
+{
+    var picker = new FileOpenPicker();
+    picker.FileTypeFilter.Add(".png");
+    picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+
+    var file = await picker.PickSingleFileAsync();
+    if (file == null)
+    {
+        return;
+    }
+
+    var stream = await file.OpenReadAsync();
+    var bitmap = new BitmapImage();
+    bitmap.SetSource(stream);
+    ImageField.Source = bitmap;
 }
 #endif
 
