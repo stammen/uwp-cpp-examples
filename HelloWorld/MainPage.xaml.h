@@ -46,5 +46,6 @@ namespace HelloWorld
 
         static std::wstring_convert<std::codecvt_utf8<wchar_t>> s_converter;
         static std::mutex s_mutex;
+        void LoadImageAssets_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
     };
 }

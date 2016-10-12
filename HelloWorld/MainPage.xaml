@@ -40,7 +40,8 @@
             <StackPanel Margin="0,0,0,20">
                 <StackPanel Orientation="Horizontal">
                     <Button x:Name="loadImageAsync" Content="Load Image async" Margin="0,20,20,20" Click="PickImageAsync_Click"/>
-                    <Button x:Name="loadImage" Content="Load Image co_await" Click="PickImageAwait_Click"/>
+                    <Button x:Name="loadImageAwait" Content="Load Image co_await" Margin="20,0,0,0"  Click="PickImageAwait_Click"/>
+                    <Button x:Name="loadImageAssets" Content="Load Image from Assets Folder" Margin="20,0,0,0" Click="LoadImageAssets_Click"/>
                 </StackPanel>
                 <Image x:Name="theImage" Width="100" HorizontalAlignment="Left"/>
             </StackPanel>

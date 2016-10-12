@@ -159,9 +159,6 @@ void MainPage::DeleteFile_Click(Platform::Object^ sender, Windows::UI::Xaml::Rou
 
 void MainPage::DeleteWithTasksHandleErrors(Platform::String^ fileName)
 {
-    using namespace Windows::Storage;
-    using namespace concurrency;
-
     StorageFolder^ documentsFolder = KnownFolders::PicturesLibrary;
     auto getFileTask = create_task(documentsFolder->GetFileAsync(fileName));
 
@@ -314,24 +311,6 @@ task<void> MainPage::PickImageAwait()
     theImage->Source = bitmap;
 }
 
-#else
-void MainPage::PickImage_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
-{
-    auto dispatcher = Window::Current->CoreWindow->Dispatcher;  
-    auto t = PickAnImage();
-    t.then([this, dispatcher](BitmapImage^ bitmap)
-    {
-        if (bitmap != nullptr)
-        {
-            dispatcher->RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, ref new DispatchedHandler([=]()
-            {
-                theImage->Source = bitmap;
-            }));
-        }
-    });
-}
-#endif
-
 #if 0
 // C# version
 private async void OnLoadImageClick(object sender, RoutedEventArgs e)
@@ -354,5 +333,37 @@ private async void OnLoadImageClick(object sender, RoutedEventArgs e)
 #endif
 
 
+void HelloWorld::MainPage::LoadImageAssets_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    StorageFolder^ folder = Windows::ApplicationModel::Package::Current->InstalledLocation;
+    Platform::String^ fileName = "\\Assets\\StoreLogo.png";
+    auto getFileTask = create_task(folder->GetFileAsync(fileName));
 
-
+    getFileTask.then([this](StorageFile^ file)
+    {
+        if (file == nullptr)
+        {
+            // user cancelled operation
+            cancel_current_task();
+        }
+        //throw ref new InvalidArgumentException();
+        return file->OpenReadAsync();
+    })
+    .then([this](IRandomAccessStreamWithContentType^ stream)
+    {
+        auto bitmap = ref new BitmapImage();
+        bitmap->SetSource(stream);
+        theImage->Source = bitmap;
+    })
+    .then([this](task<void> previousTask)
+    {
+        try
+        {
+            previousTask.get();
+        }
+        catch (Platform::Exception^ ex)
+        {
+            folderText->Text = "Exception: " + ex->Message;
+        }
+    });
+}
