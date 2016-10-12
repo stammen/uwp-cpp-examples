@@ -13,14 +13,8 @@ Class1::Class1()
 
 void Class1::fromJavaScript(Platform::String^ args)
 {
-    m_dispatcher->RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, ref new Windows::UI::Core::DispatchedHandler([args]()
+    m_dispatcher->RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, ref new Windows::UI::Core::DispatchedHandler([this, args]()
     {
-        // Show the message dialog
-        auto msg = ref new Windows::UI::Popups::MessageDialog(args, "Class1::fromJavaScrip");
-        // Set the command to be invoked when a user presses 'ESC'
-        msg->CancelCommandIndex = 1;
-        msg->ShowAsync();
+        OnJavaScriptCallback(this, args);
     }));
-
-    auto s = args;
 }

@@ -16,9 +16,17 @@ namespace WebViewExample
 	{
 	public:
 		MainPage();
+
+    protected:
+        virtual void OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e) override;
+        virtual void OnNavigatedFrom(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e) override;
+
     private:
         void webView_NavigationStarting(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ args);
 
-        WindowsRuntimeComponent1::Class1^ m_Helper;
+        void JavaScriptCallbackHandler(WindowsRuntimeComponent1::Class1^ sender, Platform::String^ args);
+
+        WindowsRuntimeComponent1::Class1^ m_helper;
+        Windows::Foundation::EventRegistrationToken m_webToken;
     };
 }
