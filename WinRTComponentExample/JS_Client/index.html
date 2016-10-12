@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>JS_Client</title>
+    <link href="lib/winjs-4.0.1/css/ui-light.css" rel="stylesheet" />
+    <script src="lib/winjs-4.0.1/js/base.js"></script>
+    <script src="lib/winjs-4.0.1/js/ui.js"></script>
+    <link href="css/default.css" rel="stylesheet" />
+    <script src="js/main.js"></script>
+</head>
+<body class="win-type-body">
+    <div id="ClearDiv">
+        <button id="Button_Clear">Clear</button>
+    </div>   <div id="LogButtonDiv">
+        <button id="logButton">Logarithms using AMP</button>
+    </div>
+    <div id="LogResultDiv">
+        <p id="logResult"></p>
+    </div>
+    <div id="OrderedPrimeButtonDiv">
+        <button id="orderedPrimeButton">Primes using parallel_for with sort</button>
+    </div>
+    <div id="OrderedPrimeProgress">
+        <progress id="OrderedPrimesProgressBar" value="0" max="100"></progress>
+    </div>
+    <div id="OrderedPrimeResultDiv">
+        <p id="orderedPrimes">
+            Primes found (ordered):
+        </p>
+    </div>
+    <div id="UnorderedPrimeButtonDiv">
+        <button id="ButtonUnordered">Primes returned as they are produced.</button>
+    </div>
+    <div id="UnorderedPrimeDiv">
+        <progress id="UnorderedPrimesProgressBar" value="0" max="100"></progress>
+    </div>
+    <div id="UnorderedPrime">
+        <p id="unorderedPrimes">
+            Primes found (unordered):
+        </p>
+    </div>
+
+</body>
+</html>
