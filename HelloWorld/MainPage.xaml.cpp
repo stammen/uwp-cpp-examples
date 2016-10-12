@@ -287,7 +287,6 @@ void MainPage::PickImageAsync_Click(Platform::Object^ sender, Windows::UI::Xaml:
     });
 }
 
-#if 1
 void MainPage::PickImageAwait_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     PickImageAwait();
