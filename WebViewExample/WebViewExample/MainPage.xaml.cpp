@@ -53,7 +53,7 @@ void MainPage::webView_NavigationStarting(WebView^ sender, WebViewNavigationStar
 // This is called on the Xaml UI thread when WindowsRuntimeComponent1::Class1 receives a callback from JavaScript
 void MainPage::JavaScriptCallbackHandler(WindowsRuntimeComponent1::Class1^ sender, Platform::String^ args)
 {
-    // Show the message dialog
+    // Show a message dialog
     auto msg = ref new Windows::UI::Popups::MessageDialog(args, "JavaScriptCallbackHandler");
     // Set the command to be invoked when a user presses 'ESC'
     msg->CancelCommandIndex = 1;
