@@ -10,7 +10,9 @@ namespace WindowsRuntimeComponent1
     {
     public:
         Class1();
-        void fromJavaScript(Platform::String^ args);
+        void stringFromJavaScript(Platform::String^ args);
+        void boolFromJavaScript(Platform::Boolean arg);
+
         // Event whose type is a delegate "class"
         event JavaScriptCallbackHandler^ OnJavaScriptCallback;
 
