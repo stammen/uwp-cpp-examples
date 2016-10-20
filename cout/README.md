@@ -22,6 +22,7 @@ private:
 1. Use std::cout and std::wcout normally in the app. 
  ```c++
     std::cout << "***App.xaml.cpp: Hello world!***" << std::endl;
+    
     std::wcout << L"***App.xaml.cpp: Hello wide world!***" << std::endl;
 ```
 
