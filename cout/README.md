@@ -1,5 +1,5 @@
-# uwp-cpp-examples
-Using std::cout and std::cwout in a Windows 10 UWP app
+# Using std::cout and std::cwout in a Windows 10 UWP App
+
 
 In order to override std::cout to use OutputDebugString in a C++ UWP app, do the following:
 
