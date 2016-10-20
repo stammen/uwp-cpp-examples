@@ -1,5 +1,6 @@
 # Using std::cout and std::cwout in a Windows 10 UWP App
 
+Based on http://stackoverflow.com/questions/5248704/how-to-redirect-stdout-to-output-window-from-visual-studio
 
 In order to override std::cout to use OutputDebugString in a C++ UWP app, do the following:
 
