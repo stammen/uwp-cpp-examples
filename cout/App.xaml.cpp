@@ -5,6 +5,8 @@
 
 #include "pch.h"
 #include "MainPage.xaml.h"
+#include "..\Lib1\Lib1.h"
+#include "..\DLL1\DLL1.h"
 #include <iostream>
 
 using namespace cout;
@@ -34,6 +36,10 @@ App::App()
     std::cout << "***App.xaml.cpp: Hello world!***" << std::endl;
     std::wcout << L"***App.xaml.cpp: Hello wide world!***" << std::endl;
 
+    auto component = ref new WindowsRuntimeComponent1::Class1();
+
+    lib_cout_test();
+    dll_cout_test();
 
     Suspending += ref new SuspendingEventHandler(this, &App::OnSuspending);
 }
