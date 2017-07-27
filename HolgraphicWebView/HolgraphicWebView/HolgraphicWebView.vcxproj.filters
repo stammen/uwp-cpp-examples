@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>8c2366b6-2d0c-4db1-b99e-24900dd34966</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>268755da-5077-4f49-a4c2-c4ed59e72f80</UniqueIdentifier>
+      <Extensions>bmp;fbx;gif;jpg;jpeg;tga;tiff;tif;png</Extensions>
+    </Filter>
+    <Filter Include="HolographicView">
+      <UniqueIdentifier>{43dd9f88-9d0c-4fa0-8ce3-0b34d0d1acde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HolographicView\Common">
+      <UniqueIdentifier>{e2802bfd-9ec6-4a14-8592-76f51c539e81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HolographicView\Content">
+      <UniqueIdentifier>{a8d3db78-3940-4ad0-9703-c2f4df776a86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HolographicView\Content\Shaders">
+      <UniqueIdentifier>{19ef0f6e-3169-4b53-bfd6-2dc9bf75a56f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="App.xaml.cpp" />
+    <ClCompile Include="MainPage.xaml.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="HolographicView\Common\CameraResources.cpp">
+      <Filter>HolographicView\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="HolographicView\Common\DeviceResources.cpp">
+      <Filter>HolographicView\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="HolographicView\Content\SpatialInputHandler.cpp">
+      <Filter>HolographicView\Content</Filter>
+    </ClCompile>
+    <ClCompile Include="HolographicView\Content\SpinningCubeRenderer.cpp">
+      <Filter>HolographicView\Content</Filter>
+    </ClCompile>
+    <ClCompile Include="HolographicView\AppView.cpp">
+      <Filter>HolographicView</Filter>
+    </ClCompile>
+    <ClCompile Include="HolographicView\HolgraphicWebViewMain.cpp">
+      <Filter>HolographicView</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="App.xaml.h" />
+    <ClInclude Include="MainPage.xaml.h" />
+    <ClInclude Include="HolographicView\Common\CameraResources.h">
+      <Filter>HolographicView\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\Common\DeviceResources.h">
+      <Filter>HolographicView\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\Common\DirectXHelper.h">
+      <Filter>HolographicView\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\Common\StepTimer.h">
+      <Filter>HolographicView\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\Content\ShaderStructures.h">
+      <Filter>HolographicView\Content</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\Content\SpatialInputHandler.h">
+      <Filter>HolographicView\Content</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\Content\SpinningCubeRenderer.h">
+      <Filter>HolographicView\Content</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\AppView.h">
+      <Filter>HolographicView</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\HolgraphicWebViewMain.h">
+      <Filter>HolographicView</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\LockScreenLogo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\SplashScreen.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\StoreLogo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Wide310x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="HolgraphicWebView_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="MainPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="HolographicView\Content\GeometryShader.hlsl">
+      <Filter>HolographicView\Content\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="HolographicView\Content\PixelShader.hlsl">
+      <Filter>HolographicView\Content\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="HolographicView\Content\VertexShader.hlsl">
+      <Filter>HolographicView\Content\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="HolographicView\Content\VPRTVertexShader.hlsl">
+      <Filter>HolographicView\Content\Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
