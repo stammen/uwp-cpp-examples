@@ -53,5 +53,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainPage.xaml" />
+    <Page Include="SecondaryPage.xaml" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="WebViewCapture.MainPage"
+    x:Class="WebViewCapture.SecondaryPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:WebViewCapture"
@@ -7,18 +7,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  Margin="20">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="20">
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="viewButton" Content="Show Secondary View" Click="viewButton_Click"/>
+                <Button x:Name="viewButton" Content="Main View" Click="viewButton_Click"/>
                 <TextBlock Text=" FPS:"/>
-                <TextBlock x:Name="frameCount" Text="0"/>
+                <TextBlock x:Name="frameCount" Text="0" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <WebView x:Name="webview1" Source="https://www.time.gov/" Width="400" Height="400" Margin="20"/>
                 <Image x:Name="image1" Width="400" Height="400" Margin="20"/>
             </StackPanel>
-            <TextBlock Text="Original WebView" />
+            <TextBlock Text="Image of WebView" />
         </StackPanel>
     </Grid>
 </Page>
