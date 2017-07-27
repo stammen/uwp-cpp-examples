@@ -3,7 +3,7 @@
 
 #include <ppltasks.h>
 
-using namespace HolgraphicWebView;
+using namespace HolographicWebView;
 
 using namespace concurrency;
 using namespace Windows::ApplicationModel;
@@ -45,7 +45,7 @@ void AppView::Initialize(CoreApplicationView^ applicationView)
     // resources.
     m_deviceResources = std::make_shared<DX::DeviceResources>();
 
-    m_main = std::make_unique<HolgraphicWebViewMain>(m_deviceResources);
+    m_main = std::make_unique<HolographicWebViewMain>(m_deviceResources);
 }
 
 // Called when the CoreWindow object is created (or re-created).

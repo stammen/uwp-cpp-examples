@@ -2,7 +2,7 @@
 #include "SpatialInputHandler.h"
 #include <functional>
 
-using namespace HolgraphicWebView;
+using namespace HolographicWebView;
 
 using namespace Windows::Foundation;
 using namespace Windows::UI::Input::Spatial;

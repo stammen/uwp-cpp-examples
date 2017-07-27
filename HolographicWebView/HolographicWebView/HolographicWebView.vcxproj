@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8c2366b6-2d0c-4db1-b99e-24900dd34966}</ProjectGuid>
-    <RootNamespace>HolgraphicWebView</RootNamespace>
+    <RootNamespace>HolographicWebView</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
@@ -97,7 +97,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <PackageCertificateKeyFile>HolgraphicWebView_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>HolographicWebView_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateThumbprint>7BC349CB8E157331B9A67D47BBA94A195595C8E7</PackageCertificateThumbprint>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
@@ -150,7 +151,7 @@
     <ClInclude Include="HolographicView\Content\ShaderStructures.h" />
     <ClInclude Include="HolographicView\Content\SpatialInputHandler.h" />
     <ClInclude Include="HolographicView\Content\SpinningCubeRenderer.h" />
-    <ClInclude Include="HolographicView\HolgraphicWebViewMain.h" />
+    <ClInclude Include="HolographicView\HolographicWebViewMain.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -171,7 +172,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="HolgraphicWebView_TemporaryKey.pfx" />
+    <None Include="HolographicWebView_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\LockScreenLogo.scale-200.png" />
@@ -191,7 +192,7 @@
     <ClCompile Include="HolographicView\Common\DeviceResources.cpp" />
     <ClCompile Include="HolographicView\Content\SpatialInputHandler.cpp" />
     <ClCompile Include="HolographicView\Content\SpinningCubeRenderer.cpp" />
-    <ClCompile Include="HolographicView\HolgraphicWebViewMain.cpp" />
+    <ClCompile Include="HolographicView\HolographicWebViewMain.cpp" />
     <ClCompile Include="MainPage.xaml.cpp">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClCompile>

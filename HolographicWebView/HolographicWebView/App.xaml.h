@@ -7,7 +7,7 @@
 
 #include "App.g.h"
 
-namespace HolgraphicWebView
+namespace HolographicWebView
 {
 	/// <summary>
 	/// Provides application-specific behavior to supplement the default Application class.

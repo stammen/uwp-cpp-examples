@@ -1,6 +1,6 @@
 #pragma once
 
-namespace HolgraphicWebView
+namespace HolographicWebView
 {
     // Constant buffer used to send hologram position transform to the shader pipeline.
     struct ModelConstantBuffer

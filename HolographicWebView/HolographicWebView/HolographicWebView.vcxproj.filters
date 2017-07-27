@@ -43,7 +43,7 @@
     <ClCompile Include="HolographicView\AppView.cpp">
       <Filter>HolographicView</Filter>
     </ClCompile>
-    <ClCompile Include="HolographicView\HolgraphicWebViewMain.cpp">
+    <ClCompile Include="HolographicView\HolographicWebViewMain.cpp">
       <Filter>HolographicView</Filter>
     </ClCompile>
   </ItemGroup>
@@ -75,7 +75,7 @@
     <ClInclude Include="HolographicView\AppView.h">
       <Filter>HolographicView</Filter>
     </ClInclude>
-    <ClInclude Include="HolographicView\HolgraphicWebViewMain.h">
+    <ClInclude Include="HolographicView\HolographicWebViewMain.h">
       <Filter>HolographicView</Filter>
     </ClInclude>
   </ItemGroup>
@@ -106,7 +106,7 @@
     <AppxManifest Include="Package.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="HolgraphicWebView_TemporaryKey.pfx" />
+    <None Include="HolographicWebView_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainPage.xaml" />

@@ -7,7 +7,7 @@
 
 #include "MainPage.g.h"
 
-namespace HolgraphicWebView
+namespace HolographicWebView
 {
 	/// <summary>
 	/// An empty page that can be used on its own or navigated to within a Frame.
@@ -16,6 +16,7 @@ namespace HolgraphicWebView
 	{
 	public:
 		MainPage();
+        void DisplayWebView(Platform::String^ url);
 
     private:
         void button1_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);

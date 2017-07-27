@@ -2,7 +2,7 @@
 #include "SpinningCubeRenderer.h"
 #include "Common\DirectXHelper.h"
 
-using namespace HolgraphicWebView;
+using namespace HolographicWebView;
 using namespace Concurrency;
 using namespace DirectX;
 using namespace Windows::Foundation::Numerics;

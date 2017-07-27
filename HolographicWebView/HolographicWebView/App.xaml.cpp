@@ -6,7 +6,7 @@
 #include "pch.h"
 #include "MainPage.xaml.h"
 
-using namespace HolgraphicWebView;
+using namespace HolographicWebView;
 
 using namespace Platform;
 using namespace Windows::ApplicationModel;

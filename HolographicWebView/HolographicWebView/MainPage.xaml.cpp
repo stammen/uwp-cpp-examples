@@ -7,7 +7,7 @@
 #include "MainPage.xaml.h"
 #include "AppView.h"
 
-using namespace HolgraphicWebView;
+using namespace HolographicWebView;
 
 using namespace Platform;
 using namespace Windows::ApplicationModel::Core;
@@ -30,13 +30,13 @@ MainPage::MainPage()
 	InitializeComponent();
 }
 
-void HolgraphicWebView::MainPage::button1_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void MainPage::button1_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     if (m_holographicView.Get() == nullptr)
     {
         try
         {
-            m_holographicView = CoreApplication::CreateNewView(ref new HolgraphicWebView::AppViewSource());
+            m_holographicView = CoreApplication::CreateNewView(ref new HolographicWebView::AppViewSource());
         }
         catch (Platform::COMException^ e)
         {
@@ -45,6 +45,8 @@ void HolgraphicWebView::MainPage::button1_Click(Platform::Object^ sender, Window
             return;
         }
     }
+
+    webview1->Visibility = Windows::UI::Xaml::Visibility::Collapsed;
 
     // We must launch the switch from the exclusive view's UI thread so we can access its view ID
     m_holographicView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this]()
@@ -59,3 +61,11 @@ void HolgraphicWebView::MainPage::button1_Click(Platform::Object^ sender, Window
         }));
     }));
 }
+
+void MainPage::DisplayWebView(Platform::String^ url)
+{
+    Windows::Foundation::Uri^ uri = ref new Windows::Foundation::Uri(url);
+    webview1->Visibility = Windows::UI::Xaml::Visibility::Visible;
+    webview1->Source = uri;
+}
+

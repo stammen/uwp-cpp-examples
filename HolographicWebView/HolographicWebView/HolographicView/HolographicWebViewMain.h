@@ -19,13 +19,13 @@
 #endif
 
 // Updates, renders, and presents holographic content using Direct3D.
-namespace HolgraphicWebView
+namespace HolographicWebView
 {
-    class HolgraphicWebViewMain : public DX::IDeviceNotify
+    class HolographicWebViewMain : public DX::IDeviceNotify
     {
     public:
-        HolgraphicWebViewMain(const std::shared_ptr<DX::DeviceResources>& deviceResources);
-        ~HolgraphicWebViewMain();
+        HolographicWebViewMain(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+        ~HolographicWebViewMain();
 
         // Sets the holographic space. This is our closest analogue to setting a new window
         // for the app.

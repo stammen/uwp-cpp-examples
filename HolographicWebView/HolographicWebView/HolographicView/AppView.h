@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Common\DeviceResources.h"
-#include "HolgraphicWebViewMain.h"
+#include "HolographicWebViewMain.h"
 
-namespace HolgraphicWebView
+namespace HolographicWebView
 {
     // IFrameworkView class. Connects the app with the Windows shell and handles application lifecycle events.
     ref class AppView sealed : public Windows::ApplicationModel::Core::IFrameworkView
@@ -32,7 +32,7 @@ namespace HolgraphicWebView
         void OnKeyPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
 
     private:
-        std::unique_ptr<HolgraphicWebViewMain> m_main;
+        std::unique_ptr<HolographicWebViewMain> m_main;
 
         std::shared_ptr<DX::DeviceResources>                m_deviceResources;
         bool                                                m_windowClosed  = false;

@@ -1,12 +1,13 @@
 #include "pch.h"
-#include "HolgraphicWebViewMain.h"
+#include "HolographicWebViewMain.h"
+#include "MainPage.xaml.h"
 #include "Common\DirectXHelper.h"
 
 #include <windows.graphics.directx.direct3d11.interop.h>
 #include <Collection.h>
 
 
-using namespace HolgraphicWebView;
+using namespace HolographicWebView;
 
 using namespace concurrency;
 using namespace Platform;
@@ -18,17 +19,18 @@ using namespace Windows::Perception::Spatial;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input::Spatial;
 using namespace Windows::UI::ViewManagement;
+using namespace Windows::UI::Xaml;
 using namespace std::placeholders;
 
 // Loads and initializes application assets when the application is loaded.
-HolgraphicWebViewMain::HolgraphicWebViewMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
+HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
     m_deviceResources(deviceResources)
 {
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
 }
 
-void HolgraphicWebViewMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
+void HolographicWebViewMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
 {
     UnregisterHolographicEventHandlers();
 
@@ -52,7 +54,7 @@ void HolgraphicWebViewMain::SetHolographicSpace(HolographicSpace^ holographicSpa
     m_locatabilityChangedToken =
         m_locator->LocatabilityChanged +=
             ref new Windows::Foundation::TypedEventHandler<SpatialLocator^, Object^>(
-                std::bind(&HolgraphicWebViewMain::OnLocatabilityChanged, this, _1, _2)
+                std::bind(&HolographicWebViewMain::OnLocatabilityChanged, this, _1, _2)
                 );
 
     // Respond to camera added events by creating any resources that are specific
@@ -66,7 +68,7 @@ void HolgraphicWebViewMain::SetHolographicSpace(HolographicSpace^ holographicSpa
 m_cameraAddedToken =
 m_holographicSpace->CameraAdded +=
 ref new Windows::Foundation::TypedEventHandler<HolographicSpace^, HolographicSpaceCameraAddedEventArgs^>(
-    std::bind(&HolgraphicWebViewMain::OnCameraAdded, this, _1, _2)
+    std::bind(&HolographicWebViewMain::OnCameraAdded, this, _1, _2)
     );
 
 // Respond to camera removed events by releasing resources that were created for that
@@ -78,7 +80,7 @@ ref new Windows::Foundation::TypedEventHandler<HolographicSpace^, HolographicSpa
 m_cameraRemovedToken =
 m_holographicSpace->CameraRemoved +=
 ref new Windows::Foundation::TypedEventHandler<HolographicSpace^, HolographicSpaceCameraRemovedEventArgs^>(
-    std::bind(&HolgraphicWebViewMain::OnCameraRemoved, this, _1, _2)
+    std::bind(&HolographicWebViewMain::OnCameraRemoved, this, _1, _2)
     );
 
 // The simplest way to render world-locked holograms is to create a stationary reference frame
@@ -97,7 +99,7 @@ m_referenceFrame = m_locator->CreateStationaryFrameOfReferenceAtCurrentLocation(
 //   occurred.
 }
 
-void HolgraphicWebViewMain::UnregisterHolographicEventHandlers()
+void HolographicWebViewMain::UnregisterHolographicEventHandlers()
 {
     if (m_holographicSpace != nullptr)
     {
@@ -122,7 +124,7 @@ void HolgraphicWebViewMain::UnregisterHolographicEventHandlers()
     }
 }
 
-HolgraphicWebViewMain::~HolgraphicWebViewMain()
+HolographicWebViewMain::~HolographicWebViewMain()
 {
     // Deregister device notification.
     m_deviceResources->RegisterDeviceNotify(nullptr);
@@ -131,7 +133,7 @@ HolgraphicWebViewMain::~HolgraphicWebViewMain()
 }
 
 // Updates the application state once per frame.
-HolographicFrame^ HolgraphicWebViewMain::Update()
+HolographicFrame^ HolographicWebViewMain::Update()
 {
     // Before doing the timer update, there is some work to do per-frame
     // to maintain holographic rendering. First, we will get information
@@ -169,6 +171,10 @@ HolographicFrame^ HolgraphicWebViewMain::Update()
         mainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this]()
         {
             auto viewId = ApplicationView::GetForCurrentView()->Id;
+
+            Controls::Frame^ frame = (Controls::Frame^)Window::Current->Content;
+            MainPage^ page = (MainPage^)frame->Content;
+            page->DisplayWebView(L"https://www.microsoft.com");
 
             CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([viewId]()
             {
@@ -233,7 +239,7 @@ HolographicFrame^ HolgraphicWebViewMain::Update()
 // Renders the current frame to each holographic camera, according to the
 // current application and spatial positioning state. Returns true if the
 // frame was rendered to at least one camera.
-bool HolgraphicWebViewMain::Render(Windows::Graphics::Holographic::HolographicFrame^ holographicFrame)
+bool HolographicWebViewMain::Render(Windows::Graphics::Holographic::HolographicFrame^ holographicFrame)
 {
     // Don't try to render anything before the first Update.
     if (m_timer.GetFrameCount() == 0)
@@ -318,7 +324,7 @@ bool HolgraphicWebViewMain::Render(Windows::Graphics::Holographic::HolographicFr
     });
 }
 
-void HolgraphicWebViewMain::SaveAppState()
+void HolographicWebViewMain::SaveAppState()
 {
     //
     // TODO: Insert code here to save your app state.
@@ -329,14 +335,14 @@ void HolgraphicWebViewMain::SaveAppState()
 }
 
 // Consumes any waiting input event, and discards it
-void HolgraphicWebViewMain::ResetInput()
+void HolographicWebViewMain::ResetInput()
 {
     // This "consumes" the click event
     SpatialInteractionSourceState^ pointerState = m_spatialInputHandler->CheckForInput();
     m_timer.ResetElapsedTime();
 }
 
-void HolgraphicWebViewMain::LoadAppState()
+void HolographicWebViewMain::LoadAppState()
 {
     //
     // TODO: Insert code here to load your app state.
@@ -348,7 +354,7 @@ void HolgraphicWebViewMain::LoadAppState()
 
 // Notifies classes that use Direct3D device resources that the device resources
 // need to be released before this method returns.
-void HolgraphicWebViewMain::OnDeviceLost()
+void HolographicWebViewMain::OnDeviceLost()
 {
 #ifdef DRAW_SAMPLE_CONTENT
     m_spinningCubeRenderer->ReleaseDeviceDependentResources();
@@ -357,14 +363,14 @@ void HolgraphicWebViewMain::OnDeviceLost()
 
 // Notifies classes that use Direct3D device resources that the device resources
 // may now be recreated.
-void HolgraphicWebViewMain::OnDeviceRestored()
+void HolographicWebViewMain::OnDeviceRestored()
 {
 #ifdef DRAW_SAMPLE_CONTENT
     m_spinningCubeRenderer->CreateDeviceDependentResources();
 #endif
 }
 
-void HolgraphicWebViewMain::OnLocatabilityChanged(SpatialLocator^ sender, Object^ args)
+void HolographicWebViewMain::OnLocatabilityChanged(SpatialLocator^ sender, Object^ args)
 {
     switch (sender->Locatability)
     {
@@ -396,7 +402,7 @@ void HolgraphicWebViewMain::OnLocatabilityChanged(SpatialLocator^ sender, Object
     }
 }
 
-void HolgraphicWebViewMain::OnCameraAdded(
+void HolographicWebViewMain::OnCameraAdded(
     HolographicSpace^ sender,
     HolographicSpaceCameraAddedEventArgs^ args
     )
@@ -428,7 +434,7 @@ void HolgraphicWebViewMain::OnCameraAdded(
     });
 }
 
-void HolgraphicWebViewMain::OnCameraRemoved(
+void HolographicWebViewMain::OnCameraRemoved(
     HolographicSpace^ sender,
     HolographicSpaceCameraRemovedEventArgs^ args
     )

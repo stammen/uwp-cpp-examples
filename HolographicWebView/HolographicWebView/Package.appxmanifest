@@ -14,7 +14,7 @@
   <mp:PhoneIdentity PhoneProductId="1587af37-6520-4933-ba9a-040e3a2ff1e7" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>HolgraphicWebView</DisplayName>
+    <DisplayName>HolographicWebView</DisplayName>
     <PublisherDisplayName>stamm</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -30,12 +30,12 @@
   <Applications>
     <Application Id="App"
       Executable="$targetnametoken$.exe"
-      EntryPoint="HolgraphicWebView.App">
+      EntryPoint="HolographicWebView.App">
       <uap:VisualElements
-        DisplayName="HolgraphicWebView"
+        DisplayName="HolographicWebView"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="HolgraphicWebView"
+        Description="HolographicWebView"
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
