@@ -333,6 +333,7 @@ void HolgraphicWebViewMain::ResetInput()
 {
     // This "consumes" the click event
     SpatialInteractionSourceState^ pointerState = m_spatialInputHandler->CheckForInput();
+    m_timer.ResetElapsedTime();
 }
 
 void HolgraphicWebViewMain::LoadAppState()

@@ -8,9 +8,12 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <StackPanel Orientation="Vertical"  VerticalAlignment="Center" HorizontalAlignment="Center">
-            <Button x:Name="button1" Content="Launch MR" Click="button1_Click" />
-            <TextBlock x:Name="statusText"/>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="button1" Content="Launch MR" Click="button1_Click" />
+                <TextBlock x:Name="statusText"/>
+            </StackPanel>
+            <WebView x:Name="webview1" Width="900" Height="440" Source="https://www.microsoft.com/"/>
         </StackPanel>
     </Grid>
 </Page>
