@@ -116,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="HolographicWebView_TemporaryKey.pfx" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainPage.xaml" />
