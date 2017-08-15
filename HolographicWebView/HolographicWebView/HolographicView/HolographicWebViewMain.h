@@ -14,7 +14,7 @@
 #include "Common\StepTimer.h"
 
 #ifdef DRAW_SAMPLE_CONTENT
-#include "Content\SpinningCubeRenderer.h"
+#include "Content\QuadRenderer.h"
 #include "Content\SpatialInputHandler.h"
 #endif
 
@@ -74,7 +74,7 @@ namespace HolographicWebView
 #ifdef DRAW_SAMPLE_CONTENT
         // Renders a colorful holographic cube that's 20 centimeters wide. This sample content
         // is used to demonstrate world-locked rendering.
-        std::unique_ptr<SpinningCubeRenderer>                           m_spinningCubeRenderer;
+        std::unique_ptr<QuadRenderer>                           m_renderer;
 
         // Listens for the Pressed spatial input event.
         std::shared_ptr<SpatialInputHandler>                            m_spatialInputHandler;
@@ -92,8 +92,8 @@ namespace HolographicWebView
         // SpatialLocator that is attached to the primary camera.
         Windows::Perception::Spatial::SpatialLocator^                   m_locator;
 
-        // A reference frame attached to the holographic camera.
-        Windows::Perception::Spatial::SpatialStationaryFrameOfReference^ m_referenceFrame;
+		// A reference frame attached to the holographic camera.
+		Windows::Perception::Spatial::SpatialLocatorAttachedFrameOfReference^   m_attachedReferenceFrame;
 
         // Event registration tokens.
         Windows::Foundation::EventRegistrationToken                     m_cameraAddedToken;

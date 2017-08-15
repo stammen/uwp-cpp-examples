@@ -37,14 +37,17 @@
     <ClCompile Include="HolographicView\Content\SpatialInputHandler.cpp">
       <Filter>HolographicView\Content</Filter>
     </ClCompile>
-    <ClCompile Include="HolographicView\Content\SpinningCubeRenderer.cpp">
-      <Filter>HolographicView\Content</Filter>
-    </ClCompile>
     <ClCompile Include="HolographicView\AppView.cpp">
       <Filter>HolographicView</Filter>
     </ClCompile>
     <ClCompile Include="HolographicView\HolographicWebViewMain.cpp">
       <Filter>HolographicView</Filter>
+    </ClCompile>
+    <ClCompile Include="HolographicView\Content\QuadRenderer.cpp">
+      <Filter>HolographicView\Content</Filter>
+    </ClCompile>
+    <ClCompile Include="HolographicView\Content\DDSTextureLoader.cpp">
+      <Filter>HolographicView\Content</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -69,14 +72,17 @@
     <ClInclude Include="HolographicView\Content\SpatialInputHandler.h">
       <Filter>HolographicView\Content</Filter>
     </ClInclude>
-    <ClInclude Include="HolographicView\Content\SpinningCubeRenderer.h">
-      <Filter>HolographicView\Content</Filter>
-    </ClInclude>
     <ClInclude Include="HolographicView\AppView.h">
       <Filter>HolographicView</Filter>
     </ClInclude>
     <ClInclude Include="HolographicView\HolographicWebViewMain.h">
       <Filter>HolographicView</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\Content\QuadRenderer.h">
+      <Filter>HolographicView\Content</Filter>
+    </ClInclude>
+    <ClInclude Include="HolographicView\Content\DDSTextureLoader.h">
+      <Filter>HolographicView\Content</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +105,9 @@
       <Filter>Assets</Filter>
     </Image>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\holoHello.dds">
       <Filter>Assets</Filter>
     </Image>
   </ItemGroup>
