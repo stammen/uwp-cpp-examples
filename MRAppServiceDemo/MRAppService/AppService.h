@@ -13,9 +13,10 @@ namespace MRAppService
 	private:
 		void OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args);
 		void OnTaskCanceled(Windows::ApplicationModel::Background::IBackgroundTaskInstance^ sender, Windows::ApplicationModel::Background::BackgroundTaskCancellationReason reason);
+		Concurrency::task<bool> LaunchAppWithProtocol(Platform::String^ protocol);
 
 		Platform::Agile<Windows::ApplicationModel::Background::BackgroundTaskDeferral> m_backgroundTaskDeferral = nullptr;
 		Windows::ApplicationModel::AppService::AppServiceConnection^ m_appServiceconnection = nullptr;
-		unsigned int m_requestCount;
+		static unsigned int m_data;
     };
 }

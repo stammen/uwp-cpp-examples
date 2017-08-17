@@ -9,9 +9,11 @@ using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::ApplicationModel::Background;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Windows::System;
+
+unsigned int AppService::m_data = 0;
 
 AppService::AppService()
-	: m_requestCount(0)
 {
 }
 
@@ -36,14 +38,41 @@ void AppService::OnRequestReceived(AppServiceConnection^ sender, AppServiceReque
 	auto messageDeferral = args->GetDeferral();
 
 	ValueSet^ message = args->Request->Message;
-	ValueSet^ returnData = ref new ValueSet();
 
-	returnData->Insert(L"Result", ++m_requestCount);
-
-	create_task(args->Request->SendResponseAsync(returnData)).then([messageDeferral](AppServiceResponseStatus response)
+	if (message->HasKey(L"LaunchApp"))
 	{
-		messageDeferral->Complete();
-	});
+		Platform::String^ protocol = dynamic_cast<Platform::String^>(message->Lookup(L"LaunchApp"));
+		auto task = LaunchAppWithProtocol(protocol);
+		task.then([this, messageDeferral, args](bool result)
+		{
+			ValueSet^ returnData = ref new ValueSet();
+			returnData->Insert(L"Result", result);
+			create_task(args->Request->SendResponseAsync(returnData)).then([messageDeferral](AppServiceResponseStatus response)
+			{
+				messageDeferral->Complete();
+			});
+		});
+	}
+	else if (message->HasKey(L"PostData"))
+	{
+		m_data = safe_cast<unsigned int>(message->Lookup(L"PostData"));
+		ValueSet^ returnData = ref new ValueSet();
+		returnData->Insert(L"Status", 1);
+		create_task(args->Request->SendResponseAsync(returnData)).then([messageDeferral](AppServiceResponseStatus response)
+		{
+			messageDeferral->Complete();
+		});
+	}
+	else
+	{
+		ValueSet^ returnData = ref new ValueSet();
+		returnData->Insert(L"Result", m_data);
+
+		create_task(args->Request->SendResponseAsync(returnData)).then([messageDeferral](AppServiceResponseStatus response)
+		{
+			messageDeferral->Complete();
+		});
+	}
 }
 
 void AppService::OnTaskCanceled(IBackgroundTaskInstance^ sender, BackgroundTaskCancellationReason reason)
@@ -54,4 +83,14 @@ void AppService::OnTaskCanceled(IBackgroundTaskInstance^ sender, BackgroundTaskC
 		m_backgroundTaskDeferral->Complete();
 	}
 }
+
+Concurrency::task<bool> AppService::LaunchAppWithProtocol(Platform::String^ protocol)
+{
+	auto uri = ref new Uri(protocol); // The protocol handled by the launched app
+	auto options = ref new LauncherOptions();
+	return create_task(Launcher::LaunchUriAsync(uri, options));
+}
+
+
+
 

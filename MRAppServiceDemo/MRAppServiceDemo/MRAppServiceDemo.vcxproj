@@ -203,4 +203,15 @@
   <PropertyGroup>
     <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
   </PropertyGroup>
+  <PropertyGroup Label="DesktopBridge">
+    <BinPath Condition=" '$(BinPath)' == '' ">$(SolutionDir)\$(Platform)\$(Configuration)\</BinPath>
+  </PropertyGroup>
+  <ItemGroup Label="DesktopBridge">
+    <None Include="$(BinPath)ConsoleApplication1.exe">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="$(BinPath)ConsoleApplication1.pdb">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
 </Project>
