@@ -506,15 +506,7 @@ void MRAppServiceDemoMain::LaunchWin32App()
 		if (consoleEntry)
 		{
 			auto t2 = create_task(consoleEntry->LaunchAsync());
-#if 0			
-			t2.then([dispatcher](bool result)
-			{
-				dispatcher->RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, ref new DispatchedHandler([=]()
-				{
-					Windows::UI::Xaml::Application::Current->Exit();
-				}));
-			});
-#endif
+
 		}
 	});
 }
