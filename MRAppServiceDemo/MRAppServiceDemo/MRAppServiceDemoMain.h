@@ -69,6 +69,8 @@ namespace MRAppServiceDemo
 		void UpdateAppService();
 		void GetAppServiceData();
 
+		void LaunchWin32App();
+
 #ifdef DRAW_SAMPLE_CONTENT
         // Renders a colorful holographic cube that's 20 centimeters wide. This sample content
         // is used to demonstrate world-locked rendering.

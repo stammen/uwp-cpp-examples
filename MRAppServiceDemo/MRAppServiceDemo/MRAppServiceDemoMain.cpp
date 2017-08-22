@@ -13,11 +13,13 @@ using namespace MRAppServiceDemo;
 using namespace concurrency;
 using namespace Platform;
 using namespace Windows::ApplicationModel::AppService;
+using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Foundation::Numerics;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::Perception::Spatial;
+using namespace Windows::UI::Core;
 using namespace Windows::UI::Input::Spatial;
 using namespace std::placeholders;
 
@@ -171,6 +173,8 @@ HolographicFrame^ MRAppServiceDemoMain::Update()
         m_spinningCubeRenderer->PositionHologram(
             pointerState->TryGetPointerPose(currentCoordinateSystem)
             );
+
+		LaunchWin32App();
     }
 #endif
 
@@ -479,6 +483,39 @@ void MRAppServiceDemoMain::GetAppServiceData()
 		std::wstringstream w;
 		w << L"GetAppServiceData:" << result << std::endl;
 		OutputDebugString(w.str().c_str());
+	});
+}
+
+void MRAppServiceDemoMain::LaunchWin32App()
+{
+	auto t = create_task(Windows::ApplicationModel::Package::Current->GetAppListEntriesAsync());
+	t.then([](IVectorView <Windows::ApplicationModel::Core::AppListEntry^>^ entries)
+	{
+		AppListEntry^ consoleEntry = nullptr;
+
+		for (AppListEntry^ entry : entries)
+		{
+			auto info = entry->DisplayInfo;
+			if (info->DisplayName == L"ConsoleApp")
+			{
+				consoleEntry = entry;
+				break;
+			}
+		}
+
+		if (consoleEntry)
+		{
+			auto t2 = create_task(consoleEntry->LaunchAsync());
+#if 0			
+			t2.then([dispatcher](bool result)
+			{
+				dispatcher->RunAsync(Windows::UI::Core::CoreDispatcherPriority::Normal, ref new DispatchedHandler([=]()
+				{
+					Windows::UI::Xaml::Application::Current->Exit();
+				}));
+			});
+#endif
+		}
 	});
 }
 
