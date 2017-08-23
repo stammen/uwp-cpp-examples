@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\directxtk_uwp.2017.6.21.1\build\native\directxtk_uwp.props" Condition="Exists('..\packages\directxtk_uwp.2017.6.21.1\build\native\directxtk_uwp.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8c2366b6-2d0c-4db1-b99e-24900dd34966}</ProjectGuid>
     <RootNamespace>HolographicWebView</RootNamespace>
@@ -180,6 +181,7 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <None Include="HolographicWebView_TemporaryKey.pfx" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\holoHello.dds" />
@@ -274,5 +276,13 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\directxtk_uwp.2017.6.21.1\build\native\directxtk_uwp.targets" Condition="Exists('..\packages\directxtk_uwp.2017.6.21.1\build\native\directxtk_uwp.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\directxtk_uwp.2017.6.21.1\build\native\directxtk_uwp.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk_uwp.2017.6.21.1\build\native\directxtk_uwp.props'))" />
+    <Error Condition="!Exists('..\packages\directxtk_uwp.2017.6.21.1\build\native\directxtk_uwp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\directxtk_uwp.2017.6.21.1\build\native\directxtk_uwp.targets'))" />
+  </Target>
 </Project>
