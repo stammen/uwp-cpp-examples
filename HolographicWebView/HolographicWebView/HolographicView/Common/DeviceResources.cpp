@@ -130,7 +130,8 @@ void DX::DeviceResources::CreateDeviceResources()
     if (DX::SdkLayersAvailable())
     {
         // If the project is in a debug build, enable debugging via SDK Layers with this flag.
-        creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
+		// Note This is broken in Windows build 16257
+        //creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
 #endif
 

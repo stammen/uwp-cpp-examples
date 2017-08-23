@@ -6,6 +6,8 @@
 #pragma once
 
 #include "MainPage.g.h"
+#include "Common/StepTimer.h"
+#include <mutex>
 
 namespace HolographicWebView
 {
@@ -16,12 +18,26 @@ namespace HolographicWebView
 	{
 	public:
 		MainPage();
-        void DisplayWebView(Platform::String^ url);
+        void DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height);
+        Windows::UI::Xaml::Media::Imaging::WriteableBitmap^ GetBitmap();
 
     private:
         void button1_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 
     private:
+        void TimerTick(Platform::Object^ sender, Platform::Object^ e);
+        void StartTimer();
+        void StopTimer();
+        Concurrency::task<void> UpdateWebViewBitmap(unsigned int width, unsigned int height);
+        void OnDOMContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewDOMContentLoadedEventArgs ^ args);
+
+
         Platform::Agile<Windows::ApplicationModel::Core::CoreApplicationView> m_holographicView;
+        DX::StepTimer m_timer;
+        Windows::UI::Xaml::DispatcherTimer^ m_dispatcherTimer;
+        Windows::Graphics::Imaging::BitmapTransform^ m_transform;
+        Windows::UI::Xaml::Media::Imaging::WriteableBitmap^ m_bitmap1;
+        Windows::UI::Xaml::Media::Imaging::WriteableBitmap^ m_bitmap2;
+        std::mutex m_mutex;
     };
 }
