@@ -9,6 +9,7 @@
 #include <string>
 #include <sstream> 
 #include <algorithm>
+#include <ppltasks.h>
 #include <robuffer.h> // IBufferByteAccess
 
 using namespace HolographicWebView;
@@ -35,13 +36,16 @@ using namespace Windows::UI::Xaml::Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
+std::vector<byte> MainPage::s_bitmap1;
+std::vector<byte> MainPage::s_bitmap2;
+
+std::mutex MainPage::s_mutex;
+
 MainPage::MainPage()
 {
 	InitializeComponent();
     m_dispatcherTimer = ref new DispatcherTimer();
     m_transform = ref new BitmapTransform();
-    m_bitmap1 = nullptr;
-    m_bitmap2 = nullptr;
     webview1->DOMContentLoaded += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewDOMContentLoadedEventArgs ^>(this, &HolographicWebView::MainPage::OnDOMContentLoaded);
 }
 
@@ -110,8 +114,8 @@ void MainPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigne
     int bitmapWidth = (int)(webViewControlWidth * scale);
     int bitmapHeight = (int)(webViewControlHeight * scale);
 
-    m_bitmap1 = ref new WriteableBitmap(bitmapWidth, bitmapHeight);
-    m_bitmap2 = ref new WriteableBitmap(bitmapWidth, bitmapHeight);
+    s_bitmap1.resize(bitmapWidth * bitmapHeight * 4);
+    s_bitmap2.resize(bitmapWidth * bitmapHeight * 4);
 
     // need to add code to scale webview zoom to display entire width of webpage inside of webview
 }
@@ -168,15 +172,9 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
             ColorManagementMode::DoNotColorManage))
             .then([width, height, this](PixelDataProvider^ pixelDataProvider)
         {
-            std::unique_lock<std::mutex> lock(m_mutex);
+            std::unique_lock<std::mutex> lock(s_mutex);
             Platform::Array<byte>^ pixelData = pixelDataProvider->DetachPixelData();
-            ComPtr<IInspectable> bufferAsInspectable(reinterpret_cast<IInspectable*>(m_bitmap2->PixelBuffer));
-            ComPtr<IBufferByteAccess> bufferAsByteAccess;
-            bufferAsInspectable.As(&bufferAsByteAccess);
-            byte* pixels;
-            bufferAsByteAccess->Buffer(&pixels);
-            memcpy(pixels, pixelData->Data, pixelData->Length);
-            m_bitmap2->Invalidate();
+            memcpy(s_bitmap2.data(), pixelData->Data, pixelData->Length);
         });
     }).then([this]()
     {
@@ -186,11 +184,11 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
     });
 }
 
-WriteableBitmap^ MainPage::GetBitmap()
+const std::vector<byte>& MainPage::GetBitmap()
 {
-    std::unique_lock<std::mutex> lock(m_mutex);
-    std::swap(m_bitmap1, m_bitmap2);
-    return m_bitmap1;
+    std::unique_lock<std::mutex> lock(s_mutex);
+    std::swap(s_bitmap1, s_bitmap2);
+    return s_bitmap1;
 };
 
 

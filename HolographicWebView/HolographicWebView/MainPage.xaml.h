@@ -8,6 +8,7 @@
 #include "MainPage.g.h"
 #include "Common/StepTimer.h"
 #include <mutex>
+#include <vector>
 
 namespace HolographicWebView
 {
@@ -19,7 +20,9 @@ namespace HolographicWebView
 	public:
 		MainPage();
         void DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height);
-        Windows::UI::Xaml::Media::Imaging::WriteableBitmap^ GetBitmap();
+
+    internal:
+        static const std::vector<byte>& GetBitmap();
 
     private:
         void button1_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
@@ -36,8 +39,8 @@ namespace HolographicWebView
         DX::StepTimer m_timer;
         Windows::UI::Xaml::DispatcherTimer^ m_dispatcherTimer;
         Windows::Graphics::Imaging::BitmapTransform^ m_transform;
-        Windows::UI::Xaml::Media::Imaging::WriteableBitmap^ m_bitmap1;
-        Windows::UI::Xaml::Media::Imaging::WriteableBitmap^ m_bitmap2;
-        std::mutex m_mutex;
+        static std::vector<byte> s_bitmap1;
+        static std::vector<byte> s_bitmap2;
+        static std::mutex s_mutex;
     };
 }
