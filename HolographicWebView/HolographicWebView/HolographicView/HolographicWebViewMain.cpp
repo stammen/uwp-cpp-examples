@@ -173,12 +173,10 @@ HolographicFrame^ HolographicWebViewMain::Update()
             MainPage^ page = (MainPage^)frame->Content;
             page->DisplayWebView(L"https://www.microsoft.com", 900, 447);
 
-#if 0
             CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([viewId]()
             {
                 auto asyncAction = ApplicationViewSwitcher::SwitchAsync(viewId, ApplicationView::GetForCurrentView()->Id);
             }));
-#endif
         }));
     }
 

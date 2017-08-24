@@ -43,14 +43,19 @@ std::mutex MainPage::s_mutex;
 
 MainPage::MainPage()
 {
-	InitializeComponent();
-    m_dispatcherTimer = ref new DispatcherTimer();
+    InitializeComponent();
     m_transform = ref new BitmapTransform();
-    webview1->DOMContentLoaded += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewDOMContentLoadedEventArgs ^>(this, &HolographicWebView::MainPage::OnDOMContentLoaded);
+    TimeSpan span;
+    span.Duration = 10000000L / 30L;
+    m_dispatcherTimer = ref new DispatcherTimer();
+    m_dispatcherTimer->Tick += ref new Windows::Foundation::EventHandler<Object^>(this, &MainPage::TimerTick);
+    m_dispatcherTimer->Interval = span;
 }
 
 void MainPage::button1_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
+    m_bFrameReceived = true;
+    StartTimer();
     if (m_holographicView.Get() == nullptr)
     {
         try
@@ -65,8 +70,6 @@ void MainPage::button1_Click(Platform::Object^ sender, Windows::UI::Xaml::Routed
         }
     }
 
-    webview1->Visibility = Windows::UI::Xaml::Visibility::Collapsed;
-
     // We must launch the switch from the exclusive view's UI thread so we can access its view ID
     m_holographicView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this]()
     {
@@ -79,61 +82,43 @@ void MainPage::button1_Click(Platform::Object^ sender, Windows::UI::Xaml::Routed
             auto asyncAction = ApplicationViewSwitcher::SwitchAsync(viewId, ApplicationView::GetForCurrentView()->Id);
         }));
     }));
+
+
 }
 
 void MainPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height)
 {
-    StopTimer();
+    //StopTimer();
     
-    Windows::Foundation::Uri^ uri = ref new Windows::Foundation::Uri(url);
-    webview1->Visibility = Windows::UI::Xaml::Visibility::Visible;
-    webview1->Source = uri;
+    //Windows::Foundation::Uri^ uri = ref new Windows::Foundation::Uri(url);
+    //webview1->Visibility = Windows::UI::Xaml::Visibility::Visible;
+    //webview1->Source = uri;
+
     //webview1->Width = width;
     //webview1->Height = height;
 
 
-    // Scale the bitmap to the space available for the thumbnail image,
-    // preserving aspect ratio.
-    double thumbnailWidth = width;
-    double thumbnailHeight = height;
-    double webViewControlWidth = webview1->ActualWidth;
-    double webViewControlHeight = webview1->ActualHeight;
 
-    if (thumbnailWidth == 0 || thumbnailHeight == 0 ||
-        webViewControlWidth == 0 || webViewControlHeight == 0)
-    {
-        // Avoid 0x0 bitmaps, which cause all sorts of problems.
-        return;
-    }
-
-    double horizontalScale = thumbnailWidth / webViewControlWidth;
-    double verticalScale = thumbnailHeight / webViewControlHeight;
-    double scale = std::min(horizontalScale, verticalScale);
-
-
-    int bitmapWidth = (int)(webViewControlWidth * scale);
-    int bitmapHeight = (int)(webViewControlHeight * scale);
-
-    s_bitmap1.resize(bitmapWidth * bitmapHeight * 4);
-    s_bitmap2.resize(bitmapWidth * bitmapHeight * 4);
 
     // need to add code to scale webview zoom to display entire width of webpage inside of webview
 }
 
 void MainPage::OnDOMContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewDOMContentLoadedEventArgs ^ args)
 {
-    StartTimer();
+
+    double webViewControlWidth = webview1->ActualWidth;
+    double webViewControlHeight = webview1->ActualHeight;
+
+    s_bitmap1.resize(webViewControlWidth * webViewControlHeight * 4);
+    s_bitmap2.resize(webViewControlWidth * webViewControlHeight * 4);
+
 }
 
 
 void MainPage::StartTimer()
 {
-    TimeSpan span;
-    span.Duration = 10000000L / 60L;
-    m_dispatcherTimer->Tick += ref new Windows::Foundation::EventHandler<Object^>(this, &MainPage::TimerTick);
-    m_dispatcherTimer->Interval = span;
-    m_timer.ResetElapsedTime();
     m_dispatcherTimer->Start();
+    m_bFrameReceived = true;
 }
 
 void MainPage::StopTimer()
@@ -145,7 +130,11 @@ void MainPage::TimerTick(Platform::Object^ sender, Platform::Object^ e)
 {
     m_timer.Tick([&]()
     {
-        UpdateWebViewBitmap((unsigned int)webview1->ActualWidth, (unsigned int)webview1->ActualHeight);
+        if (m_bFrameReceived)
+        {
+            m_bFrameReceived = false;
+            UpdateWebViewBitmap((unsigned int)webview1->ActualWidth, (unsigned int)webview1->ActualHeight);
+        }
     });
 }
 
@@ -153,6 +142,16 @@ void MainPage::TimerTick(Platform::Object^ sender, Platform::Object^ e)
 task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
 {
     InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
+
+    if (s_bitmap1.size() == 0 || s_bitmap2.size() == 0)
+    {
+
+        double webViewControlWidth = webview1->ActualWidth;
+        double webViewControlHeight = webview1->ActualHeight;
+
+        s_bitmap1.resize(webViewControlWidth * webViewControlHeight * 4);
+        s_bitmap2.resize(webViewControlWidth * webViewControlHeight * 4);
+    }
 
     // capture the WebView
     return create_task(webview1->CapturePreviewToStreamAsync(stream))
@@ -178,6 +177,7 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
         });
     }).then([this]()
     {
+        m_bFrameReceived = true;
         std::wstringstream w;
         w << L" FPS:" << m_timer.GetFramesPerSecond() << std::endl;
         statusText->Text = ref new Platform::String(w.str().c_str());
@@ -187,8 +187,8 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
 const std::vector<byte>& MainPage::GetBitmap()
 {
     std::unique_lock<std::mutex> lock(s_mutex);
-    std::swap(s_bitmap1, s_bitmap2);
-    return s_bitmap1;
+    //std::swap(s_bitmap1, s_bitmap2);
+    return s_bitmap2;
 };
 
 

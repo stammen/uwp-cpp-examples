@@ -9,6 +9,7 @@
 #include "Common/StepTimer.h"
 #include <mutex>
 #include <vector>
+#include <ppltasks.h>
 
 namespace HolographicWebView
 {
@@ -31,14 +32,15 @@ namespace HolographicWebView
         void TimerTick(Platform::Object^ sender, Platform::Object^ e);
         void StartTimer();
         void StopTimer();
+
         Concurrency::task<void> UpdateWebViewBitmap(unsigned int width, unsigned int height);
         void OnDOMContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewDOMContentLoadedEventArgs ^ args);
-
 
         Platform::Agile<Windows::ApplicationModel::Core::CoreApplicationView> m_holographicView;
         DX::StepTimer m_timer;
         Windows::UI::Xaml::DispatcherTimer^ m_dispatcherTimer;
         Windows::Graphics::Imaging::BitmapTransform^ m_transform;
+        bool m_bFrameReceived;
         static std::vector<byte> s_bitmap1;
         static std::vector<byte> s_bitmap2;
         static std::mutex s_mutex;

@@ -23,5 +23,10 @@ namespace HolographicWebView
 	private:
 		void OnSuspending(Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ e);
 		void OnNavigationFailed(Platform::Object ^sender, Windows::UI::Xaml::Navigation::NavigationFailedEventArgs ^e);
+
+        Platform::Agile<Windows::ApplicationModel::Core::CoreApplicationView> m_holographicView;
+        Platform::Agile<Windows::ApplicationModel::Core::CoreApplicationView> m_xamlView;
+        int m_xamlViewId;
+        int m_holographicViewId;
 	};
 }

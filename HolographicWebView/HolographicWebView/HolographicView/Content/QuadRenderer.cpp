@@ -191,17 +191,22 @@ namespace HolographicWebView
 
         if (bitmap.size() != 0)
         {
-            m_quadTexture.Reset();
-            m_quadTextureView.Reset();
+            D3D11_MAPPED_SUBRESOURCE mapped;
+            context->Map(m_quadTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+            unsigned int count = bitmap.size();
+            byte* data1 = (byte*)mapped.pData;
+            byte* data2 = bitmap.data();
+            while (count >= mapped.RowPitch)
+            {
+                unsigned int length = count >= mapped.RowPitch ? mapped.RowPitch : count;
+                memcpy((void*)data1, (void*)data2, length);
+                count -= length;
+                data1 += length;
+                data2 += length;
+            }
 
-            HRESULT hr = CreateWICTextureFromMemory(m_deviceResources->GetD3DDevice(),
-                m_deviceResources->GetD3DDeviceContext(),
-                bitmap.data(), bitmap.size(),
-                m_quadTexture.GetAddressOf(),
-                m_quadTextureView.GetAddressOf());
 
-
-
+            context->Unmap(m_quadTexture.Get(), 0);
         }
 
         // Each vertex is one instance of the VertexPositionColor struct.
@@ -448,10 +453,16 @@ namespace HolographicWebView
             );
 
             DX::ThrowIfFailed(
-                CreateWICTextureFromFile(m_deviceResources->GetD3DDevice(),
-                    L"Assets\\edge.png",
-                    m_quadTexture.GetAddressOf(),
-                    m_quadTextureView.GetAddressOf()));
+                CreateWICTextureFromFileEx(
+                    m_deviceResources->GetD3DDevice(), 
+                    L"Assets\\edge.png", 
+                    0,
+                    D3D11_USAGE_DYNAMIC, 
+                    D3D11_BIND_SHADER_RESOURCE, 
+                    D3D11_CPU_ACCESS_WRITE, 
+                    0, 
+                    WIC_LOADER_DEFAULT,
+                    m_quadTexture.GetAddressOf(), m_quadTextureView.GetAddressOf()));
 
 
             D3D11_SAMPLER_DESC desc;

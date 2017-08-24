@@ -92,16 +92,23 @@ void AppView::Run()
     {
         if (m_windowVisible && (m_holographicSpace != nullptr))
         {
-            CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-
-            HolographicFrame^ holographicFrame = m_main->Update();
-
-            if (m_main->Render(holographicFrame))
+            try
             {
-                // The holographic frame has an API that presents the swap chain for each
-                // holographic camera.
-                m_deviceResources->Present(holographicFrame);
+                CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+
+                HolographicFrame^ holographicFrame = m_main->Update();
+
+                if (m_main->Render(holographicFrame))
+                {
+                    // The holographic frame has an API that presents the swap chain for each
+                    // holographic camera.
+                    m_deviceResources->Present(holographicFrame);
+                }
             }
+            catch(Platform::Exception^ ex)
+            {
+            }
+
         }
         else
         {
