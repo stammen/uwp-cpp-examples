@@ -21,6 +21,7 @@ namespace HolographicWebView
         property Windows::Graphics::Imaging::BitmapPixelFormat Format;
         property int Width;
         property int Height;
+        property int framesPerSecond;
     };
 
 
@@ -40,23 +41,19 @@ namespace HolographicWebView
     internal:
         static Concurrency::task<MainPage^> CreatePage();
         std::function<void(MainPage^, WebViewImageInfo^)> OnImage;
-        static const std::vector<byte>& GetBitmap();
 
     private:
-        void button1_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 
-    private:
-        void TimerTick(Platform::Object^ sender, Platform::Object^ e);
-        void StartTimer();
-        void StopTimer();
-
+        void UpdateWebView();
         Concurrency::task<void> UpdateWebViewBitmap(unsigned int width, unsigned int height);
+
         void OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
 
         Platform::Agile<Windows::ApplicationModel::Core::CoreApplicationView> m_holographicView;
         DX::StepTimer m_timer;
-        Windows::UI::Xaml::DispatcherTimer^ m_dispatcherTimer;
         Windows::Graphics::Imaging::BitmapTransform^ m_transform;
-        bool m_bFrameReceived;
+
+        int m_requestedWebViewWidth;
+        int m_requestedWebViewHeight;
     };
 }

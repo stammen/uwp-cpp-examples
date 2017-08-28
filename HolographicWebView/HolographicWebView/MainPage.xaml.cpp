@@ -41,15 +41,9 @@ MainPage::MainPage()
 {
     InitializeComponent();
     m_transform = ref new BitmapTransform();
-    TimeSpan span;
-    span.Duration = 10000000L / 30L;
-    m_dispatcherTimer = ref new DispatcherTimer();
-    m_dispatcherTimer->Tick += ref new Windows::Foundation::EventHandler<Object^>(this, &MainPage::TimerTick);
-    m_dispatcherTimer->Interval = span;
     //webview1 = ref new WebView(WebViewExecutionMode::SeparateThread);
     webview1->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &HolographicWebView::MainPage::OnWebContentLoaded);
 }
-
  
 Concurrency::task<MainPage^> MainPage::CreatePage()
 {
@@ -88,45 +82,18 @@ Concurrency::task<MainPage^> MainPage::CreatePage()
     return event_set;
 }
 
-
-
-void MainPage::button1_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
-{
-    auto xamlViewId = Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->Id;
-
-    if (m_holographicView.Get() == nullptr)
-    {
-        try
-        {
-            m_holographicView = CoreApplication::CreateNewView(ref new HolographicWebView::AppViewSource());
-        }
-        catch (Platform::COMException^ e)
-        {
-            // This exception is thrown if the environment doesn't support holographic content
-            statusText->Text = L"Holographic environment not available.";
-            return;
-        }
-    }
-
-    m_holographicView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, xamlViewId]()
-    {
-        auto viewId = ApplicationView::GetForCurrentView()->Id;
-        CoreWindow::GetForCurrentThread()->Activate();
-        ApplicationViewSwitcher::SwitchAsync(viewId, xamlViewId);
-    }));
-}
-
 void MainPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height)
 {
     CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, url, width, height]()
     {
-        StopTimer();
         Windows::Foundation::Uri^ uri = ref new Windows::Foundation::Uri(url);
         webview1->Visibility = Windows::UI::Xaml::Visibility::Visible;
         webview1->Source = uri;
         webview1->Width = width;
         webview1->Height = height;
-        m_bFrameReceived = true;
+
+        m_requestedWebViewWidth = width;
+        m_requestedWebViewHeight = height;
 
         // need to add code to scale webview zoom to display entire width of webpage inside of webview
     }));
@@ -134,45 +101,26 @@ void MainPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigne
 
 void MainPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
 {
-    StartTimer();
+    UpdateWebView();
 }
 
-void MainPage::StartTimer()
-{
-    m_bFrameReceived = true;
-    m_dispatcherTimer->Start();
-}
 
-void MainPage::StopTimer()
-{
-    m_dispatcherTimer->Stop();
-}
-
-void MainPage::TimerTick(Platform::Object^ sender, Platform::Object^ e)
+void MainPage::UpdateWebView()
 {
     m_timer.Tick([&]()
     {
-        if (m_bFrameReceived)
-        {
-            m_bFrameReceived = false;
-            //UpdateWebViewBitmap((unsigned int)webview1->ActualWidth, (unsigned int)webview1->ActualHeight);
-            UpdateWebViewBitmap(400, 400);
-        }
+        UpdateWebViewBitmap(m_requestedWebViewWidth, m_requestedWebViewHeight);
     });
 }
-
 
 task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
 {
     InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
 
-
-
     // capture the WebView
     return create_task(webview1->CapturePreviewToStreamAsync(stream))
         .then([this, width, height, stream]()
     {
-
         return create_task(BitmapDecoder::CreateAsync(stream));
     }).then([width, height, this](BitmapDecoder^ decoder)
     {
@@ -194,6 +142,7 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
             info->Format = BitmapPixelFormat::Bgra8;
             info->Width = static_cast<int>(webview1->ActualWidth);
             info->Height = static_cast<int>(webview1->ActualHeight);
+            info->framesPerSecond = m_timer.GetFramesPerSecond();
             if (OnImage != nullptr)
             {
                 OnImage(this, info);
@@ -201,10 +150,10 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
         });
     }).then([this]()
     {
-        m_bFrameReceived = true;
+        UpdateWebView();
         std::wstringstream w;
         w << L" FPS:" << m_timer.GetFramesPerSecond() << std::endl;
-        statusText->Text = ref new Platform::String(w.str().c_str());
+        OutputDebugString(w.str().c_str());
     });
 }
 

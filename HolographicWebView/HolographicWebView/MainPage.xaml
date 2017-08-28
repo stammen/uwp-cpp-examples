@@ -8,16 +8,6 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  Margin="20">
-        <StackPanel Orientation="Vertical">
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="button1" Content="Show Secondary View" Click="button1_Click"/>
-                <TextBlock x:Name="statusText"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <WebView x:Name="webview1"  Width="400" Height="400" Margin="20"/>
-                <Image x:Name="image1" Width="400" Height="400" Margin="20"/>
-            </StackPanel>
-            <TextBlock Text="Original WebView" />
-        </StackPanel>
+        <WebView x:Name="webview1"  Width="400" Height="400" Margin="20"/>
     </Grid>
 </Page>
