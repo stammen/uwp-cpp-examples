@@ -33,6 +33,7 @@ HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceR
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
 
+    // create and load the WebView
     auto task = MainPage::CreatePage().then([this](MainPage ^ page)
     {
         m_webViewPage = page;
@@ -41,8 +42,10 @@ HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceR
     });
 }
 
+// An image was received from the WebView (note: this is on the WebView thread)
 void HolographicWebViewMain::OnWebViewImage(MainPage^ sender, WebViewImageInfo^ imageInfo)
 {
+    // pass the WebView image on to the renderer
     m_renderer->OnWebViewImage(sender, imageInfo);
 }
 

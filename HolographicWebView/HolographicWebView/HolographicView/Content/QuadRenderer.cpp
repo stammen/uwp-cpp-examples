@@ -201,7 +201,7 @@ namespace HolographicWebView
             auto r = mapped.RowPitch;
             auto d = mapped.DepthPitch;
             unsigned int length = m_width * 4;
-            for(unsigned int i = 0; i < m_height; ++i)
+            for(int i = 0; i < m_height; ++i)
             {
                 memcpy((void*)data1, (void*)data2, length);
                 data1 += mapped.RowPitch;
@@ -286,6 +286,8 @@ namespace HolographicWebView
 
     void QuadRenderer::OnWebViewImage(MainPage^ sender, WebViewImageInfo^ imageInfo)
     {
+        // Since we are on the WebView thread, just store the reference to the WebView info. 
+        // We will send the image data to the texture in the Render() method.
         std::unique_lock<std::mutex> lock(m_mutex);
         m_webViewImageInfo = imageInfo;
     }
@@ -351,9 +353,9 @@ namespace HolographicWebView
             DX::ThrowIfFailed(
                 m_deviceResources->GetD3DDevice()->CreateInputLayout(
                     vertexDesc.data(),
-                    vertexDesc.size(),
+                    static_cast<UINT>(vertexDesc.size()),
                     fileData.data(),
-                    fileData.size(),
+                    static_cast<UINT>(fileData.size()),
                     &m_inputLayout
                 )
             );
@@ -448,7 +450,7 @@ namespace HolographicWebView
                   }
             };
 
-            m_indexCount = quadIndices.size();
+            m_indexCount = static_cast<UINT>(quadIndices.size());
 
             D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
             indexBufferData.pSysMem = quadIndices.data();
