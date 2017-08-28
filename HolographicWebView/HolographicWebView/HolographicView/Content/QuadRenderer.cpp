@@ -30,6 +30,9 @@ namespace HolographicWebView
     QuadRenderer::QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
         m_deviceResources(deviceResources)
     {
+        m_WebviewTextureWidth = 400;
+        m_WebviewTextureHeight = 400;
+
         CreateDeviceDependentResources();
 
         StartFadeIn();
@@ -196,15 +199,16 @@ namespace HolographicWebView
             unsigned int count = bitmap.size();
             byte* data1 = (byte*)mapped.pData;
             byte* data2 = bitmap.data();
-            while (count >= mapped.RowPitch)
+            auto d = mapped.DepthPitch;
+            while (count > 0)
             {
-                unsigned int length = count >= mapped.RowPitch ? mapped.RowPitch : count;
+                //unsigned int length = count >= mapped.RowPitch ? mapped.RowPitch : count;
+                unsigned int length = m_WebviewTextureWidth * 4;
                 memcpy((void*)data1, (void*)data2, length);
-                count -= length;
-                data1 += length;
+                data1 += mapped.RowPitch;
                 data2 += length;
+                count -= length;
             }
-
 
             context->Unmap(m_quadTexture.Get(), 0);
         }
@@ -452,6 +456,31 @@ namespace HolographicWebView
                 )
             );
 
+            D3D11_TEXTURE2D_DESC desc;
+            desc.Width = m_WebviewTextureWidth;
+            desc.Height = m_WebviewTextureHeight;
+            desc.MipLevels = desc.ArraySize = 1;
+            desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+            desc.SampleDesc.Count = 1;
+            desc.SampleDesc.Quality = 0;
+            desc.Usage = D3D11_USAGE_DYNAMIC;
+            desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+            desc.MiscFlags = 0;
+
+            ID3D11Texture2D *pTexture = NULL;
+            auto hr = m_deviceResources->GetD3DDevice()->CreateTexture2D(&desc, nullptr, &pTexture);
+
+            m_quadTexture = pTexture;
+
+            D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+            SRVDesc.Format = desc.Format;
+            SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            SRVDesc.Texture2D.MipLevels = 1;
+
+            m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_quadTexture.Get(), &SRVDesc, m_quadTextureView.GetAddressOf());
+
+#if 0
             DX::ThrowIfFailed(
                 CreateWICTextureFromFileEx(
                     m_deviceResources->GetD3DDevice(), 
@@ -463,28 +492,28 @@ namespace HolographicWebView
                     0, 
                     WIC_LOADER_DEFAULT,
                     m_quadTexture.GetAddressOf(), m_quadTextureView.GetAddressOf()));
+#endif
 
+            D3D11_SAMPLER_DESC samplesDesc;
+            ZeroMemory(&samplesDesc, sizeof(D3D11_SAMPLER_DESC));
 
-            D3D11_SAMPLER_DESC desc;
-            ZeroMemory(&desc, sizeof(D3D11_SAMPLER_DESC));
-
-            desc.Filter = D3D11_FILTER_ANISOTROPIC;
-            desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-            desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-            desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-            desc.MaxAnisotropy = 3;
-            desc.MinLOD = 0;
-            desc.MaxLOD = 3;
-            desc.MipLODBias = 0.f;
-            desc.BorderColor[0] = 0.f;
-            desc.BorderColor[1] = 0.f;
-            desc.BorderColor[2] = 0.f;
-            desc.BorderColor[3] = 0.f;
-            desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+            samplesDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+            samplesDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+            samplesDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+            samplesDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+            samplesDesc.MaxAnisotropy = 3;
+            samplesDesc.MinLOD = 0;
+            samplesDesc.MaxLOD = 3;
+            samplesDesc.MipLODBias = 0.f;
+            samplesDesc.BorderColor[0] = 0.f;
+            samplesDesc.BorderColor[1] = 0.f;
+            samplesDesc.BorderColor[2] = 0.f;
+            samplesDesc.BorderColor[3] = 0.f;
+            samplesDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
             DX::ThrowIfFailed(
                 m_deviceResources->GetD3DDevice()->CreateSamplerState(
-                    &desc,
+                    &samplesDesc,
                     &m_quadTextureSamplerState
                 )
             );

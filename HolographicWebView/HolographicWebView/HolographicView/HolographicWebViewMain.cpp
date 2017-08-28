@@ -20,6 +20,8 @@ using namespace Windows::UI::Core;
 using namespace Windows::UI::Input::Spatial;
 using namespace Windows::UI::ViewManagement;
 using namespace Windows::UI::Xaml;
+using namespace Windows::UI::Xaml::Controls;
+using namespace Windows::UI::Xaml::Interop;
 using namespace std::placeholders;
 
 // Loads and initializes application assets when the application is loaded.
@@ -28,6 +30,35 @@ HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceR
 {
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
+
+    CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this]()
+    {
+        Controls::Frame^ rootFrame = dynamic_cast<Frame^>(Window::Current->Content);
+
+        // Do not repeat app initialization when the Window already has content,
+        // just ensure that the window is active
+        if (rootFrame == nullptr)
+        {
+            // Create a Frame to act as the navigation context and associate it with
+            // a SuspensionManager key
+            rootFrame = ref new Frame();
+
+            if (rootFrame->Content == nullptr)
+            {
+                // When the navigation stack isn't restored navigate to the first page,
+                // configuring the new page by passing required information as a navigation
+                // parameter
+                rootFrame->Navigate(TypeName(MainPage::typeid), nullptr);
+            }
+            // Place the frame in the current Window
+            Window::Current->Content = rootFrame;
+            // Ensure the current window is active
+            Window::Current->Activate();
+
+            MainPage^ page = dynamic_cast<MainPage^>(rootFrame->Content);
+            page->DisplayWebView(L"https://www.time.gov/", 400, 400);
+        }
+    }));
 }
 
 void HolographicWebViewMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
@@ -171,12 +202,14 @@ HolographicFrame^ HolographicWebViewMain::Update()
 
             Controls::Frame^ frame = (Controls::Frame^)Window::Current->Content;
             MainPage^ page = (MainPage^)frame->Content;
-            page->DisplayWebView(L"https://www.microsoft.com", 900, 447);
+            page->DisplayWebView(L"https://www.time.gov/", 400, 400);
 
+#if 0
             CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([viewId]()
             {
                 auto asyncAction = ApplicationViewSwitcher::SwitchAsync(viewId, ApplicationView::GetForCurrentView()->Id);
             }));
+#endif
         }));
     }
 

@@ -43,7 +43,7 @@ App::App()
 /// <param name="e">Details about the launch request and process.</param>
 void App::OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ e)
 {
-#if 0
+#if 1
     m_xamlView = Windows::ApplicationModel::Core::CoreApplication::GetCurrentView();
     m_xamlViewId = Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->Id;
 
@@ -67,10 +67,9 @@ void App::OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEvent
 
     // Defer XAML window activation until we switch to the XAML view.
     return;
-#endif
-
+#else
     auto rootFrame = dynamic_cast<Frame^>(Window::Current->Content);
-    
+
     // Do not repeat app initialization when the Window already has content,
     // just ensure that the window is active
     if (rootFrame == nullptr)
@@ -118,6 +117,7 @@ void App::OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEvent
             Window::Current->Activate();
         }
     }
+#endif
 }
 
 /// <summary>

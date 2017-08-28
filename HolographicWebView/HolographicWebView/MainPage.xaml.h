@@ -34,7 +34,7 @@ namespace HolographicWebView
         void StopTimer();
 
         Concurrency::task<void> UpdateWebViewBitmap(unsigned int width, unsigned int height);
-        void OnDOMContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewDOMContentLoadedEventArgs ^ args);
+        void OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
 
         Platform::Agile<Windows::ApplicationModel::Core::CoreApplicationView> m_holographicView;
         DX::StepTimer m_timer;

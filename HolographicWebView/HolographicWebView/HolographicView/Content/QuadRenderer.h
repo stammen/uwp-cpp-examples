@@ -86,5 +86,8 @@ namespace HolographicWebView
 
     // Whether or not the hologram is fading in, or out.
     bool                                                m_fadingIn = false;
+
+    int                                                 m_WebviewTextureWidth;
+    int                                                 m_WebviewTextureHeight;
   };
 }
