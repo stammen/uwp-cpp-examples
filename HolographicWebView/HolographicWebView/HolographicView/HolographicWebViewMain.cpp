@@ -27,6 +27,9 @@ using namespace std::placeholders;
 HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
     m_deviceResources(deviceResources)
 {
+    m_webViewWidth = 400;
+    m_webViewHeight = 400;
+
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
 
@@ -56,7 +59,7 @@ HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceR
 
             MainPage^ page = dynamic_cast<MainPage^>(rootFrame->Content);
             page->OnImage = std::bind(&HolographicWebViewMain::OnWebViewImage, this, _1, _2);
-            page->DisplayWebView(L"https://www.time.gov/", 400, 400);
+            page->DisplayWebView(L"https://www.time.gov/", m_webViewWidth, m_webViewHeight);
         }
     }));
 }
@@ -78,7 +81,7 @@ void HolographicWebViewMain::SetHolographicSpace(HolographicSpace^ holographicSp
 
 #ifdef DRAW_SAMPLE_CONTENT
     // Initialize the sample hologram.
-    m_renderer = std::make_unique<QuadRenderer>(m_deviceResources);
+    m_renderer = std::make_unique<QuadRenderer>(m_deviceResources, m_webViewWidth, m_webViewHeight);
 
     m_spatialInputHandler = std::make_unique<SpatialInputHandler>();
 #endif

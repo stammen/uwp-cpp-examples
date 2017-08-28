@@ -25,12 +25,12 @@ using namespace Windows::UI::Input::Spatial;
 namespace HolographicWebView
 {
     // Loads vertex and pixel shaders from files and instantiates the quad geometry.
-    QuadRenderer::QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) 
+    QuadRenderer::QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources, int width, int height) 
         : m_deviceResources(deviceResources)
+        , m_width(width)
+        , m_height(height)
         , m_webViewImageInfo(nullptr)
     {
-        m_WebviewTextureWidth = 400;
-        m_WebviewTextureHeight = 400;
 
         CreateDeviceDependentResources();
 
@@ -204,7 +204,7 @@ namespace HolographicWebView
             while (count > 0)
             {
                 //unsigned int length = count >= mapped.RowPitch ? mapped.RowPitch : count;
-                unsigned int length = m_WebviewTextureWidth * 4;
+                unsigned int length = m_width * 4;
                 memcpy((void*)data1, (void*)data2, length);
                 data1 += mapped.RowPitch;
                 data2 += length;
@@ -467,8 +467,8 @@ namespace HolographicWebView
             );
 
             D3D11_TEXTURE2D_DESC desc;
-            desc.Width = m_WebviewTextureWidth;
-            desc.Height = m_WebviewTextureHeight;
+            desc.Width = m_width;
+            desc.Height = m_height;
             desc.MipLevels = desc.ArraySize = 1;
             desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
             desc.SampleDesc.Count = 1;

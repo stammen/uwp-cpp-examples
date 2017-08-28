@@ -23,7 +23,7 @@ namespace HolographicWebView
   class QuadRenderer
   {
   public:
-    QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+    QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources, int width, int height);
     void CreateDeviceDependentResources();
     void ReleaseDeviceDependentResources();
     void Update(const DX::StepTimer& timer);
@@ -90,8 +90,8 @@ namespace HolographicWebView
     // Whether or not the hologram is fading in, or out.
     bool                                                m_fadingIn = false;
 
-    int                                                 m_WebviewTextureWidth;
-    int                                                 m_WebviewTextureHeight;
+    int                                                 m_width;
+    int                                                 m_height;
 
     std::mutex                                          m_mutex;
     WebViewImageInfo^                                   m_webViewImageInfo;
