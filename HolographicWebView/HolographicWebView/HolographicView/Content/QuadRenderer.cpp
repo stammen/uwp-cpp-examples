@@ -50,7 +50,7 @@ namespace HolographicWebView
             //#define USE_HORIZONTAL_OFFSET
 #ifndef USE_HORIZONTAL_OFFSET
       // The tag-along hologram follows a point 2.0m in front of the user's gaze direction.
-            constexpr float distanceFromUser = 2.0f; // meters
+            constexpr float distanceFromUser = 1.0f; // meters
             const float3 gazeAtTwoMeters = headPosition + (distanceFromUser * headDirection);
 
             // Use linear interpolation to smooth the position over time. This keeps the hologram
@@ -198,15 +198,14 @@ namespace HolographicWebView
             unsigned int count = m_webViewImageInfo->PixelData->Length;
             byte* data1 = (byte*)mapped.pData;
             byte* data2 = m_webViewImageInfo->PixelData->Data;
+            auto r = mapped.RowPitch;
             auto d = mapped.DepthPitch;
-            while (count > 0)
+            unsigned int length = m_width * 4;
+            for(unsigned int i = 0; i < m_height; ++i)
             {
-                //unsigned int length = count >= mapped.RowPitch ? mapped.RowPitch : count;
-                unsigned int length = m_width * 4;
                 memcpy((void*)data1, (void*)data2, length);
                 data1 += mapped.RowPitch;
                 data2 += length;
-                count -= length;
             }
 
             context->Unmap(m_quadTexture.Get(), 0);

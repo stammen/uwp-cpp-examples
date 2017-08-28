@@ -27,8 +27,8 @@ using namespace std::placeholders;
 HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
     m_deviceResources(deviceResources)
 {
-    m_webViewWidth = 400;
-    m_webViewHeight = 400;
+    m_webViewWidth = 512;
+    m_webViewHeight = 512;
 
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);

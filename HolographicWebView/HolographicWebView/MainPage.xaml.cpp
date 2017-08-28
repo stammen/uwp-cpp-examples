@@ -140,8 +140,8 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
             WebViewImageInfo^ info = ref new WebViewImageInfo;
             info->PixelData = pixelData;
             info->Format = BitmapPixelFormat::Bgra8;
-            info->Width = static_cast<int>(webview1->ActualWidth);
-            info->Height = static_cast<int>(webview1->ActualHeight);
+            info->Width = width;
+            info->Height = height;
             info->framesPerSecond = m_timer.GetFramesPerSecond();
             if (OnImage != nullptr)
             {
