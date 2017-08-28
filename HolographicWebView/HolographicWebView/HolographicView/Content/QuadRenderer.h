@@ -14,6 +14,8 @@
 #include "..\Common\DeviceResources.h"
 #include "..\Common\StepTimer.h"
 #include "ShaderStructures.h"
+#include "MainPage.xaml.h"
+#include <mutex>
 
 namespace HolographicWebView
 {
@@ -26,6 +28,7 @@ namespace HolographicWebView
     void ReleaseDeviceDependentResources();
     void Update(const DX::StepTimer& timer);
     void Render();
+    void OnWebViewImage(MainPage^ sender, WebViewImageInfo^ imageInfo);
 
     void StartFadeIn();
     void StartFadeOut();
@@ -89,5 +92,8 @@ namespace HolographicWebView
 
     int                                                 m_WebviewTextureWidth;
     int                                                 m_WebviewTextureHeight;
+
+    std::mutex                                          m_mutex;
+    WebViewImageInfo^                                   m_webViewImageInfo;
   };
 }

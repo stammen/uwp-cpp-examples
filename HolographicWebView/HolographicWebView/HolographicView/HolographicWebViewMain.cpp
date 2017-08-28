@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "HolographicWebViewMain.h"
-#include "MainPage.xaml.h"
 #include "Common\DirectXHelper.h"
 
 #include <windows.graphics.directx.direct3d11.interop.h>
@@ -56,9 +55,15 @@ HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceR
             Window::Current->Activate();
 
             MainPage^ page = dynamic_cast<MainPage^>(rootFrame->Content);
+            page->OnImage = std::bind(&HolographicWebViewMain::OnWebViewImage, this, _1, _2);
             page->DisplayWebView(L"https://www.time.gov/", 400, 400);
         }
     }));
+}
+
+void HolographicWebViewMain::OnWebViewImage(MainPage^ sender, WebViewImageInfo^ imageInfo)
+{
+    m_renderer->OnWebViewImage(sender, imageInfo);
 }
 
 void HolographicWebViewMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
@@ -342,6 +347,7 @@ bool HolographicWebViewMain::Render(Windows::Graphics::Holographic::HolographicF
 		return atLeastOneCameraRendered;
 	});
 }
+
 
 void HolographicWebViewMain::SaveAppState()
 {

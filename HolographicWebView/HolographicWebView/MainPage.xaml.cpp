@@ -36,12 +36,8 @@ using namespace Windows::UI::Xaml::Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-std::vector<byte> MainPage::s_bitmap1;
-std::vector<byte> MainPage::s_bitmap2;
-
-std::mutex MainPage::s_mutex;
-
 MainPage::MainPage()
+    : OnImage(nullptr)
 {
     InitializeComponent();
     m_transform = ref new BitmapTransform();
@@ -128,19 +124,13 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
 {
     InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
 
-    if (s_bitmap1.size() == 0 || s_bitmap2.size() == 0)
-    {
 
-        double webViewControlWidth = webview1->ActualWidth;
-        double webViewControlHeight = webview1->ActualHeight;
-
- 
-    }
 
     // capture the WebView
     return create_task(webview1->CapturePreviewToStreamAsync(stream))
-        .then([width, height, stream]()
+        .then([this, width, height, stream]()
     {
+
         return create_task(BitmapDecoder::CreateAsync(stream));
     }).then([width, height, this](BitmapDecoder^ decoder)
     {
@@ -155,21 +145,17 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
             ColorManagementMode::DoNotColorManage))
             .then([width, height, this](PixelDataProvider^ pixelDataProvider)
         {
-            std::unique_lock<std::mutex> lock(s_mutex);
             Platform::Array<byte>^ pixelData = pixelDataProvider->DetachPixelData();
 
-            if (s_bitmap1.size() != pixelData->Length)
+            WebViewImageInfo^ info = ref new WebViewImageInfo;
+            info->PixelData = pixelData;
+            info->Format = BitmapPixelFormat::Bgra8;
+            info->Width = static_cast<int>(webview1->ActualWidth);
+            info->Height = static_cast<int>(webview1->ActualHeight);
+            if (OnImage != nullptr)
             {
-               s_bitmap1.resize(pixelData->Length);
+                OnImage(this, info);
             }
-
-            if (s_bitmap2.size() != pixelData->Length)
-            {
-                s_bitmap2.resize(pixelData->Length);
-            }
-            
-            memcpy(s_bitmap2.data(), pixelData->Data, pixelData->Length);
-
         });
     }).then([this]()
     {
@@ -180,11 +166,6 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
     });
 }
 
-const std::vector<byte>& MainPage::GetBitmap()
-{
-    std::unique_lock<std::mutex> lock(s_mutex);
-    //std::swap(s_bitmap1, s_bitmap2);
-    return s_bitmap2;
-};
+
 
 

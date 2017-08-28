@@ -7,12 +7,25 @@
 
 #include "MainPage.g.h"
 #include "Common/StepTimer.h"
-#include <mutex>
 #include <vector>
 #include <ppltasks.h>
+#include <functional>
 
 namespace HolographicWebView
 {
+    public ref class WebViewImageInfo sealed
+    {
+    public:
+        WebViewImageInfo() {}
+        property Platform::Array<byte>^ PixelData;
+        property Windows::Graphics::Imaging::BitmapPixelFormat Format;
+        property int Width;
+        property int Height;
+    };
+
+
+    ref class MainPage;
+
 	/// <summary>
 	/// An empty page that can be used on its own or navigated to within a Frame.
 	/// </summary>
@@ -23,6 +36,7 @@ namespace HolographicWebView
         void DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height);
 
     internal:
+        std::function<void(MainPage^, WebViewImageInfo^)> OnImage;
         static const std::vector<byte>& GetBitmap();
 
     private:
@@ -41,8 +55,5 @@ namespace HolographicWebView
         Windows::UI::Xaml::DispatcherTimer^ m_dispatcherTimer;
         Windows::Graphics::Imaging::BitmapTransform^ m_transform;
         bool m_bFrameReceived;
-        static std::vector<byte> s_bitmap1;
-        static std::vector<byte> s_bitmap2;
-        static std::mutex s_mutex;
     };
 }

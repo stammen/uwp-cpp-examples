@@ -11,9 +11,7 @@
 
 #include "pch.h"
 #include "QuadRenderer.h"
-#include "MainPage.xaml.h"
 #include "Common\DirectXHelper.h"
-#include <WICTextureLoader.h>
 #include <robuffer.h> // IBufferByteAccess
 
 using namespace Concurrency;
@@ -27,8 +25,9 @@ using namespace Windows::UI::Input::Spatial;
 namespace HolographicWebView
 {
     // Loads vertex and pixel shaders from files and instantiates the quad geometry.
-    QuadRenderer::QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
-        m_deviceResources(deviceResources)
+    QuadRenderer::QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) 
+        : m_deviceResources(deviceResources)
+        , m_webViewImageInfo(nullptr)
     {
         m_WebviewTextureWidth = 400;
         m_WebviewTextureHeight = 400;
@@ -190,15 +189,17 @@ namespace HolographicWebView
         }
 
         const auto context = m_deviceResources->GetD3DDeviceContext();
-        auto bitmap = MainPage::GetBitmap();
 
-        if (bitmap.size() != 0)
+        if (m_webViewImageInfo != nullptr)
         {
+            std::unique_lock<std::mutex> lock(m_mutex);
             D3D11_MAPPED_SUBRESOURCE mapped;
+            const auto context = m_deviceResources->GetD3DDeviceContext();
+
             context->Map(m_quadTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-            unsigned int count = bitmap.size();
+            unsigned int count = m_webViewImageInfo->PixelData->Length;
             byte* data1 = (byte*)mapped.pData;
-            byte* data2 = bitmap.data();
+            byte* data2 = m_webViewImageInfo->PixelData->Data;
             auto d = mapped.DepthPitch;
             while (count > 0)
             {
@@ -211,6 +212,9 @@ namespace HolographicWebView
             }
 
             context->Unmap(m_quadTexture.Get(), 0);
+
+            // release the currect WebView Image
+            m_webViewImageInfo = nullptr;
         }
 
         // Each vertex is one instance of the VertexPositionColor struct.
@@ -281,6 +285,12 @@ namespace HolographicWebView
             0,              // Base vertex location.
             0               // Start instance location.
         );
+    }
+
+    void QuadRenderer::OnWebViewImage(MainPage^ sender, WebViewImageInfo^ imageInfo)
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_webViewImageInfo = imageInfo;
     }
 
     void QuadRenderer::StartFadeIn()
@@ -479,20 +489,6 @@ namespace HolographicWebView
             SRVDesc.Texture2D.MipLevels = 1;
 
             m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_quadTexture.Get(), &SRVDesc, m_quadTextureView.GetAddressOf());
-
-#if 0
-            DX::ThrowIfFailed(
-                CreateWICTextureFromFileEx(
-                    m_deviceResources->GetD3DDevice(), 
-                    L"Assets\\edge.png", 
-                    0,
-                    D3D11_USAGE_DYNAMIC, 
-                    D3D11_BIND_SHADER_RESOURCE, 
-                    D3D11_CPU_ACCESS_WRITE, 
-                    0, 
-                    WIC_LOADER_DEFAULT,
-                    m_quadTexture.GetAddressOf(), m_quadTextureView.GetAddressOf()));
-#endif
 
             D3D11_SAMPLER_DESC samplesDesc;
             ZeroMemory(&samplesDesc, sizeof(D3D11_SAMPLER_DESC));

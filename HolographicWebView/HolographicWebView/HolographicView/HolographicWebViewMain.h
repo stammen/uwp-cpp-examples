@@ -12,6 +12,7 @@
 
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
+#include "MainPage.xaml.h"
 
 #ifdef DRAW_SAMPLE_CONTENT
 #include "Content\QuadRenderer.h"
@@ -26,6 +27,8 @@ namespace HolographicWebView
     public:
         HolographicWebViewMain(const std::shared_ptr<DX::DeviceResources>& deviceResources);
         ~HolographicWebViewMain();
+
+        void OnWebViewImage(MainPage^ sender, WebViewImageInfo^ imageInfo);
 
         // Sets the holographic space. This is our closest analogue to setting a new window
         // for the app.
@@ -49,6 +52,7 @@ namespace HolographicWebView
         // IDeviceNotify
         virtual void OnDeviceLost();
         virtual void OnDeviceRestored();
+
 
     private:
         // Asynchronously creates resources for new holographic cameras.
