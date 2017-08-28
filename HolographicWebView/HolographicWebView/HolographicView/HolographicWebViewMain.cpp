@@ -33,35 +33,12 @@ HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceR
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
 
-    CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this]()
+    auto task = MainPage::CreatePage().then([this](MainPage ^ page)
     {
-        Controls::Frame^ rootFrame = dynamic_cast<Frame^>(Window::Current->Content);
-
-        // Do not repeat app initialization when the Window already has content,
-        // just ensure that the window is active
-        if (rootFrame == nullptr)
-        {
-            // Create a Frame to act as the navigation context and associate it with
-            // a SuspensionManager key
-            rootFrame = ref new Frame();
-
-            if (rootFrame->Content == nullptr)
-            {
-                // When the navigation stack isn't restored navigate to the first page,
-                // configuring the new page by passing required information as a navigation
-                // parameter
-                rootFrame->Navigate(TypeName(MainPage::typeid), nullptr);
-            }
-            // Place the frame in the current Window
-            Window::Current->Content = rootFrame;
-            // Ensure the current window is active
-            Window::Current->Activate();
-
-            MainPage^ page = dynamic_cast<MainPage^>(rootFrame->Content);
-            page->OnImage = std::bind(&HolographicWebViewMain::OnWebViewImage, this, _1, _2);
-            page->DisplayWebView(L"https://www.time.gov/", m_webViewWidth, m_webViewHeight);
-        }
-    }));
+        m_webViewPage = page;
+        m_webViewPage->OnImage = std::bind(&HolographicWebViewMain::OnWebViewImage, this, _1, _2);
+        m_webViewPage->DisplayWebView(L"https://www.time.gov/", m_webViewWidth, m_webViewHeight);
+    });
 }
 
 void HolographicWebViewMain::OnWebViewImage(MainPage^ sender, WebViewImageInfo^ imageInfo)
@@ -195,53 +172,8 @@ HolographicFrame^ HolographicWebViewMain::Update()
 	SpatialCoordinateSystem^ currentCoordinateSystem =
 		m_attachedReferenceFrame->GetStationaryCoordinateSystemAtTimestamp(prediction->Timestamp);
 
-    // Check for new input state since the last frame.
-    SpatialInteractionSourceState^ pointerState = m_spatialInputHandler->CheckForInput();
-    if (pointerState != nullptr)
-    {
-        // When a Pressed gesture is detected, the application asynchronously switches back to the main (XAML) view
-        auto mainView = CoreApplication::MainView;
-
-        m_timer.ResetElapsedTime();
-        // We must launch the switch from the main view's UI thread so we can access its view ID
-        mainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this]()
-        {
-            auto viewId = ApplicationView::GetForCurrentView()->Id;
-
-            Controls::Frame^ frame = (Controls::Frame^)Window::Current->Content;
-            MainPage^ page = (MainPage^)frame->Content;
-            page->DisplayWebView(L"https://www.time.gov/", 400, 400);
-
-#if 0
-            CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([viewId]()
-            {
-                auto asyncAction = ApplicationViewSwitcher::SwitchAsync(viewId, ApplicationView::GetForCurrentView()->Id);
-            }));
-#endif
-        }));
-    }
-
-
 	m_timer.Tick([&]()
 	{
-		// Check for new input state since the last frame.
-		SpatialInteractionSourceState^ pointerState = m_spatialInputHandler->CheckForInput();
-		if (pointerState != nullptr)
-		{
-			// When a Pressed gesture is detected, the application asynchronously switches back to the main (XAML) view
-			auto mainView = CoreApplication::MainView;
-
-			// We must launch the switch from the main view's UI thread so we can access its view ID
-			mainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this]()
-			{
-				auto viewId = ApplicationView::GetForCurrentView()->Id;
-
-				CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([viewId]()
-				{
-					auto asyncAction = ApplicationViewSwitcher::SwitchAsync(viewId, ApplicationView::GetForCurrentView()->Id);
-				}));
-			}));
-		}
 
 #ifdef DRAW_SAMPLE_CONTENT
 		SpatialPointerPose^ pose = SpatialPointerPose::TryGetAtTimestamp(currentCoordinateSystem, prediction->Timestamp);

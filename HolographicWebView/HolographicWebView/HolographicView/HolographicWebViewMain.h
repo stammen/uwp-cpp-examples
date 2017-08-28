@@ -106,5 +106,7 @@ namespace HolographicWebView
 
         int                                                             m_webViewWidth;
         int                                                             m_webViewHeight;
+                                    
+        MainPage^                                                       m_webViewPage;
     };
 }

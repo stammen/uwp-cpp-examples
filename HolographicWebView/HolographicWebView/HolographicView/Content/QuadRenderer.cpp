@@ -31,9 +31,7 @@ namespace HolographicWebView
         , m_height(height)
         , m_webViewImageInfo(nullptr)
     {
-
         CreateDeviceDependentResources();
-
         StartFadeIn();
     }
 

@@ -48,8 +48,47 @@ MainPage::MainPage()
     m_dispatcherTimer->Interval = span;
     //webview1 = ref new WebView(WebViewExecutionMode::SeparateThread);
     webview1->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &HolographicWebView::MainPage::OnWebContentLoaded);
-
 }
+
+ 
+Concurrency::task<MainPage^> MainPage::CreatePage()
+{
+    task_completion_event<MainPage ^> tce;
+    task<MainPage ^> event_set(tce);
+
+    CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([tce]()
+    {
+        Controls::Frame^ rootFrame = dynamic_cast<Windows::UI::Xaml::Controls::Frame^>(Window::Current->Content);
+
+        // Do not repeat app initialization when the Window already has content,
+        // just ensure that the window is active
+        if (rootFrame == nullptr)
+        {
+            // Create a Frame to act as the navigation context and associate it with
+            // a SuspensionManager key
+            rootFrame = ref new Windows::UI::Xaml::Controls::Frame();
+
+            if (rootFrame->Content == nullptr)
+            {
+                // When the navigation stack isn't restored navigate to the first page,
+                // configuring the new page by passing required information as a navigation
+                // parameter
+                rootFrame->Navigate(TypeName(MainPage::typeid), nullptr);
+            }
+            // Place the frame in the current Window
+            Window::Current->Content = rootFrame;
+            // Ensure the current window is active
+            Window::Current->Activate();
+        }
+
+        MainPage^ page = dynamic_cast<MainPage^>(rootFrame->Content);
+        tce.set(page);
+    }));
+
+    return event_set;
+}
+
+
 
 void MainPage::button1_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
@@ -79,15 +118,18 @@ void MainPage::button1_Click(Platform::Object^ sender, Windows::UI::Xaml::Routed
 
 void MainPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height)
 {
-    StopTimer();
+    CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, url, width, height]()
+    {
+        StopTimer();
+        Windows::Foundation::Uri^ uri = ref new Windows::Foundation::Uri(url);
+        webview1->Visibility = Windows::UI::Xaml::Visibility::Visible;
+        webview1->Source = uri;
+        webview1->Width = width;
+        webview1->Height = height;
+        m_bFrameReceived = true;
 
-    Windows::Foundation::Uri^ uri = ref new Windows::Foundation::Uri(url);
-    webview1->Visibility = Windows::UI::Xaml::Visibility::Visible;
-    webview1->Source = uri;
-    webview1->Width = width;
-    webview1->Height = height;
-    m_bFrameReceived = true;
-    // need to add code to scale webview zoom to display entire width of webpage inside of webview
+        // need to add code to scale webview zoom to display entire width of webpage inside of webview
+    }));
 }
 
 void MainPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
