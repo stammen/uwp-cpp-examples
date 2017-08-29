@@ -50,7 +50,7 @@ namespace HolographicWebView
             //#define USE_HORIZONTAL_OFFSET
 #ifndef USE_HORIZONTAL_OFFSET
       // The tag-along hologram follows a point 2.0m in front of the user's gaze direction.
-            constexpr float distanceFromUser = 1.0f; // meters
+            constexpr float distanceFromUser = 0.5f; // meters
             const float3 gazeAtTwoMeters = headPosition + (distanceFromUser * headDirection);
 
             // Use linear interpolation to smooth the position over time. This keeps the hologram
