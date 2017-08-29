@@ -21,7 +21,7 @@ unsigned int gSendCount = 0;
 bool LaunchApp()
 {
 	bool done = false;
-	auto uri = ref new Uri("mrappservicedemo:"); // The protocol handled by the launched app
+	auto uri = ref new Uri("mrappservicedemo-uwp:"); // The protocol handled by the launched app
 	auto options = ref new LauncherOptions();
 	concurrency::task<bool> task(Launcher::LaunchUriAsync(uri, options));
 	return task.get();

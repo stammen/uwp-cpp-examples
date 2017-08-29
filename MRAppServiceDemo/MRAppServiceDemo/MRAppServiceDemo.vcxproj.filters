@@ -98,5 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="MRAppServiceDemo_TemporaryKey.pfx" />
+    <None Include="$(BinPath)ConsoleApplication1.exe" />
+    <None Include="$(BinPath)ConsoleApplication1.pdb" />
   </ItemGroup>
 </Project>

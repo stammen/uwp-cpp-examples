@@ -12,6 +12,7 @@ using namespace MRAppServiceDemo;
 
 using namespace concurrency;
 using namespace Platform;
+using namespace Windows::ApplicationModel;
 using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
@@ -19,6 +20,7 @@ using namespace Windows::Foundation::Collections;
 using namespace Windows::Foundation::Numerics;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::Perception::Spatial;
+using namespace Windows::System;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input::Spatial;
 using namespace std::placeholders;
@@ -30,6 +32,7 @@ MRAppServiceDemoMain::MRAppServiceDemoMain(const std::shared_ptr<DX::DeviceResou
 {
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
+    LaunchWin32App();
 }
 
 void MRAppServiceDemoMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
@@ -488,27 +491,20 @@ void MRAppServiceDemoMain::GetAppServiceData()
 
 void MRAppServiceDemoMain::LaunchWin32App()
 {
-	auto t = create_task(Windows::ApplicationModel::Package::Current->GetAppListEntriesAsync());
-	t.then([](IVectorView <Windows::ApplicationModel::Core::AppListEntry^>^ entries)
-	{
-		AppListEntry^ consoleEntry = nullptr;
+    //FullTrustProcessLauncher::LaunchFullTrustProcessForCurrentAppAsync();
 
-		for (AppListEntry^ entry : entries)
-		{
-			auto info = entry->DisplayInfo;
-			if (info->DisplayName == L"ConsoleApp")
-			{
-				consoleEntry = entry;
-				break;
-			}
-		}
+    bool done = false;
+    auto uri = ref new Uri("mrappservicedemo-win32:"); // The protocol handled by the launched app
+    auto options = ref new LauncherOptions();
+    concurrency::task<bool> task(Launcher::LaunchUriAsync(uri, options));
 
-		if (consoleEntry)
-		{
-			auto t2 = create_task(consoleEntry->LaunchAsync());
-
-		}
-	});
+    task.then([](bool result)
+    {
+        if (result = false)
+        {
+            OutputDebugString(L"MRAppServiceDemoMain::LaunchWin32App() Unable to launch win32 exe\n");
+        }
+    });
 }
 
 

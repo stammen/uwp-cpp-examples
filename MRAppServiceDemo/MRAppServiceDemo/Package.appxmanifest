@@ -1,75 +1,49 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
-<Package
-  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
-  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
-  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
-  xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
-  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-  
-  IgnorableNamespaces="uap uap2 uap3 uap4 mp rescap desktop">
-
-  <Identity Name="661fcf9b-01c2-450d-be4b-a62a0fe9913c"
-            Publisher="CN=stamm"
-            Version="1.0.0.0" />
-
-  <mp:PhoneIdentity PhoneProductId="661fcf9b-01c2-450d-be4b-a62a0fe9913c" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
-
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" IgnorableNamespaces="uap uap2 uap3 uap4 mp rescap desktop">
+  <Identity Name="661fcf9b-01c2-450d-be4b-a62a0fe9913c" Publisher="CN=stamm" Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="661fcf9b-01c2-450d-be4b-a62a0fe9913c" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>MRAppServiceDemo</DisplayName>
     <PublisherDisplayName>stamm</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
-
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.14393.0" MaxVersionTested="10.0.16257.0" />
   </Dependencies>
-
   <Resources>
-    <Resource Language="x-generate"/>
+    <Resource Language="x-generate" />
   </Resources>
-
   <Applications>
-    <Application Id="App"
-      Executable="$targetnametoken$.exe"
-      EntryPoint="MRAppServiceDemo.AppView">
-      <uap:VisualElements
-        DisplayName="MRAppServiceDemo"
-        Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="MRAppServiceDemo"
-        BackgroundColor="#464646">
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="MRAppServiceDemo.AppView">
+      <uap:VisualElements DisplayName="MRAppServiceDemo" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="MRAppServiceDemo" BackgroundColor="#464646">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png">
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <uap:Extension Category="windows.protocol" Executable="$targetnametoken$.exe" EntryPoint="MRAppServiceDemo.AppView">
+          <uap:Protocol Name="mrappservicedemo-uwp" />
+        </uap:Extension>
+        <uap:Extension Category="windows.appService" EntryPoint="MRAppService.AppService">
+          <uap:AppService Name="com.mrappservicedemo.appservice" />
+        </uap:Extension>
+      </Extensions>
+    </Application>
+    <Application Id="ConsoleApp" Executable="ConsoleApplication1.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="ConsoleApp" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="MRAppServiceDemo" BackgroundColor="#464646">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
-        <uap:Extension Category="windows.appService" EntryPoint="MRAppService.AppService">
-          <uap:AppService Name="com.mrappservicedemo.appservice" uap4:SupportsMultipleInstances="false"/>
-        </uap:Extension>
-        <uap:Extension Category="windows.protocol" Executable="$targetnametoken$.exe" EntryPoint="MRAppServiceDemo.AppView">
-          <uap:Protocol Name="mrappservicedemo" />
+        <uap:Extension Category="windows.protocol" Executable="ConsoleApplication1.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap:Protocol Name="mrappservicedemo-win32" />
         </uap:Extension>
       </Extensions>
-    </Application>
-    <Application Id="ConsoleApp"
-      Executable="ConsoleApplication1.exe"
-      EntryPoint="Windows.FullTrustApplication">
-      <uap:VisualElements
-        DisplayName="ConsoleApp"
-        Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="MRAppServiceDemo"
-        BackgroundColor="#464646">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
-      </uap:VisualElements>
     </Application>
   </Applications>
   <Capabilities>
     <Capability Name="internetClient" />
+    <Capability Name="internetClientServer" />
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>
