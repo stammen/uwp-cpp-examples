@@ -19,6 +19,8 @@ namespace MRAppServiceDemo
         // Repositions the sample hologram.
         void PositionHologram(Windows::UI::Input::Spatial::SpatialPointerPose^ pointerPose);
 
+        void SetDistance(float distance);
+
         // Property accessors.
         void SetPosition(Windows::Foundation::Numerics::float3 pos) { m_position = pos;  }
         Windows::Foundation::Numerics::float3 GetPosition()         { return m_position; }
@@ -48,5 +50,7 @@ namespace MRAppServiceDemo
         // If the current D3D Device supports VPRT, we can avoid using a geometry
         // shader just to set the render target array index.
         bool                                            m_usingVprtShaders = false;
+
+        float                                             m_distanceFromUser;
     };
 }

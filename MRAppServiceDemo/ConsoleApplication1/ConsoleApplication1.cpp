@@ -16,7 +16,6 @@ using namespace Windows::System;
 
 AppServiceConnection^	gAppService = nullptr;
 bool gAppServiceConnected = false;
-unsigned int gSendCount = 0;
 
 bool LaunchApp()
 {
@@ -55,7 +54,7 @@ void LaunchAppService()
 	}
 }
 
-void SendToAppService()
+void SendToAppService(float distance)
 {
 	if (!gAppServiceConnected)
 	{
@@ -65,12 +64,12 @@ void SendToAppService()
 
 	auto message = ref new ValueSet();
 	message->Clear(); // using empty message for now
-	message->Insert(L"PostData", ++gSendCount);
-	create_task(gAppService->SendMessageAsync(message)).then([](AppServiceResponse^ response)
+	message->Insert(L"PostData", distance);
+	create_task(gAppService->SendMessageAsync(message)).then([distance](AppServiceResponse^ response)
 	{
 		if (response->Status == AppServiceResponseStatus::Success)
 		{
-			std::cout << "Sent " << gSendCount << " to AppService" << std::endl;
+			std::cout << "Sent distance of " << distance << " meters to AppService" << std::endl;
 		}
 		else
 		{
@@ -84,13 +83,16 @@ void SendToAppService()
 int main(Platform::Array<Platform::String^>^ args)
 {
 	int ch;
+   float distance = 2.0f;
 
 	std::cout << "*********************************" << std::endl;
 	std::cout << "Options:" << std::endl;
 	std::cout << " l - launch UWP Holographic App" << std::endl;
-	std::cout << " c - Connect to AppService" << std::endl;
-	std::cout << " s - send packet to AppService" << std::endl;
-	std::cout << "*********************************" << std::endl;
+    std::cout << " w - reduce viewing distance by 1 meter" << std::endl;
+    std::cout << " s - increase viewing distance by 1 meter" << std::endl;
+    std::cout << "*********************************" << std::endl;
+
+    LaunchAppService();
 
 	do
 	{
@@ -103,12 +105,14 @@ int main(Platform::Array<Platform::String^>^ args)
 				LaunchApp();
 				break;
 
-			case 'C':
-				LaunchAppService();
-				break;
+            case 'W':
+                distance = distance > 0.5f ? distance - 0.5f : 0.5f;
+                SendToAppService(distance);
+                break;
 
 			case 'S':
-				SendToAppService();
+                distance += 0.5f;
+                SendToAppService(distance);
 				break;
 
 			default:

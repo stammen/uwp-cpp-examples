@@ -17,6 +17,6 @@ namespace MRAppService
 
 		Platform::Agile<Windows::ApplicationModel::Background::BackgroundTaskDeferral> m_backgroundTaskDeferral = nullptr;
 		Windows::ApplicationModel::AppService::AppServiceConnection^ m_appServiceconnection = nullptr;
-		static unsigned int m_data;
+		static float m_data;
     };
 }

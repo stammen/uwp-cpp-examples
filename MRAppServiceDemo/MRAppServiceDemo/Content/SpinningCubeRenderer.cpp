@@ -12,6 +12,7 @@ using namespace Windows::UI::Input::Spatial;
 SpinningCubeRenderer::SpinningCubeRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
     m_deviceResources(deviceResources)
 {
+    m_distanceFromUser = 2.0f;
     CreateDeviceDependentResources();
 }
 
@@ -26,13 +27,18 @@ void SpinningCubeRenderer::PositionHologram(SpatialPointerPose^ pointerPose)
         const float3 headDirection   = pointerPose->Head->ForwardDirection;
 
         // The hologram is positioned two meters along the user's gaze direction.
-        constexpr float distanceFromUser    = 2.0f; // meters
-        const float3 gazeAtTwoMeters        = headPosition + (distanceFromUser * headDirection);
+        //constexpr float distanceFromUser    = 2.0f; // meters
+        float3 gazeAtTwoMeters        = headPosition + (m_distanceFromUser * headDirection);
 
         // This will be used as the translation component of the hologram's
         // model transform.
         SetPosition(gazeAtTwoMeters);
     }
+}
+
+void SpinningCubeRenderer::SetDistance(float distance)
+{
+    m_distanceFromUser = distance;
 }
 
 // Called once per frame. Rotates the cube, and calculates and sets the model matrix

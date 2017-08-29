@@ -93,7 +93,7 @@ namespace MRAppServiceDemo
         Windows::Perception::Spatial::SpatialLocator^                   m_locator;
 
         // A reference frame attached to the holographic camera.
-        Windows::Perception::Spatial::SpatialStationaryFrameOfReference^ m_referenceFrame;
+        Windows::Perception::Spatial::SpatialLocatorAttachedFrameOfReference^   m_attachedReferenceFrame;
 
         // Event registration tokens.
         Windows::Foundation::EventRegistrationToken                     m_cameraAddedToken;

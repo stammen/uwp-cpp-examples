@@ -88,10 +88,8 @@ void MRAppServiceDemoMain::SetHolographicSpace(HolographicSpace^ holographicSpac
                 std::bind(&MRAppServiceDemoMain::OnCameraRemoved, this, _1, _2)
                 );
 
-    // The simplest way to render world-locked holograms is to create a stationary reference frame
-    // when the app is launched. This is roughly analogous to creating a "world" coordinate system
-    // with the origin placed at the device's position as the app is launched.
-    m_referenceFrame = m_locator->CreateStationaryFrameOfReferenceAtCurrentLocation();
+    // In this example, we create a reference frame attached to the device.
+    m_attachedReferenceFrame = m_locator->CreateAttachedFrameOfReferenceAtCurrentHeading();
 
     // Notes on spatial tracking APIs:
     // * Stationary reference frames are designed to provide a best-fit position relative to the
@@ -160,7 +158,8 @@ HolographicFrame^ MRAppServiceDemoMain::Update()
     // Next, we get a coordinate system from the attached frame of reference that is
     // associated with the current frame. Later, this coordinate system is used for
     // for creating the stereo view matrices when rendering the sample content.
-    SpatialCoordinateSystem^ currentCoordinateSystem = m_referenceFrame->CoordinateSystem;
+    SpatialCoordinateSystem^ currentCoordinateSystem = m_attachedReferenceFrame->GetStationaryCoordinateSystemAtTimestamp(prediction->Timestamp);
+
 
 #ifdef DRAW_SAMPLE_CONTENT
 
@@ -190,6 +189,25 @@ HolographicFrame^ MRAppServiceDemoMain::Update()
         // but if you change the StepTimer to use a fixed time step this code will
         // run as many times as needed to get to the current step.
         //
+
+        // Get a prediction of where holographic cameras will be when this frame
+        // is presented.
+        HolographicFramePrediction^ prediction = holographicFrame->CurrentPrediction;
+
+        // Back buffers can change from frame to frame. Validate each buffer, and recreate
+        // resource views and depth buffers as needed.
+        m_deviceResources->EnsureCameraResources(holographicFrame, prediction);
+
+
+        // Next, we get a coordinate system from the attached frame of reference that is
+        // associated with the current frame. Later, this coordinate system is used for
+        // for creating the stereo view matrices when rendering the sample content.
+        SpatialCoordinateSystem^ currentCoordinateSystem =
+            m_attachedReferenceFrame->GetStationaryCoordinateSystemAtTimestamp(prediction->Timestamp);
+
+        SpatialPointerPose^ pose = SpatialPointerPose::TryGetAtTimestamp(currentCoordinateSystem, prediction->Timestamp);
+        m_spinningCubeRenderer->PositionHologram(pose);
+
 
 #ifdef DRAW_SAMPLE_CONTENT
         m_spinningCubeRenderer->Update(m_timer);
@@ -294,7 +312,7 @@ bool MRAppServiceDemoMain::Render(Windows::Graphics::Holographic::HolographicFra
             // The view and projection matrices for each holographic camera will change
             // every frame. This function refreshes the data in the constant buffer for
             // the holographic camera indicated by cameraPose.
-            pCameraResources->UpdateViewProjectionBuffer(m_deviceResources, cameraPose, m_referenceFrame->CoordinateSystem);
+            pCameraResources->UpdateViewProjectionBuffer(m_deviceResources, cameraPose, m_attachedReferenceFrame->GetStationaryCoordinateSystemAtTimestamp(prediction->Timestamp));
 
             // Attach the view/projection constant buffer for this camera to the graphics pipeline.
             bool cameraActive = pCameraResources->AttachViewProjectionBuffer(m_deviceResources);
@@ -482,9 +500,10 @@ void MRAppServiceDemoMain::GetAppServiceData()
 	create_task(m_appService->SendMessageAsync(message)).then([this](AppServiceResponse^ response)
 	{
 		auto message = response->Message;
-		unsigned long result = safe_cast<unsigned long>(message->Lookup(L"Result"));
+		float distance = safe_cast<float>(message->Lookup(L"Result"));
+        m_spinningCubeRenderer->SetDistance(distance);
 		std::wstringstream w;
-		w << L"GetAppServiceData:" << result << std::endl;
+		w << L"GetAppServiceData:" << distance << std::endl;
 		OutputDebugString(w.str().c_str());
 	});
 }

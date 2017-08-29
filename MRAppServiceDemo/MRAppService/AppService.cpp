@@ -11,7 +11,7 @@ using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::System;
 
-unsigned int AppService::m_data = 0;
+float AppService::m_data = 2.0f;
 
 AppService::AppService()
 {
@@ -55,7 +55,7 @@ void AppService::OnRequestReceived(AppServiceConnection^ sender, AppServiceReque
 	}
 	else if (message->HasKey(L"PostData"))
 	{
-		m_data = safe_cast<unsigned int>(message->Lookup(L"PostData"));
+		m_data = safe_cast<float>(message->Lookup(L"PostData"));
 		ValueSet^ returnData = ref new ValueSet();
 		returnData->Insert(L"Status", 1);
 		create_task(args->Request->SendResponseAsync(returnData)).then([messageDeferral](AppServiceResponseStatus response)
