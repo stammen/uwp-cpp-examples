@@ -1,0 +1,6 @@
+MainPackage=D:\GitHub\uwp-cpp-examples\MRAppServiceDemo\Release\MRAppServiceDemo\MRAppServiceDemo_1.0.9.0_Win32.appx
+SymbolPackage=D:\GitHub\uwp-cpp-examples\MRAppServiceDemo\AppPackages\MRAppServiceDemo\MRAppServiceDemo_1.0.9.0_Test\MRAppServiceDemo_1.0.9.0_Win32.appxsym
+ResourcePack=D:\GitHub\uwp-cpp-examples\MRAppServiceDemo\Release\MRAppServiceDemo\MRAppServiceDemo_1.0.9.0_scale-100.appx
+ResourcePack=D:\GitHub\uwp-cpp-examples\MRAppServiceDemo\Release\MRAppServiceDemo\MRAppServiceDemo_1.0.9.0_scale-125.appx
+ResourcePack=D:\GitHub\uwp-cpp-examples\MRAppServiceDemo\Release\MRAppServiceDemo\MRAppServiceDemo_1.0.9.0_scale-150.appx
+ResourcePack=D:\GitHub\uwp-cpp-examples\MRAppServiceDemo\Release\MRAppServiceDemo\MRAppServiceDemo_1.0.9.0_scale-400.appx
