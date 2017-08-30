@@ -27,21 +27,18 @@ Note: This example will not work for the Hololens as it is not able to launch a 
 
 ![App running in Mixed Reality Portal](images/mrportal.png)
 
-* Tap (or right click if using the Simulator) anywhere in the app's window. The Win32 console app will be launched on the user's desktop.
+* After the UWP MR app has launched in the MR Portal, it will launch the Win32 console app on the user's desktop. The Win32 console will connect to the App Service after launch.
 
 ![Win32 App](images/win32.png)
 
-* In the Win32 console app press the c key on the keyboard to connect the app to the App Service.
-
-![Win32 App](images/connected.png)
-
-* In the Win32 console app press the s key to send data to the UWP Mixed Reality app via the App Service.
+* In the Win32 console app press the **w** or **s** key to send data to the UWP Mixed Reality app via the App Service. This will change the viewing distance of the cube.
 
 ![Win32 App](images/send.png)
 
-* The UWP app will display the received data in the Debug output window of VS2017.
+* The UWP app will data sent from the Win32 app via the AppService to change the viewing distance of the cube.
 
-![Win32 App](images/data.png)
+![Win32 App](images/distance.png)
+
 
 ## Discussion
 
@@ -102,34 +99,25 @@ IgnorableNamespaces="uap uap2 uap3 uap4 mp rescap desktop">
   </Extensions>
 ```
 
+* The protocol to enable launching of the Win32 app from the UWP Holographic app was added to the **Extensions** section of the **Application** section for the MRAppServiceDemo app.
+
+```xml
+  <Extensions>
+	<uap:Extension Category="windows.protocol" Executable="ConsoleApplication1.exe" EntryPoint="Windows.FullTrustApplication">
+	  <uap:Protocol Name="mrappservicedemo-win32" />
+	</uap:Extension>
+  </Extensions>
+```
+
 * The protocol to enable launching of the MRAppServiceDemo UWP Holographic App from the Win32 app was also added to the **Extensions** section of the **Application** section for the MRAppServiceDemo app.
 
 ```xml
-<Extensions>
-<uap:Extension Category="windows.appService" EntryPoint="MRAppService.AppService">
-  <uap:AppService Name="com.mrappservicedemo.appservice" uap4:SupportsMultipleInstances="false"/>
-</uap:Extension>
-<uap:Extension Category="windows.protocol" Executable="$targetnametoken$.exe" EntryPoint="MRAppServiceDemo.AppView">
-  <uap:Protocol Name="mrappservicedemo" />
-</uap:Extension>
-</Extensions>
+  <Extensions>
+	<uap:Extension Category="windows.protocol" Executable="$targetnametoken$.exe" EntryPoint="MRAppServiceDemo.AppView">
+	  <uap:Protocol Name="mrappservicedemo-uwp" />
+	</uap:Extension>
+  </Extensions>
 ```
 
-* The Win32 console app was declared by adding a new **Application** tag to the **Applications** section. It must appear **after** the Application section for the MRAppServiceDemo app. 
-```xml
-<Application Id="ConsoleApp"
-  Executable="ConsoleApplication1.exe"
-  EntryPoint="Windows.FullTrustApplication">
-  <uap:VisualElements
-	DisplayName="ConsoleApp"
-	Square150x150Logo="Assets\Square150x150Logo.png"
-	Square44x44Logo="Assets\Square44x44Logo.png"
-	Description="MRAppServiceDemo"
-	BackgroundColor="#464646">
-	<uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
-	<uap:SplashScreen Image="Assets\SplashScreen.png" />
-  </uap:VisualElements>
-</Application>
-```
 
 The complete Package.appxmanifest is available [here](https://github.com/stammen/uwp-cpp-examples/blob/master/MRAppServiceDemo/MRAppServiceDemo/Package.appxmanifest)

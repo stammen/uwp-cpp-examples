@@ -1,2 +1,0 @@
-MainPackage=D:\GitHub\uwp-cpp-examples\MRAppServiceDemo\Release\MRAppServiceDemo\MRAppServiceDemo_1.0.11.0_Win32.appx
-SymbolPackage=D:\GitHub\uwp-cpp-examples\MRAppServiceDemo\AppPackages\MRAppServiceDemo\MRAppServiceDemo_1.0.11.0_Test\MRAppServiceDemo_1.0.11.0_Win32.appxsym
