@@ -84,8 +84,8 @@ IgnorableNamespaces="uap uap2 uap3 uap4 mp rescap desktop">
 * The **runFullTrust** capability was added to the **Capabilities** section
 ```xml
 <Capabilities>
-<Capability Name="internetClient" />
-<rescap:Capability Name="runFullTrust" />
+	<Capability Name="internetClient" />
+	<rescap:Capability Name="runFullTrust" />
 </Capabilities>
 ```
 
