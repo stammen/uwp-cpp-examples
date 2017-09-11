@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include <mutex>    
+#include <map>    
+
+
 namespace MRAppService
 {
 	[Windows::Foundation::Metadata::WebHostHidden]
@@ -13,10 +17,20 @@ namespace MRAppService
 	private:
 		void OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args);
 		void OnTaskCanceled(Windows::ApplicationModel::Background::IBackgroundTaskInstance^ sender, Windows::ApplicationModel::Background::BackgroundTaskCancellationReason reason);
-		Concurrency::task<bool> LaunchAppWithProtocol(Platform::String^ protocol);
+
+        void AppService::AddListener(Platform::String^ id, Windows::ApplicationModel::AppService::AppServiceConnection^ connection);
+        void AppService::RemoveListener(Platform::String^ id);
+        void ForwardMessage(
+            Platform::String^ id, 
+            Windows::Foundation::Collections::ValueSet^ message,
+            Windows::ApplicationModel::AppService::AppServiceRequest^ request,
+            Windows::ApplicationModel::AppService::AppServiceDeferral^ deferral);
 
 		Platform::Agile<Windows::ApplicationModel::Background::BackgroundTaskDeferral> m_backgroundTaskDeferral = nullptr;
 		Windows::ApplicationModel::AppService::AppServiceConnection^ m_appServiceconnection = nullptr;
-		static float m_data;
+		static Windows::Foundation::Collections::ValueSet^ s_data;
+        static std::mutex s_mutex;
+        static std::map<Platform::String^, Windows::ApplicationModel::AppService::AppServiceConnection^> AppService::s_connectionMap;
+
     };
 }

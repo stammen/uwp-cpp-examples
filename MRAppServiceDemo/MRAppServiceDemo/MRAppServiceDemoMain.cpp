@@ -6,6 +6,7 @@
 #include <Collection.h>
 #include <string>
 #include <sstream>
+#include <assert.h>
 
 
 using namespace MRAppServiceDemo;
@@ -28,11 +29,29 @@ using namespace std::placeholders;
 // Loads and initializes application assets when the application is loaded.
 MRAppServiceDemoMain::MRAppServiceDemoMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) 
 	: m_deviceResources(deviceResources)
-	, m_bAppServiceConnected(false)
 {
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
-    LaunchWin32App();
+
+    m_appServiceListener = ref new MRAppService::MRAppServiceListener(L"MR-App");
+
+    OutputDebugString(L"***** Package::FamilyName: ");
+    OutputDebugString(Windows::ApplicationModel::Package::Current->Id->FamilyName->Data());
+    OutputDebugString(L"\n");
+
+    assert(MRAPPSERVICE_FAMILY_NAME == Windows::ApplicationModel::Package::Current->Id->FamilyName);
+
+    auto connectTask = m_appServiceListener->ConnectToAppService(MRAPPSERVICE_ID, MRAPPSERVICE_FAMILY_NAME);
+    connectTask.then([this](AppServiceConnectionStatus response)
+    {
+        if (response == AppServiceConnectionStatus::Success)
+        {
+            auto listenerTask = m_appServiceListener->RegisterListener(this).then([this](AppServiceResponse^ response)
+            {
+                LaunchWin32App();
+            });
+        }
+    });
 }
 
 void MRAppServiceDemoMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
@@ -162,9 +181,6 @@ HolographicFrame^ MRAppServiceDemoMain::Update()
 
 
 #ifdef DRAW_SAMPLE_CONTENT
-
-	// Update data from the AppService
-	UpdateAppService();
 
     // Check for new input state since the last frame.
     SpatialInteractionSourceState^ pointerState = m_spatialInputHandler->CheckForInput();
@@ -456,57 +472,7 @@ void MRAppServiceDemoMain::OnCameraRemoved(
     m_deviceResources->RemoveHolographicCamera(args->Camera);
 }
 
-void MRAppServiceDemoMain::UpdateAppService()
-{
-	if (m_appService == nullptr)
-	{
-		m_appService = ref new AppServiceConnection();
 
-		// Use this value to set m_appService->PackageFamilyName
-		OutputDebugString(Windows::ApplicationModel::Package::Current->Id->FamilyName->Data());
-		OutputDebugString(L"\n");
-
-		// Here, we use the app service name defined in the app service provider's Package.appxmanifest file in the <Extension> section.
-		m_appService->AppServiceName = "com.mrappservicedemo.appservice";
-
-		// Use Windows.ApplicationModel.Package.Current.Id.FamilyName within the app service provider to get this value.
-		m_appService->PackageFamilyName = "661fcf9b-01c2-450d-be4b-a62a0fe9913c_e8xk87pxx0yyw";
-
-		create_task(m_appService->OpenAsync()).then([this](AppServiceConnectionStatus status)
-		{
-			if (status != AppServiceConnectionStatus::Success)
-			{
-				m_appService = nullptr;
-				OutputDebugString(L"Error: Unable to connect to AppService.\n");
-			}
-			else
-			{
-				OutputDebugString(L"Connected to AppService.\n");
-				m_bAppServiceConnected = true;
-				GetAppServiceData();
-			}
-		});
-	}
-	else if(m_bAppServiceConnected)
-	{
-		GetAppServiceData();
-	}
-}
-
-void MRAppServiceDemoMain::GetAppServiceData()
-{
-	auto message = ref new ValueSet();
-	message->Clear(); // using empty message for now
-	create_task(m_appService->SendMessageAsync(message)).then([this](AppServiceResponse^ response)
-	{
-		auto message = response->Message;
-		float distance = safe_cast<float>(message->Lookup(L"Result"));
-        m_spinningCubeRenderer->SetDistance(distance);
-		std::wstringstream w;
-		w << L"GetAppServiceData:" << distance << std::endl;
-		OutputDebugString(w.str().c_str());
-	});
-}
 
 void MRAppServiceDemoMain::LaunchWin32App()
 {
@@ -524,6 +490,38 @@ void MRAppServiceDemoMain::LaunchWin32App()
             OutputDebugString(L"MRAppServiceDemoMain::LaunchWin32App() Unable to launch win32 exe\n");
         }
     });
+}
+
+ValueSet^ MRAppServiceDemoMain::OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args)
+{
+    auto data = dynamic_cast<ValueSet^>(args->Request->Message->Lookup("Data"));
+    auto response = ref new ValueSet;
+
+    if (data->HasKey(L"Win32-App-Connected"))
+    {
+        bool connected = static_cast<bool>(data->Lookup(L"Win32-App-Connected"));
+        if (connected)
+        {
+            OutputDebugString(L"Win32 App is connected.\n");
+            response->Insert(L"Status", "OK");
+        }
+    }
+    else if (data->HasKey(L"Distance"))
+    {
+        response->Insert(L"Status", "OK");
+        float distance = safe_cast<float>(data->Lookup(L"Distance"));
+        m_spinningCubeRenderer->SetDistance(distance);
+        std::wstringstream w;
+        w << L"MR-App: Received distance " << distance << std::endl;
+        OutputDebugString(w.str().c_str());
+    }
+    else
+    {
+        response->Insert(L"Status", "Error");
+        response->Insert(L"ErrorMessage", "Unknown message");
+    }
+
+    return response;
 }
 
 

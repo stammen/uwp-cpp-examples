@@ -12,6 +12,7 @@
 
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
+#include "MRAppServiceListener.h"
 
 #ifdef DRAW_SAMPLE_CONTENT
 #include "Content\SpinningCubeRenderer.h"
@@ -21,7 +22,7 @@
 // Updates, renders, and presents holographic content using Direct3D.
 namespace MRAppServiceDemo
 {
-    class MRAppServiceDemoMain : public DX::IDeviceNotify
+    class MRAppServiceDemoMain : public DX::IDeviceNotify, MRAppService::IMRAppServiceListenerDelegate
     {
     public:
         MRAppServiceDemoMain(const std::shared_ptr<DX::DeviceResources>& deviceResources);
@@ -66,8 +67,7 @@ namespace MRAppServiceDemo
         // and when tearing down AppMain.
         void UnregisterHolographicEventHandlers();
 
-		void UpdateAppService();
-		void GetAppServiceData();
+        virtual Windows::Foundation::Collections::ValueSet^ OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args);
 
 		void LaunchWin32App();
 
@@ -99,8 +99,8 @@ namespace MRAppServiceDemo
         Windows::Foundation::EventRegistrationToken                     m_cameraAddedToken;
         Windows::Foundation::EventRegistrationToken                     m_cameraRemovedToken;
         Windows::Foundation::EventRegistrationToken                     m_locatabilityChangedToken;
+       
+        MRAppService::MRAppServiceListener^                             m_appServiceListener;
 
-		Windows::ApplicationModel::AppService::AppServiceConnection^	m_appService;
-		bool															m_bAppServiceConnected;
     };
 }

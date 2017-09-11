@@ -50,6 +50,9 @@
     <Image Include="Assets\Wide310x150Logo.scale-200.png">
       <Filter>Assets</Filter>
     </Image>
+    <Filter Include="MRAppService">
+      <UniqueIdentifier>{83abae80-81f4-4b82-a570-6824cefcbd50}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -61,6 +64,9 @@
       <Filter>Content</Filter>
     </ClCompile>
     <ClCompile Include="MRAppServiceDemoMain.cpp" />
+    <ClCompile Include="..\MRAppService\MRAppServiceListener.cpp">
+      <Filter>MRAppService</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -75,6 +81,9 @@
       <Filter>Content</Filter>
     </ClInclude>
     <ClInclude Include="MRAppServiceDemoMain.h" />
+    <ClInclude Include="..\MRAppService\MRAppServiceListener.h">
+      <Filter>MRAppService</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Content\VertexShader.hlsl">
