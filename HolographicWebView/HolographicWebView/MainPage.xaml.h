@@ -10,6 +10,7 @@
 #include <vector>
 #include <ppltasks.h>
 #include <functional>
+#include <collection.h>
 
 namespace HolographicWebView
 {
