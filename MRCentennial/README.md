@@ -6,7 +6,7 @@ This configuration enables a Desktop Bridge version of a UWP Mixed Reality app t
 
 ![Solution](images/mr-all-apps.png)
 
-Note: This example will not work for the Hololens as it is not able to launch a Win32 application.
+Note: This example will not work for the Hololens.
 
 ## Requirements
 
