@@ -14,7 +14,10 @@
 #include "..\Common\DeviceResources.h"
 #include "..\Common\StepTimer.h"
 #include "ShaderStructures.h"
+#include "..\ScreenCapture\ScreenCapture.h"
+
 #include <mutex>
+#include <vector>
 
 namespace MRCentennial
 {
@@ -22,7 +25,7 @@ namespace MRCentennial
   class QuadRenderer
   {
   public:
-    QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources, int width, int height);
+    QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
     void CreateDeviceDependentResources();
     void ReleaseDeviceDependentResources();
     void Update(const DX::StepTimer& timer);
@@ -62,7 +65,9 @@ namespace MRCentennial
     Microsoft::WRL::ComPtr<ID3D11PixelShader>           m_pixelShader;
     Microsoft::WRL::ComPtr<ID3D11Buffer>                m_modelConstantBuffer;
 
+
     // Direct3D resources for the default texture.
+    Microsoft::WRL::ComPtr<ID3D11Resource>              m_stagingTexture;
     Microsoft::WRL::ComPtr<ID3D11Resource>              m_quadTexture;
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>    m_quadTextureView;
     Microsoft::WRL::ComPtr<ID3D11SamplerState>          m_quadTextureSamplerState;
@@ -99,6 +104,10 @@ namespace MRCentennial
 
     std::mutex                                          m_mutex;
     HANDLE                                              m_sharedTextureHandle;
+
+    // buffer to hold screen capture pixels
+    std::vector<byte>                                   m_screenCaptureBuffer;
+
 
   };
 }

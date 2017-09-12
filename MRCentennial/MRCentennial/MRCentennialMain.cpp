@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "MRCentennialMain.h"
 #include "Common\DirectXHelper.h"
-#include "..\ScreenCapture\ScreenCapture.h"
 
 #include <windows.graphics.directx.direct3d11.interop.h>
 #include <Collection.h>
@@ -35,13 +34,9 @@ using namespace std::placeholders;
 MRCentennialMain::MRCentennialMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
     m_deviceResources(deviceResources)
 {
-    ScreenCapture_GetScreenSize(m_width, m_height);
-    m_webViewId = 1;
-
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
 
-    m_screenCaptureBuffer.resize(m_width * m_height * 4);
 }
 
 void MRCentennialMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
@@ -56,7 +51,7 @@ void MRCentennialMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
 
 #ifdef DRAW_SAMPLE_CONTENT
     // Initialize the sample hologram.
-    m_renderer = std::make_unique<QuadRenderer>(m_deviceResources, m_width, m_height);
+    m_renderer = std::make_unique<QuadRenderer>(m_deviceResources);
 
     m_spatialInputHandler = std::make_unique<SpatialInputHandler>();
 #endif
@@ -224,9 +219,6 @@ bool MRCentennialMain::Render(Windows::Graphics::Holographic::HolographicFrame^ 
     {
         return false;
     }
-
-    ScreenCapture_Capture((void*)m_screenCaptureBuffer.data(), m_width, m_height);
-    m_renderer->UpdateTexture(m_screenCaptureBuffer.data(), m_width, m_height);
 
     // Lock the set of holographic camera resources, then draw to each camera
     // in this frame.

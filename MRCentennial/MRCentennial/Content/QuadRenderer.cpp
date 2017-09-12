@@ -26,13 +26,13 @@ using namespace Windows::UI::Input::Spatial;
 namespace MRCentennial
 {
     // Loads vertex and pixel shaders from files and instantiates the quad geometry.
-    QuadRenderer::QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources, int width, int height) 
+    QuadRenderer::QuadRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) 
         : m_deviceResources(deviceResources)
-        , m_width(width)
-        , m_height(height)
         , m_sharedTextureHandle(NULL)
     {
         CreateDeviceDependentResources();
+        ScreenCapture_GetScreenSize(m_width, m_height);
+        m_screenCaptureBuffer.resize(m_width * m_height * 4);
         StartFadeIn();
     }
 
@@ -189,7 +189,7 @@ namespace MRCentennial
             D3D11_MAPPED_SUBRESOURCE mapped;
             const auto context = m_deviceResources->GetD3DDeviceContext();
 
-            context->Map(m_quadTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+            context->Map(m_stagingTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
             byte* data1 = (byte*)mapped.pData;
             const byte* data2 = data;
             unsigned int length = m_width * 4;
@@ -200,10 +200,10 @@ namespace MRCentennial
                 data2 += length;
             }
 
-            context->Unmap(m_quadTexture.Get(), 0);
+            context->Unmap(m_stagingTexture.Get(), 0);
+            context->CopyResource(m_quadTexture.Get(), m_stagingTexture.Get());
         }
     }
-
 
     // Renders one frame using the vertex and pixel shaders.
     // For Direct3D devices that do not support the optional feature level
@@ -215,6 +215,9 @@ namespace MRCentennial
         {
             return;
         }
+
+        ScreenCapture_Capture((void*)m_screenCaptureBuffer.data(), m_width, m_height);
+        UpdateTexture(m_screenCaptureBuffer.data(), m_width, m_height);
 
         const auto context = m_deviceResources->GetD3DDeviceContext();
 
@@ -343,7 +346,7 @@ namespace MRCentennial
         vertexBufferData.pSysMem = quadVertices.data();
         vertexBufferData.SysMemPitch = 0;
         vertexBufferData.SysMemSlicePitch = 0;
-        const CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColorTex) * quadVertices.size(), D3D11_BIND_VERTEX_BUFFER);
+        const CD3D11_BUFFER_DESC vertexBufferDesc((UINT)(sizeof(VertexPositionColorTex) * quadVertices.size()), D3D11_BIND_VERTEX_BUFFER);
         DX::ThrowIfFailed(
             m_deviceResources->GetD3DDevice()->CreateBuffer(
                 &vertexBufferDesc,
@@ -377,7 +380,7 @@ namespace MRCentennial
         indexBufferData.pSysMem = quadIndices.data();
         indexBufferData.SysMemPitch = 0;
         indexBufferData.SysMemSlicePitch = 0;
-        const CD3D11_BUFFER_DESC indexBufferDesc(sizeof(unsigned short) * quadIndices.size(), D3D11_BIND_INDEX_BUFFER);
+        const CD3D11_BUFFER_DESC indexBufferDesc((UINT)(sizeof(unsigned short) * quadIndices.size()), D3D11_BIND_INDEX_BUFFER);
         DX::ThrowIfFailed(
             m_deviceResources->GetD3DDevice()->CreateBuffer(
                 &indexBufferDesc,
@@ -399,19 +402,38 @@ namespace MRCentennial
         desc.MiscFlags = 0;
         desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
         ID3D11Texture2D *pTexture = NULL;
-        auto hr = m_deviceResources->GetD3DDevice()->CreateTexture2D(&desc, nullptr, &pTexture);
+        DX::ThrowIfFailed(
+            m_deviceResources->GetD3DDevice()->CreateTexture2D(&desc, nullptr, &pTexture)
+        );
 
         m_quadTexture = pTexture;
 
+        ZeroMemory(&desc, sizeof(desc));
+        desc.Width = m_width;
+        desc.Height = m_height;
+        desc.MipLevels = desc.ArraySize = 1;
+        desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+        desc.SampleDesc.Count = 1;
+        desc.SampleDesc.Quality = 0;
+        desc.Usage = D3D11_USAGE_DYNAMIC;
+        desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        pTexture = NULL;
 
+        DX::ThrowIfFailed(
+            m_deviceResources->GetD3DDevice()->CreateTexture2D(&desc, nullptr, &pTexture)
+        );
 
+        m_stagingTexture = pTexture;
 
         D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
         SRVDesc.Format = desc.Format;
         SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         SRVDesc.Texture2D.MipLevels = 1;
 
-        m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_quadTexture.Get(), &SRVDesc, m_quadTextureView.GetAddressOf());
+        DX::ThrowIfFailed(
+            m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_quadTexture.Get(), &SRVDesc, m_quadTextureView.GetAddressOf())
+        );
 
         D3D11_SAMPLER_DESC samplesDesc;
         ZeroMemory(&samplesDesc, sizeof(D3D11_SAMPLER_DESC));
@@ -437,8 +459,9 @@ namespace MRCentennial
             )
         );
 
-        m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_quadTexture.Get(), &SRVDesc, m_quadTextureView.GetAddressOf());
-
+        DX::ThrowIfFailed(
+            m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_quadTexture.Get(), &SRVDesc, m_quadTextureView.GetAddressOf())
+        );
     }
 
     
@@ -558,6 +581,7 @@ namespace MRCentennial
         m_vertexBuffer.Reset();
         m_indexBuffer.Reset();
 
+        m_stagingTexture.Reset();
         m_quadTexture.Reset();
         m_quadTextureView.Reset();
         m_quadTextureSamplerState.Reset();

@@ -12,7 +12,6 @@
 
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
-#include <vector>
 
 #ifdef DRAW_SAMPLE_CONTENT
 #include "Content\QuadRenderer.h"
@@ -101,11 +100,5 @@ namespace MRCentennial
         Windows::Foundation::EventRegistrationToken                     m_cameraAddedToken;
         Windows::Foundation::EventRegistrationToken                     m_cameraRemovedToken;
         Windows::Foundation::EventRegistrationToken                     m_locatabilityChangedToken;
-
-        int                                                             m_width;
-        int                                                             m_height;
-        int                                                             m_webViewId;
-
-        std::vector<byte>                                               m_screenCaptureBuffer;
     };
 }
