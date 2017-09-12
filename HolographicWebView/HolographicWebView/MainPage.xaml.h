@@ -38,6 +38,8 @@ namespace HolographicWebView
 
         void DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height);
 
+        void OnClick(int x, int y);
+
     internal:
         static Concurrency::task<MainPage^> CreatePage();
         std::function<void(MainPage^, WebViewImageInfo^)> OnImage;

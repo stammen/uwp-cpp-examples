@@ -99,6 +99,18 @@ void MainPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigne
     }));
 }
 
+void MainPage::OnClick(int x, int y)
+{
+    CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, x, y]()
+    {
+        auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
+        std::wstringstream w;
+        w << L"document.elementFromPoint(" << x << "," << y << L").click()";
+        scripts->Append(ref new Platform::String(w.str().c_str()));
+        webview1->InvokeScriptAsync(ref new Platform::String(L"eval"), scripts);
+    }));
+}
+
 void MainPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
 {
     UpdateWebView();
