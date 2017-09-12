@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MRCentennial", "MRCentennial\MRCentennial.vcxproj", "{BC205800-ED9B-49DE-A9AF-E9647E1F3EE4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EB7DCDE9-1BE2-4A99-88B0-70BC2B094DE1} = {EB7DCDE9-1BE2-4A99-88B0-70BC2B094DE1}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ScreenCapture", "ScreenCapture\ScreenCapture.vcxproj", "{EB7DCDE9-1BE2-4A99-88B0-70BC2B094DE1}"
 EndProject

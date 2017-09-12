@@ -9,4 +9,5 @@
     #define DllExport     __declspec(dllimport)
 #endif
 
-DllExport int CaptureScreen(void* buffer, int width, int height);
+DllExport void ScreenCapture_GetScreenSize(int& width, int& height);
+DllExport int ScreenCapture_Capture(void* buffer, int width, int height);

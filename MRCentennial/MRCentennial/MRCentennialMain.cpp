@@ -35,16 +35,11 @@ using namespace std::placeholders;
 MRCentennialMain::MRCentennialMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
     m_deviceResources(deviceResources)
 {
-    m_width = 1920;
-    m_height = 1080;
+    ScreenCapture_GetScreenSize(m_width, m_height);
     m_webViewId = 1;
 
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
-
-    OutputDebugString(L"PackageFamilyName: ");
-    OutputDebugString(Windows::ApplicationModel::Package::Current->Id->FamilyName->Data());
-    OutputDebugString(L"\n");
 
     m_screenCaptureBuffer.resize(m_width * m_height * 4);
 }
@@ -230,7 +225,7 @@ bool MRCentennialMain::Render(Windows::Graphics::Holographic::HolographicFrame^ 
         return false;
     }
 
-    CaptureScreen((void*)m_screenCaptureBuffer.data(), m_width, m_height);
+    ScreenCapture_Capture((void*)m_screenCaptureBuffer.data(), m_width, m_height);
     m_renderer->UpdateTexture(m_screenCaptureBuffer.data(), m_width, m_height);
 
     // Lock the set of holographic camera resources, then draw to each camera

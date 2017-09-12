@@ -5,7 +5,14 @@
 #include "stdafx.h"
 #include "ScreenCapture.h"
 
-DllExport int CaptureScreen(void* buffer, int width, int height)
+DllExport void ScreenCapture_GetScreenSize(int& width, int& height)
+{
+    width = GetSystemMetrics(SM_CXSCREEN);
+    height = GetSystemMetrics(SM_CYSCREEN);
+}
+
+
+DllExport int ScreenCapture_Capture(void* buffer, int width, int height)
 {
     HDC hdcScreen;
     HDC hdcMemDC = NULL;
