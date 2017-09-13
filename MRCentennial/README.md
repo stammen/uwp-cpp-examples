@@ -16,7 +16,7 @@ Note: This example will not work for the Hololens.
 
 * Open MRCentennial.sln with Visual Studio 2017
 
-* Launch the Windows Mixed Reality Portal and setup your HMD device or Mixed Reality simulator)
+* Launch the Windows Mixed Reality Portal and setup your HMD device or Mixed Reality simulator.
 
 * Select the Debug/x86 or Debug/x64 configuration. 
 
