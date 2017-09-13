@@ -37,7 +37,7 @@ The MRCentennial solution consists of the following projects:
 
 * **MRCentennial**: The UWP Windows Mixed Reality project (based on the Windows univeral C++ Holographic template)
 
-* **ScreenCapture**: A Desktop Win32 DLL (not a Univeral Windows DLL) that uses GetDIBits and other GDI functions to screen capture the primary monitor. These GDI functions are not allowed in a regular Mixed Reality UWP app.
+* **ScreenCapture**: A Desktop Win32 DLL (not a Univeral Windows DLL) that uses GetDIBits and other GDI functions to screen capture the primary monitor. These GDI functions are not allowed in a regular Mixed Reality UWP app. The source code for this DLL was derived from https://msdn.microsoft.com/en-us/library/windows/desktop/dd183402(v=vs.85).aspx
 
 
 ![Solution](images/solution.png)
