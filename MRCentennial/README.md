@@ -1,5 +1,5 @@
 # Mixed Reality/Centennial App Demo
-This sample demonstrates how to create a Centennial(Desktop Bridge) version of a UWP Mixed Reality app that use Win32 apis that are not allowed in a UWP app but are allowed in a Desktop Bridge app.
+This sample demonstrates how to create a Centennial (Desktop Bridge) version of a UWP Mixed Reality app that use Win32 apis that are not allowed in a UWP app but are allowed in a Desktop Bridge app.
 This example demonstrates how to capture the primary desktop from a Win32 DLL and package it with a UWP Mixed Reality app via the Desktop Bridge.
 
 This configuration enables a Desktop Bridge version of a UWP Mixed Reality app to appear in the list of installed apps in the Mixed Reality Portal.
