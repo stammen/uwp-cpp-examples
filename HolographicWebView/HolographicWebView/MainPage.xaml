@@ -8,6 +8,6 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"  Margin="20">
-        <WebView x:Name="webview1"  Width="400" Height="400" Margin="20"/>
+        <WebView x:Name="webview1"  Width="400" Height="400" Margin="20" Source="https://www.time.gov/"/>
     </Grid>
 </Page>

@@ -25,6 +25,7 @@ using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Interop;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
+using namespace Windows::Graphics::Holographic;
 
 /// <summary>
 /// Initializes the singleton application object.  This is the first line of authored code
@@ -43,31 +44,34 @@ App::App()
 /// <param name="e">Details about the launch request and process.</param>
 void App::OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ e)
 {
-#if 1
     m_xamlView = Windows::ApplicationModel::Core::CoreApplication::GetCurrentView();
     m_xamlViewId = Windows::UI::ViewManagement::ApplicationView::GetForCurrentView()->Id;
 
-    try
+    bool isHolographic = HolographicSpace::IsSupported && HolographicSpace::IsAvailable;
+    if (isHolographic)
     {
-        m_holographicView = CoreApplication::CreateNewView(ref new HolographicWebView::AppViewSource());
-    }
-    catch (Platform::COMException^ e)
-    {
-        // This exception is thrown if the environment doesn't support holographic content
-        //statusText->Text = L"Holographic environment not available.";
-        return;
+        try
+        {
+            m_holographicView = CoreApplication::CreateNewView(ref new HolographicWebView::AppViewSource());
+
+            m_holographicView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this]()
+            {
+                CoreWindow::GetForCurrentThread()->Activate();
+                m_holographicViewId = ApplicationView::GetForCurrentView()->Id;
+                ApplicationViewSwitcher::SwitchAsync(m_holographicViewId, m_xamlViewId);
+            }));
+
+            return;
+        }
+        catch (Platform::COMException^ e)
+        {
+            // This exception is thrown if the environment doesn't support holographic content
+            OutputDebugString(L"Holographic environment not available.\n");
+        }
     }
 
-    m_holographicView->Dispatcher->RunAsync( CoreDispatcherPriority::Normal, ref new DispatchedHandler([this]()
-    {
-        CoreWindow::GetForCurrentThread()->Activate();
-        m_holographicViewId = ApplicationView::GetForCurrentView()->Id;
-        ApplicationViewSwitcher::SwitchAsync(m_holographicViewId, m_xamlViewId);
-    }));
 
-    // Defer XAML window activation until we switch to the XAML view.
-    return;
-#else
+
     auto rootFrame = dynamic_cast<Frame^>(Window::Current->Content);
 
     // Do not repeat app initialization when the Window already has content,
@@ -117,7 +121,6 @@ void App::OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEvent
             Window::Current->Activate();
         }
     }
-#endif
 }
 
 /// <summary>
