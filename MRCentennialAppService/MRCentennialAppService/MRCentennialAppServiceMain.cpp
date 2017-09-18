@@ -215,7 +215,7 @@ HolographicFrame^ MRCentennialAppServiceMain::Update()
 
         // When a Pressed gesture is detected, the sample hologram will be repositioned
         // two meters in front of the user.
-        m_renderer->PositionHologram(pose, m_timer);
+        m_renderer->PositionHologram(pose);
     }
 #endif
 
