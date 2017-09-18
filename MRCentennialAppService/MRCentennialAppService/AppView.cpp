@@ -45,7 +45,7 @@ AppView::AppView()
     {
         if (result = false)
         {
-            OutputDebugString(L"MRAppServiceDemoMain::LaunchWin32App() Unable to launch win32 exe\n");
+            OutputDebugString(L"AppView: Unable to launch win32 exe.\n");
         }
         else
         {
@@ -57,8 +57,15 @@ AppView::AppView()
                 {
                     auto listenerTask = m_appServiceListener->RegisterListener().then([this](AppServiceResponse^ response)
                     {
-
+                        if (response->Status != AppServiceResponseStatus::Success)
+                        {
+                            OutputDebugString(L"AppView: Unable to register listener to AppService.\n");
+                        }
                     });
+                }
+                else
+                {
+                    OutputDebugString(L"AppView: Unable to connect to AppService win32 exe.\n");
                 }
             });
         }
@@ -90,6 +97,11 @@ Windows::Foundation::Collections::ValueSet^ AppView::OnRequestReceived(Windows::
 
         case MRAppServiceMessage::App_Ping:
             response->Insert(L"Status", "OK");
+            break;
+
+        default:
+            response->Insert(L"Status", "Error");
+            response->Insert(L"ErrorMessage", "Received unknown MRAppServiceMessage");
             break;
     }
 

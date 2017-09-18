@@ -161,6 +161,11 @@ ValueSet^ ScreenCapture::OnRequestReceived(Windows::ApplicationModel::AppService
         case MRAppServiceMessage::App_Ping:
             response->Insert(L"Status", "OK");
             break;
+
+        default:
+            response->Insert(L"Status", "Error");
+            response->Insert(L"ErrorMessage", "Received unknown MRAppServiceMessage");  
+            break;
     }
 
     return response;
