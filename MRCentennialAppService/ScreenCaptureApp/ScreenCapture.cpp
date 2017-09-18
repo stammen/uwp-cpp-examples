@@ -144,7 +144,7 @@ ValueSet^ ScreenCapture::OnRequestReceived(Windows::ApplicationModel::AppService
     ValueSet^ request = args->Request->Message;
 
     MRAppServiceMessage message = (MRAppServiceMessage)(static_cast<int>(request->Lookup(L"Message")));
-    Platform::String^ id = dynamic_cast<Platform::String^>(request->Lookup(L"Id"));
+    Platform::String^ id = dynamic_cast<Platform::String^>(request->Lookup(L"SenderId"));
 
     switch (message)
     {

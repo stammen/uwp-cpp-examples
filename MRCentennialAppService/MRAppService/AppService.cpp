@@ -48,7 +48,7 @@ void AppService::AddListener(Platform::String^ id, AppServiceConnection^ connect
 
     ValueSet^ broadcast = ref new ValueSet;
     broadcast->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Connected));
-    broadcast->Insert(L"Id", id);
+    broadcast->Insert(L"SenderId", id);
 
     // broadcast to all connected apps that an app just connected
     BroadcastMessage(broadcast, id);
@@ -71,7 +71,7 @@ void AppService::RemoveListener(Platform::String^ id)
 
     ValueSet^ broadcast = ref new ValueSet;
     broadcast->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Disconnected));
-    broadcast->Insert(L"Id", id);
+    broadcast->Insert(L"SenderId", id);
     BroadcastMessage(broadcast, id);
 }
 
@@ -109,7 +109,7 @@ void AppService::SendConnectedApps(Platform::String^ appId, AppServiceConnection
         {
             ValueSet^ message = ref new ValueSet;
             message->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Connected));
-            message->Insert(L"Id", id);
+            message->Insert(L"SenderId", id);
             taskgroup.run([connection, message]
             {
                 connection->SendMessageAsync(message);

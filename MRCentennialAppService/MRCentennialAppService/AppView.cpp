@@ -71,7 +71,7 @@ Windows::Foundation::Collections::ValueSet^ AppView::OnRequestReceived(Windows::
     ValueSet^ request = args->Request->Message;
 
     MRAppServiceMessage messageType = (MRAppServiceMessage)(static_cast<int>(request->Lookup(L"Message")));
-    Platform::String^ id = dynamic_cast<Platform::String^>(request->Lookup(L"Id"));
+    Platform::String^ id = dynamic_cast<Platform::String^>(request->Lookup(L"SenderId"));
 
     switch (messageType)
     {
@@ -100,10 +100,9 @@ ValueSet^ AppView::HandleMessage(ValueSet^ message)
 {
     auto data = dynamic_cast<ValueSet^>(message->Lookup("Data"));
     ValueSet^ response = ref new ValueSet;
-
+    response->Insert(L"Status", "OK");
     return response;
 }
-
 
 void AppView::Win32AppConnected()
 {

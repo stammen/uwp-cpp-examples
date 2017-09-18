@@ -102,6 +102,7 @@ Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^> MR
     ValueSet^ request = ref new ValueSet();
     request->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Message));
     request->Insert(L"Id", listenerId);
+    request->Insert(L"SenderId", m_listenerId);
     request->Insert(L"Data", message);
     return create_task(m_appService->SendMessageAsync(request)).then([this](AppServiceResponse^ response)
     {
