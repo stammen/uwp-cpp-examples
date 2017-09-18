@@ -19,10 +19,11 @@
 #include "Content\SpatialInputHandler.h"
 #endif
 
+
 // Updates, renders, and presents holographic content using Direct3D.
 namespace MRCentennialAppService
 {
-    class MRCentennialAppServiceMain : public DX::IDeviceNotify, MRAppService::IMRAppServiceListenerDelegate
+    class MRCentennialAppServiceMain : public DX::IDeviceNotify
     {
     public:
         MRCentennialAppServiceMain(const std::shared_ptr<DX::DeviceResources>& deviceResources);
@@ -45,9 +46,13 @@ namespace MRCentennialAppService
         // Handle mouse input.
         void OnPointerPressed();
 
+        void OnVisibilityChanged(bool isVisible);
+
         // IDeviceNotify
         virtual void OnDeviceLost();
         virtual void OnDeviceRestored();
+
+        Windows::Foundation::Collections::ValueSet^ GetSharedTextureInfo(int width, int height);
 
     private:
         // Asynchronously creates resources for new holographic cameras.
@@ -79,10 +84,7 @@ namespace MRCentennialAppService
         // and when tearing down AppMain.
         void UnregisterHolographicEventHandlers();
 
-        virtual Windows::Foundation::Collections::ValueSet^ OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args);
         virtual void OnServiceClosed(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceClosedEventArgs^ args);
-        void LaunchWin32App();
-        void ConnectToAppService();
         
 #ifdef DRAW_SAMPLE_CONTENT
         // Renders a colorful holographic cube that's 20 centimeters wide. This sample content
@@ -133,7 +135,5 @@ namespace MRCentennialAppService
 
         // Keep track of mouse input.
         bool                                                            m_pointerPressed = false;
-
-        MRAppService::MRAppServiceListener^                             m_appServiceListener;
     };
 }

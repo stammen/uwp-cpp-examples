@@ -6,12 +6,16 @@
 using namespace MRCentennialAppService;
 
 using namespace concurrency;
+using namespace MRAppService;
 using namespace Windows::ApplicationModel;
+using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
+using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::UI::Core;
+using namespace Windows::System;
 
 // The main function is only used to initialize our IFrameworkView class.
 // Under most circumstances, you should not need to modify this function.
@@ -30,8 +34,99 @@ IFrameworkView^ AppViewSource::CreateView()
 
 AppView::AppView()
 {
+    m_appServiceListener = ref new MRAppServiceListener(L"MR-App");
+    m_appServiceListener->RequestReceived += ref new RequestReceivedHandler(this, &AppView::OnRequestReceived);
+
+    // Launch the Win32 App
+    auto uri = ref new Uri("screencapture-win32:"); // The protocol handled by the launched app
+    auto options = ref new LauncherOptions();
+    concurrency::task<bool> task(Launcher::LaunchUriAsync(uri, options));
+    task.then([this](bool result)
+    {
+        if (result = false)
+        {
+            OutputDebugString(L"MRAppServiceDemoMain::LaunchWin32App() Unable to launch win32 exe\n");
+        }
+        else
+        {
+            // Connect to the App Service
+            auto connectTask = m_appServiceListener->ConnectToAppService(MRAPPSERVICE_ID, MRAPPSERVICE_FAMILY_NAME);
+            connectTask.then([this](AppServiceConnectionStatus response)
+            {
+                if (response == AppServiceConnectionStatus::Success)
+                {
+                    auto listenerTask = m_appServiceListener->RegisterListener().then([this](AppServiceResponse^ response)
+                    {
+
+                    });
+                }
+            });
+        }
+    });
 }
 
+Windows::Foundation::Collections::ValueSet^ AppView::OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args)
+{
+    ValueSet^ response = ref new ValueSet;
+    ValueSet^ request = args->Request->Message;
+
+    MRAppServiceMessage messageType = (MRAppServiceMessage)(static_cast<int>(request->Lookup(L"Message")));
+    Platform::String^ id = dynamic_cast<Platform::String^>(request->Lookup(L"Id"));
+
+    switch (messageType)
+    {
+        case MRAppServiceMessage::App_Connected:
+            response->Insert(L"Status", "OK");
+            Win32AppConnected();
+            break;
+
+        case MRAppServiceMessage::App_Disconnected:
+            response->Insert(L"Status", "OK");
+            break;
+
+        case MRAppServiceMessage::App_Message:
+            response->Insert(L"Status", "OK");
+            break;
+
+        case MRAppServiceMessage::App_Ping:
+            response->Insert(L"Status", "OK");
+            break;
+    }
+
+    return response;
+}
+
+ValueSet^ AppView::HandleMessage(ValueSet^ message)
+{
+    auto data = dynamic_cast<ValueSet^>(message->Lookup("Data"));
+    ValueSet^ response = ref new ValueSet;
+
+    return response;
+}
+
+
+void AppView::Win32AppConnected()
+{
+    ValueSet^ message = ref new ValueSet;
+    message->Insert(L"GetWindowSize", true);
+    m_appServiceListener->SendAppServiceMessage(L"Win32-App", message).then([this](AppServiceResponse^ response)
+    {
+        auto responseMessage = response->Message;
+
+        // The response from the MR-App contains the info we need to open the shared texture
+        if (responseMessage->HasKey(L"WindowSize"))
+        {
+            int width = static_cast<int>(responseMessage->Lookup(L"Width"));
+            int height = static_cast<int>(responseMessage->Lookup(L"Height"));
+
+            auto message = m_main->GetSharedTextureInfo(width, height);
+            m_appServiceListener->SendAppServiceMessage(L"Win32-App", message).then([this](AppServiceResponse^ response)
+            {
+ 
+            });
+        }
+    });
+}
 
 // IFrameworkView methods
 
@@ -200,6 +295,8 @@ void AppView::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 void AppView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
 {
     m_windowVisible = args->Visible;
+    m_main->OnVisibilityChanged(m_windowVisible);
+
 }
 
 void AppView::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)

@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "AppService.h"
+#include "MRAppServiceListener.h"
+#include <ppl.h>    
 #include <ppltasks.h>    
 #include <mutex>    
 #include <string>
@@ -39,24 +41,90 @@ void AppService::Run(IBackgroundTaskInstance^ taskInstance)
 
 void AppService::AddListener(Platform::String^ id, AppServiceConnection^ connection)
 {
-    std::lock_guard<std::mutex> guard(s_mutex);
-    s_connectionMap[id] = connection;
+    {
+        std::lock_guard<std::mutex> guard(s_mutex);
+        s_connectionMap[id] = connection;
+    }
+
+    ValueSet^ broadcast = ref new ValueSet;
+    broadcast->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Connected));
+    broadcast->Insert(L"Id", id);
+
+    // broadcast to all connected apps that an app just connected
+    BroadcastMessage(broadcast, id);
+
+    // send the list of connected apps to the app that just connected
+    SendConnectedApps(id, connection);
+
 }
 
 void AppService::RemoveListener(Platform::String^ id)
 {
-    std::lock_guard<std::mutex> guard(s_mutex);
-    auto iter = s_connectionMap.find(id);
-    if (iter != s_connectionMap.end())
     {
-        s_connectionMap.erase(iter);
+        std::lock_guard<std::mutex> guard(s_mutex);
+        auto iter = s_connectionMap.find(id);
+        if (iter != s_connectionMap.end())
+        {
+            s_connectionMap.erase(iter);
+        }
     }
+
+    ValueSet^ broadcast = ref new ValueSet;
+    broadcast->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Disconnected));
+    broadcast->Insert(L"Id", id);
+    BroadcastMessage(broadcast, id);
 }
+
+void AppService::BroadcastMessage(Windows::Foundation::Collections::ValueSet^ message, Platform::String^ fromAppId)
+{
+    std::lock_guard<std::mutex> guard(s_mutex);
+    task_group taskgroup;
+
+    for (auto& iter : s_connectionMap)
+    {
+        auto id = iter.first;
+        if (id != fromAppId)
+        {
+            auto connection = iter.second;
+            taskgroup.run([connection, message]
+            {
+                connection->SendMessageAsync(message);
+            });
+        }
+    }
+
+    taskgroup.wait();
+}
+
+// sends the list of already connected apps to the app that just connected
+void AppService::SendConnectedApps(Platform::String^ appId, AppServiceConnection^ connection)
+{
+    std::lock_guard<std::mutex> guard(s_mutex);
+
+    task_group taskgroup;
+    for (auto& iter : s_connectionMap)
+    {
+        auto id = iter.first;
+        if (id != appId)
+        {
+            ValueSet^ message = ref new ValueSet;
+            message->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Connected));
+            message->Insert(L"Id", id);
+            taskgroup.run([connection, message]
+            {
+                connection->SendMessageAsync(message);
+            });
+        }
+    }
+
+    taskgroup.wait();
+}
+
+
 
 void AppService::ForwardMessage(Platform::String^ id, ValueSet^ message, AppServiceRequest^ request, AppServiceDeferral^ deferral)
 {
     AppServiceConnection^ appServiceConnection = nullptr;
-
     {
         std::lock_guard<std::mutex> guard(s_mutex);
         auto iter = s_connectionMap.find(id);
@@ -103,24 +171,28 @@ void AppService::OnRequestReceived(AppServiceConnection^ sender, AppServiceReque
 
 	if (request->HasKey(L"Message") && request->HasKey(L"Id"))
 	{
-        Platform::String^ message = dynamic_cast<Platform::String^>(request->Lookup(L"Message"));
+        //Platform::String^ message = dynamic_cast<Platform::String^>(request->Lookup(L"Message"));
+        MRAppServiceMessage messageType = (MRAppServiceMessage)(static_cast<int>(request->Lookup(L"Message")));
+
         Platform::String^ id = dynamic_cast<Platform::String^>(request->Lookup(L"Id"));
 
-        if (message == L"Register")
+        switch (messageType)
         {
-            AddListener(id, sender);
-            response->Insert(L"Status", L"OK");
-        }
-        else if (message == L"Unregister")
-        {
-            RemoveListener(id);
-            response->Insert(L"Status", L"OK");
-        }
-        else if (message == L"Message")
-        {
-            ForwardMessage(id, request, args->Request, messageDeferral);
-            // ForwardMessage handles response and deferral so we can return
-            return;
+            case MRAppServiceMessage::App_Register:
+                AddListener(id, sender);
+                response->Insert(L"Status", L"OK");
+                break;
+
+            case MRAppServiceMessage::App_Unregister:
+                RemoveListener(id);
+                response->Insert(L"Status", L"OK");
+                break;
+
+            case MRAppServiceMessage::App_Message:
+                // ForwardMessage handles response and deferral so we can return
+                ForwardMessage(id, request, args->Request, messageDeferral);
+                return;
+                break;
         }
 	}
 

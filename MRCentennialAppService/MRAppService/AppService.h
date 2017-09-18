@@ -20,6 +20,10 @@ namespace MRAppService
 
         void AppService::AddListener(Platform::String^ id, Windows::ApplicationModel::AppService::AppServiceConnection^ connection);
         void AppService::RemoveListener(Platform::String^ id);
+
+        void BroadcastMessage(Windows::Foundation::Collections::ValueSet^ message, Platform::String^ fromAppId);
+        void SendConnectedApps(Platform::String^ id, Windows::ApplicationModel::AppService::AppServiceConnection^ connection);
+
         void ForwardMessage(
             Platform::String^ id, 
             Windows::Foundation::Collections::ValueSet^ message,

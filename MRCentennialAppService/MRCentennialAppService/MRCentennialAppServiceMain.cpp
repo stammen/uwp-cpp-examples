@@ -11,7 +11,6 @@ using namespace MRCentennialAppService;
 using namespace concurrency;
 using namespace Platform;
 using namespace Windows::ApplicationModel;
-using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
@@ -38,6 +37,7 @@ MRCentennialAppServiceMain::MRCentennialAppServiceMain(const std::shared_ptr<DX:
     m_deviceResources->RegisterDeviceNotify(this);
 }
 
+#if 0
 void MRCentennialAppServiceMain::ConnectToAppService()
 {
     OutputDebugString(L"PackageFamilyName: ");
@@ -53,12 +53,25 @@ void MRCentennialAppServiceMain::ConnectToAppService()
         {
             auto listenerTask = m_appServiceListener->RegisterListener(this).then([this](AppServiceResponse^ response)
             {
-                LaunchWin32App();
+                ValueSet^ message = ref new ValueSet;
+                message->Insert("GetWindowSize", true);
+                m_appServiceListener->SendAppServiceMessage("Win32-App", message).then([this](AppServiceResponse^ response)
+                {
+                    auto status = response->Status;
+                    auto responseMessage = response->Message;
+
+                    // The response from the MR-App contains the info we need to open the shared texture
+                    if (responseMessage->HasKey(L"WindowSize"))
+                    {
+                        int width = (int)responseMessage->Lookup(L"Width");
+                        int height = (int)responseMessage->Lookup(L"Height");
+                    }
+                });
             });
         }
     });
 }
-
+#endif
 
 void MRCentennialAppServiceMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
 {
@@ -242,7 +255,6 @@ bool MRCentennialAppServiceMain::Render(Windows::Graphics::Holographic::Holograp
 		return false;
 	}
 
-
 	// Lock the set of holographic camera resources, then draw to each camera
 	// in this frame.
 	return m_deviceResources->UseHolographicCameraResources<bool>(
@@ -401,12 +413,6 @@ void MRCentennialAppServiceMain::OnCameraAdded(
         // Holographic frame predictions will not include any information about this camera until
         // the deferral is completed.
         deferral->Complete();
-
-        // Don't connect to app service and launch Win32 app until we have a camera!
-        if (m_appServiceListener == nullptr)
-        {
-            ConnectToAppService();
-        }
     });
 }
 
@@ -432,43 +438,16 @@ void MRCentennialAppServiceMain::OnCameraRemoved(
     m_deviceResources->RemoveHolographicCamera(args->Camera);
 }
 
-void MRCentennialAppServiceMain::LaunchWin32App()
-{
-    auto uri = ref new Uri("screencapture-win32:"); // The protocol handled by the launched app
-    auto options = ref new LauncherOptions();
-    concurrency::task<bool> task(Launcher::LaunchUriAsync(uri, options));
 
-    task.then([](bool result)
-    {
-        if (result = false)
-        {
-            OutputDebugString(L"MRAppServiceDemoMain::LaunchWin32App() Unable to launch win32 exe\n");
-        }
-    });
-}
-
-ValueSet^ MRCentennialAppServiceMain::OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args)
+ValueSet^ MRCentennialAppServiceMain::GetSharedTextureInfo(int width, int height)
 {
-    auto data = dynamic_cast<ValueSet^>(args->Request->Message->Lookup("Data"));
     auto response = ref new ValueSet;
-    if (data->HasKey(L"Win32-App-Connected"))
-    {
-        bool connected = static_cast<bool>(data->Lookup(L"Win32-App-Connected"));
-        if (connected)
-        {
-            response->Insert(L"Status", "OK");
-            response->Insert(L"Message", "SharedTextureInfo");
-            response->Insert(L"Width", 1920);
-            response->Insert(L"Height", 1080);
-            HANDLE h = m_renderer->getSharedTexture();
-            response->Insert(L"SharedTextureHandle", (uintptr_t)m_renderer->getSharedTexture());
-        }
-    }
-    else if (data->HasKey(L"Win32-App-Ping"))
-    {
-        response->Insert(L"Status", "OK");
-    }
-
+    response->Insert(L"Status", "OK");
+    response->Insert(L"SharedTextureInfo", true);
+    response->Insert(L"Width", 1920);
+    response->Insert(L"Height", 1080);
+    HANDLE h = m_renderer->getSharedTexture();
+    response->Insert(L"SharedTextureHandle", (uintptr_t)m_renderer->getSharedTexture());
     return response;
 }
 
@@ -482,5 +461,15 @@ void MRCentennialAppServiceMain::OnPointerPressed()
 {
 
 }
+
+void MRCentennialAppServiceMain::OnVisibilityChanged(bool isVisible)
+{
+    if (isVisible)
+    {
+
+    }
+}
+
+
 
 

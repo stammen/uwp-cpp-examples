@@ -2,6 +2,7 @@
 
 #include "Common\DeviceResources.h"
 #include "MRCentennialAppServiceMain.h"
+#include "..\MRAppService\MRAppServiceListener.h"
 
 namespace MRCentennialAppService
 {
@@ -33,7 +34,14 @@ namespace MRCentennialAppService
         void OnKeyPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
         void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
 
+        Windows::Foundation::Collections::ValueSet^ OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args);
+        Windows::Foundation::Collections::ValueSet^ HandleMessage(Windows::Foundation::Collections::ValueSet^ message);
+        void AppView::Win32AppConnected();
+
     private:
+
+
+
         std::unique_ptr<MRCentennialAppServiceMain> m_main;
 
         std::shared_ptr<DX::DeviceResources>                m_deviceResources;
@@ -42,6 +50,9 @@ namespace MRCentennialAppService
 
         // The holographic space the app will use for rendering.
         Windows::Graphics::Holographic::HolographicSpace^   m_holographicSpace = nullptr;
+
+        MRAppService::MRAppServiceListener^                 m_appServiceListener;
+
     };
 
     // The entry point for the app.

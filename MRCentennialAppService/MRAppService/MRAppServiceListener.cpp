@@ -54,7 +54,7 @@ Concurrency::task<AppServiceConnectionStatus> MRAppServiceListener::ConnectToApp
 Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^> MRAppServiceListener::RegisterListener(IMRAppServiceListenerDelegate* delegate)
 {
     auto request = ref new ValueSet();
-    request->Insert(L"Message", L"Register");
+    request->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Register));
     request->Insert(L"Id", m_listenerId);
 
     return create_task(m_appService->SendMessageAsync(request)).then([this, delegate](AppServiceResponse^ response)
@@ -71,10 +71,36 @@ Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^> MR
     });
 }
 
+Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^> MRAppServiceListener::RegisterListener()
+{
+    auto request = ref new ValueSet();
+    request->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Register));
+    request->Insert(L"Id", m_listenerId);
+    m_delegate = nullptr;
+
+    return create_task(m_appService->SendMessageAsync(request)).then([this](AppServiceResponse^ response)
+    {
+        return response;
+    });
+}
+
+Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^> MRAppServiceListener::UnregisterListener()
+{
+    auto request = ref new ValueSet();
+    request->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Unregister));
+    request->Insert(L"Id", m_listenerId);
+    m_delegate = nullptr;
+
+    return create_task(m_appService->SendMessageAsync(request)).then([this](AppServiceResponse^ response)
+    {
+        return response;
+    });
+}
+
 Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^> MRAppServiceListener::SendAppServiceMessage(Platform::String^ listenerId, ValueSet^ message)
 {
     ValueSet^ request = ref new ValueSet();
-    request->Insert(L"Message", L"Message");
+    request->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Message));
     request->Insert(L"Id", listenerId);
     request->Insert(L"Data", message);
     return create_task(m_appService->SendMessageAsync(request)).then([this](AppServiceResponse^ response)
@@ -88,14 +114,18 @@ void MRAppServiceListener::OnRequestReceived(AppServiceConnection^ sender, AppSe
 {
     ValueSet^ response = ref new ValueSet();
 
+    // Get a deferral because we use an async API below to respond to the message
+    // and we don't want this call to get cancelled while we are waiting.
+    auto messageDeferral = args->GetDeferral();
+
     if (m_delegate)
     {
         response = m_delegate->OnRequestReceived(sender, args);
     }
-
-    // Get a deferral because we use an async API below to respond to the message
-    // and we don't want this call to get cancelled while we are waiting.
-    auto messageDeferral = args->GetDeferral();
+    else
+    {
+        response = RequestReceived(sender, args);
+    }
 
     create_task(args->Request->SendResponseAsync(response)).then([messageDeferral](AppServiceResponseStatus response)
     {

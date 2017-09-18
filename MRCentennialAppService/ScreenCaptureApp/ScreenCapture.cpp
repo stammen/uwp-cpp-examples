@@ -6,6 +6,7 @@
 #include <ppltasks.h>
 
 using namespace concurrency;
+using namespace MRAppService;
 using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
@@ -102,10 +103,9 @@ void ScreenCapture::Ping()
     });
 }
 
-
 Concurrency::task<void> ScreenCapture::ConnectToAppService()
 {
-    m_appServiceListener = ref new MRAppService::MRAppServiceListener(L"Win32-App");
+    m_appServiceListener = ref new MRAppServiceListener(L"Win32-App");
     auto connectTask = m_appServiceListener->ConnectToAppService(MRAPPSERVICE_ID, MRAPPSERVICE_FAMILY_NAME);
     return connectTask.then([this](AppServiceConnectionStatus status)
     {
@@ -115,6 +115,7 @@ Concurrency::task<void> ScreenCapture::ConnectToAppService()
             {
                 if (response->Status == AppServiceResponseStatus::Success)
                 {
+
                     ValueSet^ message = ref new ValueSet();
 
                     // Tell the MR-App we are now ready to receive messages
@@ -139,9 +140,57 @@ Concurrency::task<void> ScreenCapture::ConnectToAppService()
     });
 }
 
-ValueSet^ ScreenCapture::OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^)
+ValueSet^ ScreenCapture::OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args)
 {
-    return ref new ValueSet;
+    ValueSet^ response = ref new ValueSet;
+    ValueSet^ request = args->Request->Message;
+
+    MRAppServiceMessage message = (MRAppServiceMessage)(static_cast<int>(request->Lookup(L"Message")));
+    Platform::String^ id = dynamic_cast<Platform::String^>(request->Lookup(L"Id"));
+
+    switch (message)
+    {
+        case MRAppServiceMessage::App_Connected:
+            break;
+
+        case MRAppServiceMessage::App_Disconnected:
+            break;
+
+        case MRAppServiceMessage::App_Message:
+            response = HandleMessage(request);
+            break;
+
+        case MRAppServiceMessage::App_Ping:
+            response->Insert(L"Status", "OK");
+            break;
+    }
+
+    return response;
+}
+
+ValueSet^ ScreenCapture::HandleMessage(ValueSet^ message)
+{
+    auto data = dynamic_cast<ValueSet^>(message->Lookup("Data"));
+    ValueSet^ response = ref new ValueSet;
+
+    if (data->HasKey(L"SharedTextureInfo"))
+    {
+        CreateDirectxTextures(data);
+        response->Insert(L"Status", "OK");
+    }
+    else if (data->HasKey(L"GetWindowSize"))
+    {
+        int width;
+        int height;
+
+        GetScreenSize(width, height);
+        response->Insert(L"WindowSize", true);
+        response->Insert(L"Width", width);
+        response->Insert(L"Height", height);
+        response->Insert(L"Status", "OK");
+    }
+
+    return response;
 }
 
 void ScreenCapture::OnServiceClosed(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceClosedEventArgs^ args)
@@ -162,6 +211,11 @@ void ScreenCapture::DoScreenCapture()
     HDC hdcMemDC = NULL;
     HBITMAP hbmScreen = NULL;
     BITMAP bmpScreen;
+
+    if (m_quadTexture.Get() == nullptr || m_stagingTexture.Get() == nullptr)
+    {
+        return;
+    }
 
     // Retrieve the handle to a display device context for the client 
     // area of the window. 

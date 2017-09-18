@@ -21,6 +21,8 @@ private:
 
     virtual Windows::Foundation::Collections::ValueSet^ OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args);
     virtual void OnServiceClosed(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceClosedEventArgs^ args);
+    Windows::Foundation::Collections::ValueSet^ ScreenCapture::HandleMessage(Windows::Foundation::Collections::ValueSet^ message);
+
 
     void UpdateDirectxTextures(const void* buffer, int width, int height);
     void CreateDirectxTextures(Windows::Foundation::Collections::ValueSet^ info);
