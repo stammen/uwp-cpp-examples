@@ -104,10 +104,10 @@ namespace MRCentennialAppService
         Windows::Graphics::Holographic::HolographicSpace^               m_holographicSpace;
 
         // SpatialLocator that is attached to the default HolographicDisplay.
-        Windows::Perception::Spatial::SpatialLocator^                   m_locator;
+        Windows::Perception::Spatial::SpatialLocator^                   m_spatialLocator;
 
         // A stationary reference frame based on spatialLocator.
-        Windows::Perception::Spatial::SpatialLocatorAttachedFrameOfReference^   m_attachedReferenceFrame;
+        Windows::Perception::Spatial::SpatialStationaryFrameOfReference^ m_stationaryReferenceFrame;
 
         // Event registration tokens.
         Windows::Foundation::EventRegistrationToken                     m_cameraAddedToken;

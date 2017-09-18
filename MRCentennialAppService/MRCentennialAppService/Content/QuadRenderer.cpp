@@ -38,7 +38,7 @@ namespace MRCentennialAppService
 
     // This function uses a SpatialPointerPose to position the world-locked hologram
     // two meters in front of the user's heading.
-    void QuadRenderer::UpdateHologramPosition(SpatialPointerPose^ pointerPose, const DX::StepTimer& timer)
+    void QuadRenderer::PositionHologram(SpatialPointerPose^ pointerPose, const DX::StepTimer& timer)
     {
         const float& deltaTime = static_cast<float>(timer.GetElapsedSeconds());
 

@@ -34,7 +34,7 @@ namespace MRCentennialAppService
     HANDLE getSharedTexture() { return m_sharedTextureHandle; }
 
     // Repositions the sample hologram.
-    void UpdateHologramPosition(Windows::UI::Input::Spatial::SpatialPointerPose^ pointerPose, const DX::StepTimer& timer);
+    void PositionHologram(Windows::UI::Input::Spatial::SpatialPointerPose^ pointerPose, const DX::StepTimer& timer);
 
     // Property accessors.
     void ResetPosition(Windows::Foundation::Numerics::float3 pos)

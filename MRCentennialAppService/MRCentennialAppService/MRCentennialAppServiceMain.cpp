@@ -74,15 +74,15 @@ void MRCentennialAppServiceMain::SetHolographicSpace(HolographicSpace^ holograph
     m_spatialInputHandler = std::make_unique<SpatialInputHandler>();
 #endif
 
-    // Use the default SpatialLocator to track the motion of the device.
-    m_locator = SpatialLocator::GetDefault();
+    // Subscribe for notifications about changes to the state of the default HolographicDisplay 
+    // and its SpatialLocator.
+    m_holographicDisplayIsAvailableChangedEventToken = HolographicSpace::IsAvailableChanged +=
+        ref new EventHandler<Object^>(
+            bind(&MRCentennialAppServiceMain::OnHolographicDisplayIsAvailableChanged, this, _1, _2)
+            );
 
-    // Be able to respond to changes in the positional tracking state.
-    m_locatabilityChangedToken =
-        m_locator->LocatabilityChanged +=
-            ref new Windows::Foundation::TypedEventHandler<SpatialLocator^, Object^>(
-                std::bind(&MRCentennialAppServiceMain::OnLocatabilityChanged, this, _1, _2)
-                );
+    // Acquire the current state of the default HolographicDisplay and its SpatialLocator.
+    OnHolographicDisplayIsAvailableChanged(nullptr, nullptr);
 
     // Respond to camera added events by creating any resources that are specific
     // to that camera, such as the back buffer render target view.
@@ -91,38 +91,34 @@ void MRCentennialAppServiceMain::SetHolographicSpace(HolographicSpace^ holograph
     // for that handler, or return from the handler without creating a deferral. This
     // allows the app to take more than one frame to finish creating resources and
     // loading assets for the new holographic camera.
-	// This function should be registered before the app creates any HolographicFrames.
-	m_cameraAddedToken =
-	m_holographicSpace->CameraAdded +=
-	ref new Windows::Foundation::TypedEventHandler<HolographicSpace^, HolographicSpaceCameraAddedEventArgs^>(
-		std::bind(&MRCentennialAppServiceMain::OnCameraAdded, this, _1, _2)
-		);
+    // This function should be registered before the app creates any HolographicFrames.
+    m_cameraAddedToken =
+        m_holographicSpace->CameraAdded +=
+        ref new TypedEventHandler<HolographicSpace^, HolographicSpaceCameraAddedEventArgs^>(
+            std::bind(&MRCentennialAppServiceMain::OnCameraAdded, this, _1, _2)
+            );
 
-	// Respond to camera removed events by releasing resources that were created for that
-	// camera.
-	// When the app receives a CameraRemoved event, it releases all references to the back
-	// buffer right away. This includes render target views, Direct2D target bitmaps, and so on.
-	// The app must also ensure that the back buffer is not attached as a render target, as
-	// shown in DeviceResources::ReleaseResourcesForBackBuffer.
-	m_cameraRemovedToken =
-	m_holographicSpace->CameraRemoved +=
-	ref new Windows::Foundation::TypedEventHandler<HolographicSpace^, HolographicSpaceCameraRemovedEventArgs^>(
-		std::bind(&MRCentennialAppServiceMain::OnCameraRemoved, this, _1, _2)
-		);
+    // Respond to camera removed events by releasing resources that were created for that
+    // camera.
+    // When the app receives a CameraRemoved event, it releases all references to the back
+    // buffer right away. This includes render target views, Direct2D target bitmaps, and so on.
+    // The app must also ensure that the back buffer is not attached as a render target, as
+    // shown in DeviceResources::ReleaseResourcesForBackBuffer.
+    m_cameraRemovedToken =
+        m_holographicSpace->CameraRemoved +=
+        ref new TypedEventHandler<HolographicSpace^, HolographicSpaceCameraRemovedEventArgs^>(
+            std::bind(&MRCentennialAppServiceMain::OnCameraRemoved, this, _1, _2)
+            );
 
-	// In this example, we create a reference frame attached to the device.
-	m_attachedReferenceFrame = m_locator->CreateAttachedFrameOfReferenceAtCurrentHeading();
-
-	// Notes on spatial tracking APIs:
-	// * Stationary reference frames are designed to provide a best-fit position relative to the
-	//   overall space. Individual positions within that reference frame are allowed to drift slightly
-	//   as the device learns more about the environment.
-	// * When precise placement of individual holograms is required, a SpatialAnchor should be used to
-	//   anchor the individual hologram to a position in the real world - for example, a point the user
-	//   indicates to be of special interest. Anchor positions do not drift, but can be corrected; the
-	//   anchor will use the corrected position starting in the next frame after the correction has
-	//   occurred.
-
+    // Notes on spatial tracking APIs:
+    // * Stationary reference frames are designed to provide a best-fit position relative to the
+    //   overall space. Individual positions within that reference frame are allowed to drift slightly
+    //   as the device learns more about the environment.
+    // * When precise placement of individual holograms is required, a SpatialAnchor should be used to
+    //   anchor the individual hologram to a position in the real world - for example, a point the user
+    //   indicates to be of special interest. Anchor positions do not drift, but can be corrected; the
+    //   anchor will use the corrected position starting in the next frame after the correction has
+    //   occurred.
 }
 
 void MRCentennialAppServiceMain::UnregisterHolographicEventHandlers()
@@ -144,9 +140,9 @@ void MRCentennialAppServiceMain::UnregisterHolographicEventHandlers()
         }
     }
 
-    if (m_locator != nullptr)
+    if (m_spatialLocator != nullptr)
     {
-        m_locator->LocatabilityChanged -= m_locatabilityChangedToken;
+        m_spatialLocator->LocatabilityChanged -= m_locatabilityChangedToken;
     }
 }
 
@@ -156,6 +152,19 @@ MRCentennialAppServiceMain::~MRCentennialAppServiceMain()
     m_deviceResources->RegisterDeviceNotify(nullptr);
 
     UnregisterHolographicEventHandlers();
+
+    if (m_gamepadAddedEventToken.Value != 0)
+    {
+        Gamepad::GamepadAdded -= m_gamepadAddedEventToken;
+    }
+    if (m_gamepadRemovedEventToken.Value != 0)
+    {
+        Gamepad::GamepadRemoved -= m_gamepadRemovedEventToken;
+    }
+    if (m_holographicDisplayIsAvailableChangedEventToken.Value != 0)
+    {
+        HolographicSpace::IsAvailableChanged -= m_holographicDisplayIsAvailableChangedEventToken;
+    }
 }
 
 // Updates the application state once per frame.
@@ -178,123 +187,177 @@ HolographicFrame^ MRCentennialAppServiceMain::Update()
     // resource views and depth buffers as needed.
     m_deviceResources->EnsureCameraResources(holographicFrame, prediction);
 
-	// Next, we get a coordinate system from the attached frame of reference that is
-	// associated with the current frame. Later, this coordinate system is used for
-	// for creating the stereo view matrices when rendering the sample content.
-	SpatialCoordinateSystem^ currentCoordinateSystem =
-		m_attachedReferenceFrame->GetStationaryCoordinateSystemAtTimestamp(prediction->Timestamp);
+#ifdef DRAW_SAMPLE_CONTENT
+    if (m_stationaryReferenceFrame != nullptr)
+    {
+        // Check for new input state since the last frame.
+        for (auto& gamepadWithButtonState : m_gamepads)
+        {
+            bool buttonDownThisUpdate = ((gamepadWithButtonState.gamepad->GetCurrentReading().Buttons & GamepadButtons::A) == GamepadButtons::A);
+            if (buttonDownThisUpdate && !gamepadWithButtonState.buttonAWasPressedLastFrame)
+            {
+                m_pointerPressed = true;
+            }
+            gamepadWithButtonState.buttonAWasPressedLastFrame = buttonDownThisUpdate;
+        }
 
-	m_timer.Tick([&]()
-	{
+        SpatialInteractionSourceState^ pointerState = m_spatialInputHandler->CheckForInput();
+        SpatialPointerPose^ pose = nullptr;
+        if (pointerState != nullptr)
+        {
+            pose = pointerState->TryGetPointerPose(m_stationaryReferenceFrame->CoordinateSystem);
+        }
+        else if (m_pointerPressed)
+        {
+            pose = SpatialPointerPose::TryGetAtTimestamp(m_stationaryReferenceFrame->CoordinateSystem, prediction->Timestamp);
+        }
+        m_pointerPressed = false;
+
+        // When a Pressed gesture is detected, the sample hologram will be repositioned
+        // two meters in front of the user.
+        m_renderer->PositionHologram(pose, m_timer);
+    }
+#endif
+
+    m_timer.Tick([&]()
+    {
+        //
+        // TODO: Update scene objects.
+        //
+        // Put time-based updates here. By default this code will run once per frame,
+        // but if you change the StepTimer to use a fixed time step this code will
+        // run as many times as needed to get to the current step.
+        //
 
 #ifdef DRAW_SAMPLE_CONTENT
-		SpatialPointerPose^ pose = SpatialPointerPose::TryGetAtTimestamp(currentCoordinateSystem, prediction->Timestamp);
-		m_renderer->UpdateHologramPosition(pose, m_timer);
-
-		m_renderer->Update(m_timer);
+        m_renderer->Update(m_timer);
 #endif
-	});
+    });
 
-	// We complete the frame update by using information about our content positioning
-	// to set the focus point.
-	for (auto cameraPose : prediction->CameraPoses)
-	{
+    // We complete the frame update by using information about our content positioning
+    // to set the focus point.
+
+    for (auto cameraPose : prediction->CameraPoses)
+    {
 #ifdef DRAW_SAMPLE_CONTENT
-		// The HolographicCameraRenderingParameters class provides access to set
-		// the image stabilization parameters.
-		HolographicCameraRenderingParameters^ renderingParameters = holographicFrame->GetRenderingParameters(cameraPose);
+        // The HolographicCameraRenderingParameters class provides access to set
+        // the image stabilization parameters.
+        HolographicCameraRenderingParameters^ renderingParameters = holographicFrame->GetRenderingParameters(cameraPose);
 
-		// SetFocusPoint informs the system about a specific point in your scene to
-		// prioritize for image stabilization. The focus point is set independently
-		// for each holographic camera.
-		// In this example, we set position, normal, and velocity for a tag-along quad.
-		float3 const& focusPointPosition = m_renderer->GetPosition();
-		float3        focusPointNormal = focusPointPosition == float3(0.f) ? float3(0.f, 0.f, 1.f) : -normalize(focusPointPosition);
-		float3 const& focusPointVelocity = m_renderer->GetVelocity();
-
-		// Set the focus point.
-		SpatialCoordinateSystem^ coordinateSystemToUse = currentCoordinateSystem;
-		renderingParameters->SetFocusPoint(
-			coordinateSystemToUse,
-			focusPointPosition,
-			focusPointNormal,
-			focusPointVelocity
-		);
+        // SetFocusPoint informs the system about a specific point in your scene to
+        // prioritize for image stabilization. The focus point is set independently
+        // for each holographic camera.
+        // You should set the focus point near the content that the user is looking at.
+        // In this example, we put the focus point at the center of the sample hologram,
+        // since that is the only hologram available for the user to focus on.
+        // You can also set the relative velocity and facing of that content; the sample
+        // hologram is at a fixed point so we only need to indicate its position.
+        if (m_stationaryReferenceFrame != nullptr)
+        {
+            renderingParameters->SetFocusPoint(
+                m_stationaryReferenceFrame->CoordinateSystem,
+                m_renderer->GetPosition()
+            );
+        }
 #endif
-	}
+    }
 
-	// The holographic frame will be used to get up-to-date view and projection matrices and
-	// to present the swap chain.
-	return holographicFrame;
+    // The holographic frame will be used to get up-to-date view and projection matrices and
+    // to present the swap chain.
+    return holographicFrame;
 }
 
 // Renders the current frame to each holographic camera, according to the
 // current application and spatial positioning state. Returns true if the
 // frame was rendered to at least one camera.
-bool MRCentennialAppServiceMain::Render(Windows::Graphics::Holographic::HolographicFrame^ holographicFrame)
+bool MRCentennialAppServiceMain::Render(HolographicFrame^ holographicFrame)
 {
-	// Don't try to render anything before the first Update.
-	if (m_timer.GetFrameCount() == 0)
-	{
-		return false;
-	}
+    // Don't try to render anything before the first Update.
+    if (m_timer.GetFrameCount() == 0)
+    {
+        return false;
+    }
 
-	// Lock the set of holographic camera resources, then draw to each camera
-	// in this frame.
-	return m_deviceResources->UseHolographicCameraResources<bool>(
-		[this, holographicFrame](std::map<UINT32, std::unique_ptr<DX::CameraResources>>& cameraResourceMap)
-	{
-		// Up-to-date frame predictions enhance the effectiveness of image stabilization and
-		// allow more accurate positioning of holograms.
-		holographicFrame->UpdateCurrentPrediction();
-		HolographicFramePrediction^ prediction = holographicFrame->CurrentPrediction;
+    //
+    // TODO: Add code for pre-pass rendering here.
+    //
+    // Take care of any tasks that are not specific to an individual holographic
+    // camera. This includes anything that doesn't need the final view or projection
+    // matrix, such as lighting maps.
+    //
 
-		bool atLeastOneCameraRendered = false;
-		for (auto cameraPose : prediction->CameraPoses)
-		{
+    // Lock the set of holographic camera resources, then draw to each camera
+    // in this frame.
+    return m_deviceResources->UseHolographicCameraResources<bool>(
+        [this, holographicFrame](std::map<UINT32, std::unique_ptr<DX::CameraResources>>& cameraResourceMap)
+    {
+        // Up-to-date frame predictions enhance the effectiveness of image stablization and
+        // allow more accurate positioning of holograms.
+        holographicFrame->UpdateCurrentPrediction();
+        HolographicFramePrediction^ prediction = holographicFrame->CurrentPrediction;
 
-			// This represents the device-based resources for a HolographicCamera.
-			DX::CameraResources* pCameraResources = cameraResourceMap[cameraPose->HolographicCamera->Id].get();
+        bool atLeastOneCameraRendered = false;
+        for (auto cameraPose : prediction->CameraPoses)
+        {
+            // This represents the device-based resources for a HolographicCamera.
+            DX::CameraResources* pCameraResources = cameraResourceMap[cameraPose->HolographicCamera->Id].get();
 
-			// Get the device context.
-			const auto context = m_deviceResources->GetD3DDeviceContext();
-			const auto depthStencilView = pCameraResources->GetDepthStencilView();
+            // Get the device context.
+            const auto context = m_deviceResources->GetD3DDeviceContext();
+            const auto depthStencilView = pCameraResources->GetDepthStencilView();
 
-			// Set render targets to the current holographic camera.
-			ID3D11RenderTargetView* const targets[1] = { pCameraResources->GetBackBufferRenderTargetView() };
-			context->OMSetRenderTargets(1, targets, depthStencilView);
+            // Set render targets to the current holographic camera.
+            ID3D11RenderTargetView *const targets[1] = { pCameraResources->GetBackBufferRenderTargetView() };
+            context->OMSetRenderTargets(1, targets, depthStencilView);
 
-			// Clear the back buffer and depth stencil view.
-			context->ClearRenderTargetView(targets[0], DirectX::Colors::Transparent);
-			context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+            // Clear the back buffer and depth stencil view.
+            context->ClearRenderTargetView(targets[0], DirectX::Colors::Transparent);
+            context->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-			// The view and projection matrices for each holographic camera will change
-			// every frame. This function refreshes the data in the constant buffer for
-			// the holographic camera indicated by cameraPose.
-			pCameraResources->UpdateViewProjectionBuffer(
-				m_deviceResources,
-				cameraPose,
-				m_attachedReferenceFrame->GetStationaryCoordinateSystemAtTimestamp(prediction->Timestamp)
-			);
+            //
+            // TODO: Replace the sample content with your own content.
+            //
+            // Notes regarding holographic content:
+            //    * For drawing, remember that you have the potential to fill twice as many pixels
+            //      in a stereoscopic render target as compared to a non-stereoscopic render target
+            //      of the same resolution. Avoid unnecessary or repeated writes to the same pixel,
+            //      and only draw holograms that the user can see.
+            //    * To help occlude hologram geometry, you can create a depth map using geometry
+            //      data obtained via the surface mapping APIs. You can use this depth map to avoid
+            //      rendering holograms that are intended to be hidden behind tables, walls,
+            //      monitors, and so on.
+            //    * Black pixels will appear transparent to the user wearing the device, but you
+            //      should still use alpha blending to draw semitransparent holograms. You should
+            //      also clear the screen to Transparent as shown above.
+            //
 
-			// Attach the view/projection constant buffer for this camera to the graphics pipeline.
-			bool cameraActive = pCameraResources->AttachViewProjectionBuffer(m_deviceResources);
+
+            // The view and projection matrices for each holographic camera will change
+            // every frame. This function refreshes the data in the constant buffer for
+            // the holographic camera indicated by cameraPose.
+            if (m_stationaryReferenceFrame)
+            {
+                pCameraResources->UpdateViewProjectionBuffer(m_deviceResources, cameraPose, m_stationaryReferenceFrame->CoordinateSystem);
+            }
+
+            // Attach the view/projection constant buffer for this camera to the graphics pipeline.
+            bool cameraActive = pCameraResources->AttachViewProjectionBuffer(m_deviceResources);
 
 #ifdef DRAW_SAMPLE_CONTENT
-			// This example content can always be rendered, as long as the content and Direct3D
-			// device-based resources are done loading.
-			if (cameraActive)
-			{
-				// Draw the sample hologram.
-				m_renderer->Render();
-			}
+            // Only render world-locked content when positional tracking is active.
+            if (cameraActive)
+            {
+                // Draw the sample hologram.
+                m_renderer->Render();
+            }
 #endif
-			atLeastOneCameraRendered = true;
-		}
+            atLeastOneCameraRendered = true;
+        }
 
-		return atLeastOneCameraRendered;
-	});
+        return atLeastOneCameraRendered;
+    });
 }
+
 
 
 void MRCentennialAppServiceMain::SaveAppState()
@@ -446,6 +509,47 @@ void MRCentennialAppServiceMain::OnGamepadRemoved(Object^, Gamepad^ args)
         m_gamepads.end());
 }
 
+void MRCentennialAppServiceMain::OnHolographicDisplayIsAvailableChanged(Object^, Object^)
+{
+    // Get the spatial locator for the default HolographicDisplay, if one is available.
+    SpatialLocator^ spatialLocator = nullptr;
+    HolographicDisplay^ defaultHolographicDisplay = HolographicDisplay::GetDefault();
+    if (defaultHolographicDisplay)
+    {
+        spatialLocator = defaultHolographicDisplay->SpatialLocator;
+    }
+
+    if (m_spatialLocator != spatialLocator)
+    {
+        // If the spatial locator is disconnected or replaced, we should discard all state that was
+        // based on it.
+        if (m_spatialLocator != nullptr)
+        {
+            m_spatialLocator->LocatabilityChanged -= m_locatabilityChangedToken;
+            m_spatialLocator = nullptr;
+        }
+
+        m_stationaryReferenceFrame = nullptr;
+
+        if (spatialLocator != nullptr)
+        {
+            // Use the SpatialLocator from the default HolographicDisplay to track the motion of the device.
+            m_spatialLocator = spatialLocator;
+
+            // Respond to changes in the positional tracking state.
+            m_locatabilityChangedToken =
+                m_spatialLocator->LocatabilityChanged +=
+                ref new TypedEventHandler<SpatialLocator^, Object^>(
+                    std::bind(&MRCentennialAppServiceMain::OnLocatabilityChanged, this, _1, _2)
+                    );
+
+            // The simplest way to render world-locked holograms is to create a stationary reference frame
+            // based on a SpatialLocator. This is roughly analogous to creating a "world" coordinate system
+            // with the origin placed at the device's position as the app is launched.
+            m_stationaryReferenceFrame = m_spatialLocator->CreateStationaryFrameOfReferenceAtCurrentLocation();
+        }
+    }
+}
 
 ValueSet^ MRCentennialAppServiceMain::GetSharedTextureInfo(int width, int height)
 {
@@ -465,10 +569,9 @@ ValueSet^ MRCentennialAppServiceMain::GetSharedTextureInfo(int width, int height
     return response;
 }
 
-
 void MRCentennialAppServiceMain::OnPointerPressed()
 {
-
+    m_pointerPressed = true;
 }
 
 void MRCentennialAppServiceMain::OnVisibilityChanged(bool isVisible)
