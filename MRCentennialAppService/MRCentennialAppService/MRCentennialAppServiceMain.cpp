@@ -4,7 +4,7 @@
 
 #include <windows.graphics.directx.direct3d11.interop.h>
 #include <Collection.h>
-
+#include <D3D11.h>
 
 using namespace MRCentennialAppService;
 
@@ -15,6 +15,7 @@ using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Foundation::Numerics;
+using namespace Windows::Gaming::Input;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::Perception::Spatial;
 using namespace Windows::System;
@@ -31,47 +32,30 @@ using namespace std::placeholders;
 
 // Loads and initializes application assets when the application is loaded.
 MRCentennialAppServiceMain::MRCentennialAppServiceMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
-    m_deviceResources(deviceResources)
+    m_deviceResources(deviceResources),
+    m_width(1920),
+    m_height(1080)
 {
     // Register to be notified if the device is lost or recreated.
     m_deviceResources->RegisterDeviceNotify(this);
-}
 
-#if 0
-void MRCentennialAppServiceMain::ConnectToAppService()
-{
-    OutputDebugString(L"PackageFamilyName: ");
-    OutputDebugString(Windows::ApplicationModel::Package::Current->Id->FamilyName->Data());
-    OutputDebugString(L"\n");
+    // If connected, a game controller can also be used for input.
+    m_gamepadAddedEventToken = Gamepad::GamepadAdded +=
+        ref new EventHandler<Gamepad^>(
+            bind(&MRCentennialAppServiceMain::OnGamepadAdded, this, _1, _2)
+            );
 
-    m_appServiceListener = ref new MRAppService::MRAppServiceListener(L"MR-App");
+    m_gamepadRemovedEventToken = Gamepad::GamepadRemoved +=
+        ref new EventHandler<Gamepad^>(
+            bind(&MRCentennialAppServiceMain::OnGamepadRemoved, this, _1, _2)
+            );
 
-    auto connectTask = m_appServiceListener->ConnectToAppService(MRAPPSERVICE_ID, MRAPPSERVICE_FAMILY_NAME);
-    connectTask.then([this](AppServiceConnectionStatus response)
+    for (auto const& gamepad : Gamepad::Gamepads)
     {
-        if (response == AppServiceConnectionStatus::Success)
-        {
-            auto listenerTask = m_appServiceListener->RegisterListener(this).then([this](AppServiceResponse^ response)
-            {
-                ValueSet^ message = ref new ValueSet;
-                message->Insert("GetWindowSize", true);
-                m_appServiceListener->SendAppServiceMessage("Win32-App", message).then([this](AppServiceResponse^ response)
-                {
-                    auto status = response->Status;
-                    auto responseMessage = response->Message;
-
-                    // The response from the MR-App contains the info we need to open the shared texture
-                    if (responseMessage->HasKey(L"WindowSize"))
-                    {
-                        int width = (int)responseMessage->Lookup(L"Width");
-                        int height = (int)responseMessage->Lookup(L"Height");
-                    }
-                });
-            });
-        }
-    });
+        OnGamepadAdded(nullptr, gamepad);
+    }
 }
-#endif
+
 
 void MRCentennialAppServiceMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
 {
@@ -85,7 +69,7 @@ void MRCentennialAppServiceMain::SetHolographicSpace(HolographicSpace^ holograph
 
 #ifdef DRAW_SAMPLE_CONTENT
     // Initialize the sample hologram.
-    m_renderer = std::make_unique<QuadRenderer>(m_deviceResources, 1920, 1080);
+    m_renderer = std::make_unique<QuadRenderer>(m_deviceResources, m_width, m_height);
 
     m_spatialInputHandler = std::make_unique<SpatialInputHandler>();
 #endif
@@ -438,22 +422,47 @@ void MRCentennialAppServiceMain::OnCameraRemoved(
     m_deviceResources->RemoveHolographicCamera(args->Camera);
 }
 
+void MRCentennialAppServiceMain::OnGamepadAdded(Object^, Gamepad^ args)
+{
+    for (auto const& gamepadWithButtonState : m_gamepads)
+    {
+        if (args == gamepadWithButtonState.gamepad)
+        {
+            // This gamepad is already in the list.
+            return;
+        }
+    }
+
+    GamepadWithButtonState newGamepad = { args, false };
+    m_gamepads.push_back(newGamepad);
+}
+
+void MRCentennialAppServiceMain::OnGamepadRemoved(Object^, Gamepad^ args)
+{
+    m_gamepads.erase(std::remove_if(m_gamepads.begin(), m_gamepads.end(), [&](GamepadWithButtonState& gamepadWithState)
+    {
+        return gamepadWithState.gamepad == args;
+    }),
+        m_gamepads.end());
+}
+
 
 ValueSet^ MRCentennialAppServiceMain::GetSharedTextureInfo(int width, int height)
 {
+    m_width = width;
+    m_height = height;
+
+    // make sure we are the correct size
+    m_renderer->Resize(width, height);
+
     auto response = ref new ValueSet;
     response->Insert(L"Status", "OK");
     response->Insert(L"SharedTextureInfo", true);
-    response->Insert(L"Width", 1920);
-    response->Insert(L"Height", 1080);
+    response->Insert(L"Width", m_width);
+    response->Insert(L"Height", m_height);
     HANDLE h = m_renderer->getSharedTexture();
     response->Insert(L"SharedTextureHandle", (uintptr_t)m_renderer->getSharedTexture());
     return response;
-}
-
-void MRCentennialAppServiceMain::OnServiceClosed(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceClosedEventArgs^ args)
-{
-    
 }
 
 

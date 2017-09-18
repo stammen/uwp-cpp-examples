@@ -84,7 +84,6 @@ namespace MRCentennialAppService
         // and when tearing down AppMain.
         void UnregisterHolographicEventHandlers();
 
-        virtual void OnServiceClosed(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceClosedEventArgs^ args);
         
 #ifdef DRAW_SAMPLE_CONTENT
         // Renders a colorful holographic cube that's 20 centimeters wide. This sample content
@@ -135,5 +134,8 @@ namespace MRCentennialAppService
 
         // Keep track of mouse input.
         bool                                                            m_pointerPressed = false;
+
+        int                                                             m_width;
+        int                                                             m_height;
     };
 }
