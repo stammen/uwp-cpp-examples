@@ -189,6 +189,7 @@ void AppService::OnRequestReceived(AppServiceConnection^ sender, AppServiceReque
                 break;
 
             case MRAppServiceMessage::App_Message:
+            case MRAppServiceMessage::App_Ping:
                 // ForwardMessage handles response and deferral so we can return
                 ForwardMessage(id, request, args->Request, messageDeferral);
                 return;

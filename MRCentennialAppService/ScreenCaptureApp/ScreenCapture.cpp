@@ -78,9 +78,7 @@ void ScreenCapture::Ping()
 {
     ValueSet^ message = ref new ValueSet();
 
-    // Tell the MR-App we are now ready to receive messages
-    message->Insert(L"Win32-App-Ping", true);
-    m_appServiceListener->SendAppServiceMessage(L"MR-App", message).then([this](AppServiceResponse^ response)
+    m_appServiceListener->SendPing(L"MR-App").then([this](AppServiceResponse^ response)
     {
         if (response->Status != AppServiceResponseStatus::Success)
         {

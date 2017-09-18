@@ -41,6 +41,7 @@ namespace MRAppService
         Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^>  RegisterListener(IMRAppServiceListenerDelegate* delegate);
         Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^>  RegisterListener();
         Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^>  UnregisterListener();
+        Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^> SendPing(Platform::String^ toAppId);
 
     private:
 

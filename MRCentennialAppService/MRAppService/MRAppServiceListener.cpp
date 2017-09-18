@@ -110,6 +110,19 @@ Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^> MR
     });
 }
 
+Concurrency::task<Windows::ApplicationModel::AppService::AppServiceResponse^> MRAppServiceListener::SendPing(Platform::String^ toAppId)
+{
+    ValueSet^ request = ref new ValueSet();
+    request->Insert(L"Message", static_cast<int>(MRAppServiceMessage::App_Ping));
+    request->Insert(L"Id", toAppId);
+    request->Insert(L"SenderId", m_listenerId);
+    return create_task(m_appService->SendMessageAsync(request)).then([this](AppServiceResponse^ response)
+    {
+        auto status = response->Status;
+        return response;
+    });
+}
+
 void MRAppServiceListener::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)
 {
     ValueSet^ response = ref new ValueSet();
