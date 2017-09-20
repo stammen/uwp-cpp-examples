@@ -20,6 +20,7 @@ namespace HolographicWebView
 
     protected:
         // Application lifecycle event handlers.
+        void OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
         void OnViewActivated(Windows::ApplicationModel::Core::CoreApplicationView^ sender, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
         void OnSuspending(Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
         void OnResuming(Platform::Object^ sender, Platform::Object^ args);
@@ -30,6 +31,7 @@ namespace HolographicWebView
 
         // CoreWindow input event handlers.
         void OnKeyPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+        void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
 
     private:
         std::unique_ptr<HolographicWebViewMain> m_main;

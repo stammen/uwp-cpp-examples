@@ -7,13 +7,14 @@ using namespace HolographicWebView;
 
 using namespace concurrency;
 using namespace Windows::ApplicationModel;
+using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
+using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::UI::Core;
-
-
+using namespace Windows::System;
 
 IFrameworkView^ AppViewSource::CreateView()
 {
@@ -22,8 +23,8 @@ IFrameworkView^ AppViewSource::CreateView()
 
 AppView::AppView()
 {
-}
 
+}
 
 // IFrameworkView methods
 
@@ -54,6 +55,10 @@ void AppView::SetWindow(CoreWindow^ window)
     // Register for keypress notifications.
     window->KeyDown +=
         ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &AppView::OnKeyPressed);
+
+    // Register for pointer pressed notifications.
+    window->PointerPressed +=
+        ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &AppView::OnPointerPressed);
 
     // Register for notification that the app window is being closed.
     window->Closed +=
@@ -92,23 +97,16 @@ void AppView::Run()
     {
         if (m_windowVisible && (m_holographicSpace != nullptr))
         {
-            try
+            CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+
+            HolographicFrame^ holographicFrame = m_main->Update();
+
+            if (m_main->Render(holographicFrame))
             {
-                CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-
-                HolographicFrame^ holographicFrame = m_main->Update();
-
-                if (m_main->Render(holographicFrame))
-                {
-                    // The holographic frame has an API that presents the swap chain for each
-                    // holographic camera.
-                    m_deviceResources->Present(holographicFrame);
-                }
+                // The holographic frame has an API that presents the swap chain for each
+                // holographic camera.
+                m_deviceResources->Present(holographicFrame);
             }
-            catch(Platform::Exception^ ex)
-            {
-            }
-
         }
         else
         {
@@ -129,6 +127,18 @@ void AppView::Uninitialize()
 
 // Application lifecycle event handlers
 
+// Called when the app is prelaunched. Use this method to load resources ahead of time
+// and enable faster launch times.
+void AppView::OnLaunched(LaunchActivatedEventArgs^ args)
+{
+    if (args->PrelaunchActivated)
+    {
+        //
+        // TODO: Insert code to preload resources here.
+        //
+    }
+}
+
 // Called when the app view is activated. Activates the app's CoreWindow.
 void AppView::OnViewActivated(CoreApplicationView^ sender, IActivatedEventArgs^ args)
 {
@@ -144,7 +154,7 @@ void AppView::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
     // the app will be forced to exit.
     SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
 
-    create_task([this, deferral] ()
+    create_task([this, deferral]()
     {
         m_deviceResources->Trim();
 
@@ -183,13 +193,6 @@ void AppView::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 void AppView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
 {
     m_windowVisible = args->Visible;
-    if (m_windowVisible)
-    {
-        // Unfortunately, click events in the XAML view are passed through to the exclusive
-        // view, which immediately triggers the switch back. This forces the system to read
-        // and discard the unintended click
-        m_main->ResetInput();
-    }
 }
 
 void AppView::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
@@ -208,3 +211,13 @@ void AppView::OnKeyPressed(CoreWindow^ sender, KeyEventArgs^ args)
     //       your holographic app.
     //
 }
+
+void AppView::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
+{
+    // Allow the user to interact with the holographic world using the mouse.
+    if (m_main != nullptr)
+    {
+        m_main->OnPointerPressed();
+    }
+}
+

@@ -37,43 +37,21 @@ namespace HolographicWebView
 
     // This function uses a SpatialPointerPose to position the world-locked hologram
     // two meters in front of the user's heading.
-    void QuadRenderer::UpdateHologramPosition(SpatialPointerPose^ pointerPose, const DX::StepTimer& timer)
+    void QuadRenderer::PositionHologram(SpatialPointerPose^ pointerPose)
     {
-        const float& deltaTime = static_cast<float>(timer.GetElapsedSeconds());
-
         if (pointerPose != nullptr)
         {
             // Get the gaze direction relative to the given coordinate system.
             const float3 headPosition = pointerPose->Head->Position;
             const float3 headDirection = pointerPose->Head->ForwardDirection;
 
-            //#define USE_HORIZONTAL_OFFSET
-#ifndef USE_HORIZONTAL_OFFSET
-      // The tag-along hologram follows a point 2.0m in front of the user's gaze direction.
-            constexpr float distanceFromUser = 0.5f; // meters
+            // The hologram is positioned two meters along the user's gaze direction.
+            constexpr float distanceFromUser = 2.0f; // meters
             const float3 gazeAtTwoMeters = headPosition + (distanceFromUser * headDirection);
-
-            // Use linear interpolation to smooth the position over time. This keeps the hologram
-            // comfortably stable.
-            const float3 smoothedPosition = lerp(m_position, gazeAtTwoMeters, deltaTime * c_lerpRate);
-
-#else // USE_HORIZONTAL_OFFSET
-      // If you're making a debug view, you might not want the tag-along to be directly in the
-      // center of your field of view. Use this code to position the hologram to the right of
-      // the user's gaze direction - moving it out of the way of your content.
-            const float3 offset = float3(0.13f, 0.0f, 0.f);
-            constexpr float offsetDistanceFromUser = 2.2f; // meters
-            const float3 offsetFromGazeAtTwoMeters = headPosition + (float3(offsetDistanceFromUser) * (headDirection + offset));
-
-            // Use linear interpolation to smooth the position over time. This keeps the hologram
-            // comfortably stable.
-            const float3 smoothedPosition = lerp(m_position, offsetFromGazeAtTwoMeters, deltaTime * c_lerpRate);
-#endif // USE_HORIZONTAL_OFFSET
 
             // This will be used as the translation component of the hologram's
             // model transform.
-            m_lastPosition = m_position;
-            m_position = smoothedPosition;
+            SetPosition(gazeAtTwoMeters);
         }
     }
 
