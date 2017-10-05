@@ -36,7 +36,7 @@ namespace MRCentennialAppService
 
         Windows::Foundation::Collections::ValueSet^ OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args);
         Windows::Foundation::Collections::ValueSet^ HandleMessage(Windows::Foundation::Collections::ValueSet^ message);
-        void AppView::Win32AppConnected();
+        void Win32AppConnected();
 
     private:
 
