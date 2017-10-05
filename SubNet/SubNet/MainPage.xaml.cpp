@@ -29,7 +29,6 @@ using namespace Windows::UI::Xaml::Navigation;
 // From https://tangentsoft.net/wskfaq/examples/getifaces.html
 void MainPage::GetInterfaces()
 {
-    int result = 0;
     std::stringstream ss;
 
     WSADATA WinsockData;
