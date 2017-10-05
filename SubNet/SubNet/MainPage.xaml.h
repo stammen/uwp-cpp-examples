@@ -18,7 +18,7 @@ namespace SubNet
 		MainPage();
 
     private:
-        int GetInterfaces();
+        void GetInterfaces();
 
 	};
 }
