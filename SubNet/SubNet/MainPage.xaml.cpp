@@ -32,33 +32,36 @@ using namespace Windows::UI::Xaml::Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
+// From https://tangentsoft.net/wskfaq/examples/getifaces.html
 int MainPage::GetInterfaces()
 {
     std::stringstream ss;
 
     WSADATA WinsockData;
-    if (WSAStartup(MAKEWORD(2, 2), &WinsockData) != 0) {
+    if (WSAStartup(MAKEWORD(2, 2), &WinsockData) != 0) 
+    {
         ss << "Failed to find Winsock 2.2!" << std::endl;
     }
 
     SOCKET sd = WSASocket(AF_INET, SOCK_DGRAM, 0, 0, 0, 0);
-    if (sd == SOCKET_ERROR) {
-        ss << "Failed to get a socket. Error " << WSAGetLastError() <<
-            std::endl; ;
+    if (sd == SOCKET_ERROR) 
+    {
+        ss << "Failed to get a socket. Error " << WSAGetLastError() << std::endl; 
     }
 
     INTERFACE_INFO InterfaceList[20];
     unsigned long nBytesReturned;
     if (WSAIoctl(sd, SIO_GET_INTERFACE_LIST, 0, 0, &InterfaceList,
-        sizeof(InterfaceList), &nBytesReturned, 0, 0) == SOCKET_ERROR) {
-        ss << "Failed calling WSAIoctl: error " << WSAGetLastError() <<
-            std::endl;
-        return 1;
+        sizeof(InterfaceList), &nBytesReturned, 0, 0) == SOCKET_ERROR) 
+    {
+        ss << "Failed calling WSAIoctl: error " << WSAGetLastError() << std::endl;
+        nBytesReturned = 0;
     }
 
     int nNumInterfaces = nBytesReturned / sizeof(INTERFACE_INFO);
     ss << "There are " << nNumInterfaces << " interfaces:" << std::endl;
-    for (int i = 0; i < nNumInterfaces; ++i) {
+    for (int i = 0; i < nNumInterfaces; ++i) 
+    {
         ss << std::endl;
 
         sockaddr_in *pAddress;
