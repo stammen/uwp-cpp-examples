@@ -15,7 +15,6 @@
 #include <sstream>
 #include <string>
 #pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "iphlpapi.lib")
 
 using namespace SubNet;
 
@@ -30,12 +29,7 @@ using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 // From https://tangentsoft.net/wskfaq/examples/getifaces.html
-
-
-
 void MainPage::GetInterfaces()
 {
     int result = 0;
