@@ -7,10 +7,9 @@
 #include "MainPage.xaml.h"
 
 #include <stdio.h>
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <winsock2.h>
-#include <iphlpapi.h>
 #include <ws2tcpip.h>
 #include <sstream>
 #include <string>
