@@ -3,7 +3,7 @@
 #include <functional>
 #include <ppltasks.h>
 
-#define MRAPPSERVICE_ID L"com.cefbrowser.appservice"
+#define MRAPPSERVICE_ID L"com.sendinput.appservice"
 
 namespace MRAppService
 { 
