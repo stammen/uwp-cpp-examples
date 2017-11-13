@@ -92,7 +92,7 @@ Windows::Foundation::Collections::ValueSet^ AppView::OnRequestReceived(Windows::
             break;
 
         case MRAppServiceMessage::App_Message:
-            response->Insert(L"Status", "OK");
+            response = HandleMessage(request);
             break;
 
         case MRAppServiceMessage::App_Ping:
@@ -108,11 +108,24 @@ Windows::Foundation::Collections::ValueSet^ AppView::OnRequestReceived(Windows::
     return response;
 }
 
+
 ValueSet^ AppView::HandleMessage(ValueSet^ message)
 {
     auto data = dynamic_cast<ValueSet^>(message->Lookup("Data"));
     ValueSet^ response = ref new ValueSet;
     response->Insert(L"Status", "OK");
+
+    if (data->HasKey(L"MONITORINFO"))
+    {
+        Windows::Foundation::Rect rcMonitor = static_cast<Windows::Foundation::Rect>(data->Lookup("rcMonitor"));
+        Windows::Foundation::Rect rcWork = static_cast<Windows::Foundation::Rect>(data->Lookup("rcWork"));
+        unsigned int dwFlags = static_cast<unsigned int>(data->Lookup("dwFlags"));
+        if (dwFlags && MONITORINFOF_PRIMARY)
+        {
+
+        }
+    }
+
     return response;
 }
 
@@ -137,7 +150,12 @@ void AppView::Win32AppConnected()
             });
         }
     });
+
+    ValueSet^ monitorMessage = ref new ValueSet;
+    monitorMessage->Insert(L"EnumDisplayMonitors", true);
+    m_appServiceListener->SendAppServiceMessage(L"Win32-App", monitorMessage);
 }
+
 
 // IFrameworkView methods
 

@@ -171,6 +171,41 @@ ValueSet^ ScreenCapture::OnRequestReceived(Windows::ApplicationModel::AppService
     return response;
 }
 
+BOOL CALLBACK MonitorEnumProc(
+    _In_ HMONITOR hMonitor,
+    _In_ HDC      hdcMonitor,
+    _In_ LPRECT   lprcMonitor,
+    _In_ LPARAM   dwData
+)
+{
+    ScreenCapture* sc = (ScreenCapture*)dwData;
+    if(sc)
+    {
+        sc->MonitorCallback(hMonitor);
+        return true;
+    }
+
+    return false;
+}
+
+void ScreenCapture::MonitorCallback(HMONITOR hMonitor)
+{
+    MONITORINFO mi;
+    mi.cbSize = sizeof(MONITORINFO);
+    GetMonitorInfo(hMonitor, &mi);
+
+    ValueSet^ message = ref new ValueSet;
+    Windows::Foundation::Rect r((float)mi.rcMonitor.left, (float)mi.rcMonitor.top, (float)mi.rcMonitor.right, (float)mi.rcMonitor.bottom);
+    Windows::Foundation::Rect w((float)mi.rcWork.left, (float)mi.rcWork.top, (float)mi.rcWork.right, (float)mi.rcWork.bottom);
+    message->Insert(L"MONITORINFO", true);
+    message->Insert(L"rcMonitor", r);
+    message->Insert(L"rcWork", w);
+    message->Insert(L"dwFlags", static_cast<unsigned int>(mi.dwFlags));
+    message->Insert(L"Status", "OK");
+    m_appServiceListener->SendAppServiceMessage(L"MR-App", message);
+}
+
+
 ValueSet^ ScreenCapture::HandleMessage(ValueSet^ message)
 {
     auto data = dynamic_cast<ValueSet^>(message->Lookup("Data"));
@@ -185,12 +220,18 @@ ValueSet^ ScreenCapture::HandleMessage(ValueSet^ message)
     {
         int width;
         int height;
+        Windows::Foundation::Rect r(0, 1, 2, 3);
 
         GetScreenSize(width, height);
         response->Insert(L"WindowSize", true);
         response->Insert(L"Width", width);
         response->Insert(L"Height", height);
         response->Insert(L"Status", "OK");
+    }
+    else if (data->HasKey(L"EnumDisplayMonitors"))
+    {
+        response->Insert(L"Status", "OK");
+        EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)this);
     }
 
     return response;

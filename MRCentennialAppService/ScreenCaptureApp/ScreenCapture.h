@@ -10,6 +10,7 @@ public:
     ScreenCapture();
     ~ScreenCapture();
     int Run();
+    void MonitorCallback(HMONITOR hMonitor);
 
 private:
     Concurrency::task<void> ConnectToAppService();
