@@ -59,7 +59,7 @@ The TestHMD app detects the following situations
 
 ## TestHMD Configuration
 
-The Win32 console app calls a few UWP apis to launch the MR Portal App. In order to be able to do this, the project properties must be modified to include the following for all platforms and configurations:
+The Win32 console app calls a few UWP apis to launch the MR Portal App. In order to be able to do this, the TestHDM project properties were modified to include the following for all platforms and configurations:
 
 **C/C++ | General | Addition #using Directions** needs to have the following added:
 
