@@ -52,7 +52,7 @@ In the TestHDM.cpp, change MR_APP_PROTOCOL to the protocol you declared in the p
 
 The TestHMD app detects the following situations
 
-1. On the startuo of the TestHMD app, it launches the MR Portal and after a 10 second delay, it launches your app
+1. On the startup of the TestHMD app, it launches the MR Portal and after a 10 second delay, it launches your app
 1. TestHMD checks if your app is running every second.
 1. If the user is not present and the MR Portal has terminated your MR App, it will not relaunch the App until the user is detected.
 1. If the MR Portal is asleep, it will awaken when the user puts on the HMD. The TestHMD app will detect this event and launch your MR app.
