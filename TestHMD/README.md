@@ -57,3 +57,16 @@ The TestHMD app detects the following situations
 1. If the user is not present and the MR Portal has terminated your MR App, it will not relaunch the App until the user is detected.
 1. If the MR Portal is asleep, it will awaken when the user puts on the HMD. The TestHMD app will detect this event and launch your MR app.
 
+## TestHMD Configuration
+
+The Win32 console app calls a few UWP apis to launch the MR Portal App. In order to be able to do this, the project properties must be modified to include the following for all platforms and configurations:
+
+C/C++ | General | Addition #using Directions needs to have the following added:
+
+$(VC_ReferencesPath_x86)\store\references;C:\Program Files (x86)\Windows Kits\10\UnionMetadata;C:\Program Files (x86)\Windows Kits\10\References\Windows.Foundation.UniversalApiContract\3.0.0.0;C:\Program Files (x86)\Windows Kits\10\References\Windows.Foundation.FoundationContract\3.0.0.0;%(AdditionalUsingDirectories)
+
+C/C++ | General | Consume Windows RunTime Support should be Yes(/ZW)
+
+C/C++ | Code Generation | Enable Minimal Rebuild should be No(/Gm-) 
+
+
