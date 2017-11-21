@@ -1,4 +1,4 @@
-# Mixed Reality Win32 App Detect HMD Presence Demo
+# Mixed Reality Win32 App to detect HMD Presence
 This sample demonstrates how to create a Win32 app that can do the following:
 
 1) Launch the MR Portal if it is not running
