@@ -40,7 +40,7 @@ Add the following to the Application block:
           <uap:Protocol Name="testhmdapp"/>
         </uap:Extension>
       </Extensions>
-,,,
+```
 
 Note: testhmdapp is used in this example. You will want to use your own unique protocol name here.
 
