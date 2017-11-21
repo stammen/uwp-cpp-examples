@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2009
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestHMD", "TestHMD\TestHMD.vcxproj", "{ADDD3003-15DA-43BD-A18B-70265AE03761}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestHMDApp", "TestHMDApp\TestHMDApp.vcxproj", "{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ADDD3003-15DA-43BD-A18B-70265AE03761}.Debug|x64.ActiveCfg = Debug|x64
+		{ADDD3003-15DA-43BD-A18B-70265AE03761}.Debug|x64.Build.0 = Debug|x64
+		{ADDD3003-15DA-43BD-A18B-70265AE03761}.Debug|x86.ActiveCfg = Debug|Win32
+		{ADDD3003-15DA-43BD-A18B-70265AE03761}.Debug|x86.Build.0 = Debug|Win32
+		{ADDD3003-15DA-43BD-A18B-70265AE03761}.Release|x64.ActiveCfg = Release|x64
+		{ADDD3003-15DA-43BD-A18B-70265AE03761}.Release|x64.Build.0 = Release|x64
+		{ADDD3003-15DA-43BD-A18B-70265AE03761}.Release|x86.ActiveCfg = Release|Win32
+		{ADDD3003-15DA-43BD-A18B-70265AE03761}.Release|x86.Build.0 = Release|Win32
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Debug|x64.ActiveCfg = Debug|x64
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Debug|x64.Build.0 = Debug|x64
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Debug|x64.Deploy.0 = Debug|x64
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Debug|x86.ActiveCfg = Debug|Win32
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Debug|x86.Build.0 = Debug|Win32
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Debug|x86.Deploy.0 = Debug|Win32
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Release|x64.ActiveCfg = Release|x64
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Release|x64.Build.0 = Release|x64
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Release|x64.Deploy.0 = Release|x64
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Release|x86.ActiveCfg = Release|Win32
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Release|x86.Build.0 = Release|Win32
+		{3B3EDA74-DB96-4EDF-8103-D307A1CDF26C}.Release|x86.Deploy.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AB8A9FFF-7700-41E8-BB35-59D027559ED1}
+	EndGlobalSection
+EndGlobal
