@@ -69,4 +69,11 @@ $(VC_ReferencesPath_x86)\store\references;C:\Program Files (x86)\Windows Kits\10
 
 **C/C++ | Code Generation | Enable Minimal Rebuild** should be **No(/Gm-)** 
 
+Since our app is now consuming Windows Runtime we also need to add Platform::MTAThread before our main() function:
+
+```c++
+[Platform::MTAThread]
+int main()
+```
+
 
