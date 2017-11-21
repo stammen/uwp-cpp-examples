@@ -31,3 +31,21 @@ This sample demonstrates how to create a Win32 app that can do the following:
 
 ## Discussion
 
+In order for the TestHMD to be able to launch your MR App, you will need to add a Protocol section to your package.appxmanifest file
+Add the following to the Application block:
+
+```xml
+      <Extensions>
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="testhmdapp"/>
+        </uap:Extension>
+      </Extensions>
+,,,
+
+Note: testhmdapp is used in this example. You will want to use your own unique protocol name here.
+
+In the TestHDM.cpp, change MR_APP_PROTOCOL to the protocol you declared in the package.appxmanifest. Make sure you add a : to the end of the name. For example
+
+```cpp
+#define MR_APP_PROTOCOL L"testhmdapp:"
+```
