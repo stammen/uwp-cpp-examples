@@ -24,9 +24,9 @@ This sample demonstrates how to create a Win32 app that can do the following:
 
 * Press F5 to start the TestHMD Win32 console app. This will do the following:
 
-** Start the TestHMD console app
-** Start the MR Portal if it is not running
-** After a 10 second delay, the TestHMDApp will be launched in the MR Portal
+  * Start the TestHMD console app
+  * Start the MR Portal if it is not running
+  * After a 10 second delay, the TestHMDApp will be launched in the MR Portal. **Note: You may have to click the mouse to see the spinning cube.**
 
 
 ## Discussion
