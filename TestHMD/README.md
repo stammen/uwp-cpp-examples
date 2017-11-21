@@ -14,13 +14,13 @@ This sample demonstrates how to create a Win32 app that can do the following:
 
 * Open TestHMD.sln with Visual Studio 2017
 
-* Select the Debug/x86 or Debug/x64 configuration. 
+* Select the Debug/x86 or Debug/x64 configuration (or Release). 
 
 * Select Local Machine as the target device.
 
 * Set the TestHMD project as the StartUp project
 
-* Select Deploy Solutuin from the Build menu. This will build the solution and deploy the TestHMDApp so it can run in the MR Portal.
+* Select Deploy Solution from the Build menu. This will build the solution and deploy the TestHMDApp MR app so it can run in the MR Portal.
 
 * Press F5 to start the TestHMD Win32 console app. This will do the following:
 
