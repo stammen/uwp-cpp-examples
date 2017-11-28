@@ -44,6 +44,9 @@ namespace TestHMDApp
         // Handle mouse input.
         void OnPointerPressed();
 
+        // Handle mouse input.
+        void OnActivated(bool activated);
+
         // IDeviceNotify
         virtual void OnDeviceLost();
         virtual void OnDeviceRestored();
@@ -127,5 +130,6 @@ namespace TestHMDApp
 
         // Keep track of mouse input.
         bool                                                            m_pointerPressed = false;
+        bool                                                            m_activated = false;
     };
 }

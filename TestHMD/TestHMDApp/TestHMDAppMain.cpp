@@ -215,7 +215,10 @@ HolographicFrame^ TestHMDAppMain::Update()
         //
 
 #ifdef DRAW_SAMPLE_CONTENT
-        m_spinningCubeRenderer->Update(m_timer);
+        if (m_activated)
+        {
+            m_spinningCubeRenderer->Update(m_timer);
+        }
 #endif
     });
 
@@ -367,6 +370,12 @@ void TestHMDAppMain::OnPointerPressed()
 {
     m_pointerPressed = true;
 }
+
+void TestHMDAppMain::OnActivated(bool activated)
+{
+    m_activated = activated;
+}
+
 
 // Notifies classes that use Direct3D device resources that the device resources
 // need to be released before this method returns.

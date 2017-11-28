@@ -75,6 +75,10 @@ void AppView::SetWindow(CoreWindow^ window)
     window->VisibilityChanged +=
         ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &AppView::OnVisibilityChanged);
 
+    // Register for notifications that the HMD device is removed or put on by the user.
+    window->Activated +=
+        ref new TypedEventHandler<CoreWindow^, WindowActivatedEventArgs^>(this, &AppView::OnActivated);
+
     // Create a holographic space for the core window for the current view.
     // Presenting holographic frames that are created by this holographic space will put
     // the app into exclusive mode.
@@ -205,6 +209,31 @@ void AppView::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs
 void AppView::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 {
     m_windowClosed = true;
+}
+
+void AppView::OnActivated(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowActivatedEventArgs^ args)
+{
+    switch (args->WindowActivationState)
+    {
+    case CoreWindowActivationState::CodeActivated:
+        m_main->OnActivated(true);
+        OutputDebugString(L"User has put on the HMD.\n");
+        break;
+
+    case CoreWindowActivationState::Deactivated:
+        m_main->OnActivated(false);
+        OutputDebugString(L"User has removed the HMD.\n");
+        break;
+
+    case CoreWindowActivationState::PointerActivated:
+        m_main->OnActivated(true);
+        OutputDebugString(L"The window was activated by pointer interaction.\n");
+        break;
+
+    default:
+        OutputDebugString(L"Unknown CoreWindowActivationState.\n");
+        break;
+    }
 }
 
 
