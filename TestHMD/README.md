@@ -1,10 +1,10 @@
 # Mixed Reality Win32 App to detect HMD Presence
 This sample demonstrates how to create a Win32 app that can do the following:
 
-1) Launch the MR Portal if it is not running
-2) Launch a MR App using its protocol
-3) Detect if an MR App is running
-4_ Detect if the user has put on an HMD and launch an MR App when the HMD is detected
+1. Launch the MR Portal if it is not running
+2. Launch a MR App using its protocol
+3. Detect if an MR App is running
+4. Detect if the user has put on an HMD and launch an MR App when the HMD is detected
 
 ## Requirements
 
@@ -69,7 +69,7 @@ $(VC_ReferencesPath_x86)\store\references;C:\Program Files (x86)\Windows Kits\10
 
 **C/C++ | Code Generation | Enable Minimal Rebuild** should be **No(/Gm-)** 
 
-Since our app is now consuming Windows Runtime we also need to add Platform::MTAThread before our main() function:
+Since our app is now consuming the Windows Runtime we also need to add Platform::MTAThread before our main() function:
 
 ```c++
 [Platform::MTAThread]
