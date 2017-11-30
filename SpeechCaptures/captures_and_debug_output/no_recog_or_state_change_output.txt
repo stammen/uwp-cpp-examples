@@ -1,0 +1,146 @@
+﻿'SpeechTest.exe' (Win32): Loaded 'C:\Users\james\source\repos\SpeechTest\x64\Debug\SpeechTest\AppX\SpeechTest.exe'. Symbols loaded.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\ntdll.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\kernel32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\KernelBase.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\combase.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\ucrtbase.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\rpcrt4.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\bcryptprimitives.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\d2d1.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\msvcrt.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\crypt32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\msasn1.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\d3d11.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\user32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\win32u.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\gdi32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\gdi32full.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\msvcp_win.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\dxgi.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\DWrite.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Program Files\WindowsApps\Microsoft.VCLibs.140.00.Debug_14.0.25547.0_x64__8wekyb3d8bbwe\vccorlib140d_app.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\oleaut32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Program Files\WindowsApps\Microsoft.VCLibs.140.00.Debug_14.0.25547.0_x64__8wekyb3d8bbwe\msvcp140d_app.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Program Files\WindowsApps\Microsoft.VCLibs.140.00.Debug_14.0.25547.0_x64__8wekyb3d8bbwe\vcruntime140d_app.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Users\james\source\repos\SpeechTest\x64\Debug\SpeechTest\AppX\ucrtbased.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\imm32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\kernel.appcore.dll'. Cannot find or open the PDB file.
+The thread 0x27d0 has exited with code 0 (0x0).
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\twinapi.appcore.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\sechost.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\rmclient.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\advapi32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\bcrypt.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\WinTypes.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\SHCore.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.UI.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\TextInputFramework.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\CoreUIComponents.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\CoreMessaging.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\ntmarta.dll'. Cannot find or open the PDB file.
+onecoreuap\shell\coreapplication\application\lib\coreapplication.cpp(98)\twinapi.appcore.dll!00007FFA9106E417: (caller: 00007FFA9106E179) ReturnHr(1) tid(16f8) 8000000B The operation attempted to access data outside the valid range
+onecore\com\combase\inc\comcataloghelpers.hpp(64)\combase.dll!00007FFA957DFE7A: (caller: 00007FFA957DE2D5) ReturnHr(1) tid(4d44) 80040154 Class not registered
+onecore\com\combase\inc\comcataloghelpers.hpp(64)\combase.dll!00007FFA957DFE7A: (caller: 00007FFA957DE2D5) ReturnHr(2) tid(3a30) 80040154 Class not registered
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\uxtheme.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\OneCoreUAPCommonProxyStub.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Program Files\Common Files\microsoft shared\ink\tiptsf.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\dwmapi.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\d2d1debug3.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\WindowsCodecs.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\msctf.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\MrmCoreR.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\UiaManager.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.UI.Core.TextInput.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.Perception.Stub.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\cfgmgr32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.Mirage.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\ws2_32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\dcomp.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\d3d10warp.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\userenv.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\profapi.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\ResourcePolicyClient.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Unloaded 'C:\Windows\System32\ResourcePolicyClient.dll'
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\DXGIDebug.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\d3d11_3SDKLayers.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Unloaded 'C:\Windows\System32\d3d11_3SDKLayers.dll'
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_f936d37e592b25aa\nvldumdx.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\version.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\wintrust.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\imagehlp.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\cryptsp.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\rsaenh.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\cryptbase.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_f936d37e592b25aa\nvwgf2umx.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\winmm.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\winmmbase.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\winmmbase.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Unloaded 'C:\Windows\System32\winmmbase.dll'
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\shell32.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\windows.storage.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\shlwapi.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\powrprof.dll'. Cannot find or open the PDB file.
+The thread 0x2924 has exited with code 0 (0x0).
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\d3d11_3SDKLayers.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\iertutil.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\InputHost.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\urlmon.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\BCP47Langs.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\propsys.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\cldapi.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\aepic.dll'. Cannot find or open the PDB file.
+SetWindow()
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\fltLib.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\threadpoolwinrt.dll'. Cannot find or open the PDB file.
+Warning! Positional tracking is Unavailable.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.Media.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\RTWorkQ.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\mfsensorgroup.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\mfplat.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\deviceaccess.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\MFCaptureEngine.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\mfcore.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\ksuser.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\MMDevAPI.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\devobj.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\AudioSes.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\avrt.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.Media.MediaControl.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\mfreadwrite.dll'. Cannot find or open the PDB file.
+Exception thrown at 0x00007FFA92D23FB8 (KernelBase.dll) in SpeechTest.exe: 0x40080201: WinRT originate error (parameters: 0x00000000C00D36B3, 0x0000000000000027, 0x0000000B8782EC00).
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\CoreMmRes.dll'. Module was built without symbols.
+'SpeechTest.exe' (Win32): Unloaded 'C:\Windows\System32\CoreMmRes.dll'
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\CoreMmRes.dll'. Module was built without symbols.
+Exception thrown at 0x00007FFA92D23FB8 (KernelBase.dll) in SpeechTest.exe: 0x40080201: WinRT originate error (parameters: 0x00000000C00DABE0, 0x0000000000000021, 0x0000000B8772E340).
+Exception thrown at 0x00007FFA92D23FB8 (KernelBase.dll) in SpeechTest.exe: 0x40080201: WinRT originate error (parameters: 0x00000000C00DABE0, 0x0000000000000021, 0x0000000B8772E420).
+The thread 0x3e34 has exited with code 0 (0x0).
+The thread 0x22c0 has exited with code 0 (0x0).
+The thread 0x4114 has exited with code 0 (0x0).
+The thread 0x1e38 has exited with code 0 (0x0).
+The thread 0x426c has exited with code 0 (0x0).
+The thread 0x4428 has exited with code 0 (0x0).
+Have microphone permissions
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.Media.Speech.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\msvcp110_win.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Speech_OneCore\common\sapi_onecore.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\sspicli.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\winhttp.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\profext.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.ApplicationModel.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.Globalization.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Speech_OneCore\common\SpeechServiceWinRTApi.ProxyStub.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Speech_OneCore\Engines\SR\spsrx_onecore.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.Media.Devices.dll'. Cannot find or open the PDB file.
+'SpeechTest.exe' (Win32): Loaded 'C:\Windows\System32\Windows.Web.dll'. Cannot find or open the PDB file.
+Successfully started ContinuousRecognitionSession
+OnRecognizerStateChanged: Capturing
+Started recognizing speech commands
+The thread 0x730 has exited with code 0 (0x0).
+'SpeechTest.exe' (Win32): Unloaded 'C:\Windows\System32\CoreMmRes.dll'
+The thread 0x2af8 has exited with code 0 (0x0).
+'SpeechTest.exe' (Win32): Unloaded 'C:\Windows\System32\wintrust.dll'
+The thread 0x4f54 has exited with code 0 (0x0).
+The thread 0x4fec has exited with code 0 (0x0).
+The thread 0x4600 has exited with code 0 (0x0).
+The thread 0x32e8 has exited with code 0 (0x0).
+The thread 0x4cd0 has exited with code 0 (0x0).
