@@ -130,10 +130,11 @@ void SpeechInput::Stop()
 
 Concurrency::task<bool> SpeechInput::Initialize(Platform::Collections::Vector<Platform::String^>^ keys)
 {
+    // Note: Language not fully implemented and code only tested for English
     Windows::Globalization::Language^ speechLanguage = SpeechRecognizer::SystemSpeechLanguage;
-    speechContext = ResourceContext::GetForCurrentView();
-    speechContext->Languages = ref new VectorView<String^>(1, speechLanguage->LanguageTag);
-    speechResourceMap = ResourceManager::Current->MainResourceMap->GetSubtree(L"LocalizationSpeechResources");
+    m_speechContext = ResourceContext::GetForCurrentView();
+    m_speechContext->Languages = ref new VectorView<String^>(1, speechLanguage->LanguageTag);
+    m_speechResourceMap = ResourceManager::Current->MainResourceMap->GetSubtree(L"LocalizationSpeechResources");
     return InitializeRecognizer(keys, SpeechRecognizer::SystemSpeechLanguage);
 }
 
@@ -166,6 +167,13 @@ Concurrency::task<bool> SpeechInput::InitializeRecognizer(Platform::Collections:
                 SpeechRecognizerStateChangedEventArgs ^>(
                     this,
                     &SpeechInput::SpeechRecognizer_StateChanged);
+
+            m_qualityDegradedToken = m_speechRecognizer->RecognitionQualityDegrading +=
+                ref new TypedEventHandler<
+                SpeechRecognizer ^,
+                SpeechRecognitionQualityDegradingEventArgs ^>(
+                    this,
+                    &SpeechInput::OnSpeechQualityDegraded);
 
             SpeechRecognitionListConstraint^ spConstraint = ref new SpeechRecognitionListConstraint(keys);
             m_speechRecognizer->Constraints->Clear();
@@ -252,4 +260,13 @@ void SpeechInput::ContinuousRecognitionSession_ResultGenerated(SpeechContinuousR
         m_delegate->OnSpeechResultGenerated(sender, args);
     }
 }
+
+void SpeechInput::OnSpeechQualityDegraded(Windows::Media::SpeechRecognition::SpeechRecognizer^ recognizer, Windows::Media::SpeechRecognition::SpeechRecognitionQualityDegradingEventArgs^ args)
+{
+    if (m_delegate)
+    {
+        m_delegate->OnSpeechQualityDegraded(recognizer, args);
+    }
+}
+
 

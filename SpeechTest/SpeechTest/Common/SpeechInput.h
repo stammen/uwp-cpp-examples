@@ -42,8 +42,8 @@ namespace Speech
         static const unsigned int HResultRecognizerNotFound = 0x8004503a;
 
         Windows::Media::SpeechRecognition::SpeechRecognizer^ m_speechRecognizer;
-        Windows::ApplicationModel::Resources::Core::ResourceContext^ speechContext;
-        Windows::ApplicationModel::Resources::Core::ResourceMap^ speechResourceMap;
+        Windows::ApplicationModel::Resources::Core::ResourceContext^ m_speechContext;
+        Windows::ApplicationModel::Resources::Core::ResourceMap^ m_speechResourceMap;
         bool isPopulatingLanguages = false;
 
 
