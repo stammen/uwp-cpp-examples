@@ -64,11 +64,11 @@
       <Filter>Content</Filter>
     </ClCompile>
     <ClCompile Include="SpeechTestMain.cpp" />
-    <ClCompile Include="Common\SpeechInput.cpp">
+    <ClCompile Include="Content\AudioCapturePermissions.cpp">
       <Filter>Content</Filter>
     </ClCompile>
-    <ClCompile Include="Common\AudioCapturePermissions.cpp">
-      <Filter>Common</Filter>
+    <ClCompile Include="Content\SpeechInput.cpp">
+      <Filter>Content</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -84,11 +84,11 @@
       <Filter>Content</Filter>
     </ClInclude>
     <ClInclude Include="SpeechTestMain.h" />
-    <ClInclude Include="Common\SpeechInput.h">
+    <ClInclude Include="Content\AudioCapturePermissions.h">
       <Filter>Content</Filter>
     </ClInclude>
-    <ClInclude Include="Common\AudioCapturePermissions.h">
-      <Filter>Common</Filter>
+    <ClInclude Include="Content\SpeechInput.h">
+      <Filter>Content</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,7 +12,7 @@
 
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
-#include "Common\SpeechInput.h"
+#include "Content\SpeechInput.h"
 
 #ifdef DRAW_SAMPLE_CONTENT
 #include "Content\SpinningCubeRenderer.h"
