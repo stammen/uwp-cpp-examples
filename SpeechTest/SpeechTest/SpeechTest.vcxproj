@@ -144,6 +144,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AppView.h" />
+    <ClInclude Include="Common\AudioCapturePermissions.h" />
+    <ClInclude Include="Common\SpeechInput.h" />
     <ClInclude Include="SpeechTestMain.h" />
     <ClInclude Include="Common\DeviceResources.h" />
     <ClInclude Include="Common\DirectXHelper.h" />
@@ -156,6 +158,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AppView.cpp" />
+    <ClCompile Include="Common\AudioCapturePermissions.cpp" />
+    <ClCompile Include="Common\SpeechInput.cpp" />
     <ClCompile Include="SpeechTestMain.cpp" />
     <ClCompile Include="Common\DeviceResources.cpp" />
     <ClCompile Include="Common\CameraResources.cpp" />

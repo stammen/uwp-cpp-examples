@@ -12,6 +12,7 @@
 
 #include "Common\DeviceResources.h"
 #include "Common\StepTimer.h"
+#include "Common\SpeechInput.h"
 
 #ifdef DRAW_SAMPLE_CONTENT
 #include "Content\SpinningCubeRenderer.h"
@@ -25,7 +26,7 @@
 // Updates, renders, and presents holographic content using Direct3D.
 namespace SpeechTest
 {
-    class SpeechTestMain : public DX::IDeviceNotify
+    class SpeechTestMain : public DX::IDeviceNotify, public Speech::IMRAppServiceListenerDelegate
     {
     public:
         SpeechTestMain(const std::shared_ptr<DX::DeviceResources>& deviceResources);
@@ -53,10 +54,10 @@ namespace SpeechTest
         void InitializeSpeechCommandList();
 
 		void InitializeSpeechWithDelay();
+        void InitializeSpeech();
 
-        // Initializes a speech recognizer.
-        bool InitializeSpeechRecognizer();
-
+        // Handle HMD activated event
+        void OnActivated(bool activated);
 
 
     private:
@@ -81,7 +82,7 @@ namespace SpeechTest
         void UnregisterHolographicEventHandlers();
 
      // Process continuous speech recognition results.
-        void OnResultGenerated(
+        void OnSpeechResultGenerated(
             Windows::Media::SpeechRecognition::SpeechContinuousRecognitionSession ^sender,
             Windows::Media::SpeechRecognition::SpeechContinuousRecognitionResultGeneratedEventArgs ^args
         );
@@ -97,19 +98,7 @@ namespace SpeechTest
 			Windows::Media::SpeechRecognition::SpeechRecognizerStateChangedEventArgs^ args
 		);
  
-        // Creates a speech command recognizer, and starts listening.
-        Concurrency::task<bool> StartRecognizeSpeechCommands();
 
-        // Resets the speech recognizer, if one exists.
-		Concurrency::task<void> StopCurrentRecognizerIfExists();
-
-
-		Windows::Foundation::EventRegistrationToken                     m_speechRecognizerStateChangedToken;
-		Windows::Foundation::EventRegistrationToken                     m_speechRecognizerResultEventToken;
-        Windows::Foundation::EventRegistrationToken                     m_speechRecognitionQualityDegradedToken;
-
-        // Speech recognizer.
-        Windows::Media::SpeechRecognition::SpeechRecognizer^            m_speechRecognizer;
 
         // Maps commands to color data.
         // We will create a Vector of the key values in this map for use as speech commands.
@@ -143,5 +132,7 @@ namespace SpeechTest
         Windows::Foundation::EventRegistrationToken                     m_cameraAddedToken;
         Windows::Foundation::EventRegistrationToken                     m_cameraRemovedToken;
         Windows::Foundation::EventRegistrationToken                     m_locatabilityChangedToken;
+
+        Speech::SpeechInput^                                             m_speechInput;
     };
 }

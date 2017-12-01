@@ -19,65 +19,11 @@ using namespace Windows::UI::Core;
 using namespace Windows::System::Threading;
 using namespace std::placeholders;
 
-
 using namespace concurrency;
 using namespace Platform;
 using namespace Windows::Media::SpeechRecognition;
 using namespace Windows::Media::Capture;
 
-#define NO_AUDIO_CAPTURE_DEVICE_HRESULT -1072845856
-
-IAsyncOperation<bool>^  RequestMicrophonePermissionAsync()
-{
-	return create_async( []() {
-		try
-		{
-			// Request access to the microphone only, to limit the number of capabilities we need
-			// to request in the package manifest.
-			MediaCaptureInitializationSettings^ settings = ref new MediaCaptureInitializationSettings();
-			settings->StreamingCaptureMode = StreamingCaptureMode::Audio;
-			settings->MediaCategory = MediaCategory::Speech;
-			MediaCapture^ capture = ref new MediaCapture();
-
-			return create_task( capture->InitializeAsync( settings ) )
-				.then( []( task<void> previousTask ) -> bool {
-				try
-				{
-					previousTask.get();
-				}
-				catch ( AccessDeniedException^ )
-				{
-					// The user has turned off access to the microphone. If this occurs, we should show an error, or disable
-					// functionality within the app to ensure that further exceptions aren't generated when 
-					// recognition is attempted.
-					return false;
-				}
-				catch ( Exception^ exception )
-				{
-					// This can be replicated by using remote desktop to a system, but not redirecting the microphone input.
-					// Can also occur if using the virtual machine console tool to access a VM instead of using remote desktop.
-					if ( exception->HResult == NO_AUDIO_CAPTURE_DEVICE_HRESULT )
-					{
-						OutputDebugString( L"Error: No capture devices available\n" );
-						return false;
-					}
-
-					throw;
-				}
-				return true;
-			} );
-		}
-		catch ( Platform::ClassNotRegisteredException^ ex )
-		{
-			// If media player components are unavailable (eg, on an N SKU of windows), we may
-			// get ClassNotRegisteredException when trying to check if we have permission to use
-			// the microphone. 
-			OutputDebugString( L"Error: Media Player Components unavailable\n" );
-			return create_task( [] {return false; } );
-		}
-	} );
-
-}
 
 
 // Loads and initializes application assets when the application is loaded.
@@ -87,6 +33,7 @@ SpeechTestMain::SpeechTestMain( const std::shared_ptr<DX::DeviceResources>& devi
 	// Register to be notified if the device is lost or recreated.
 	m_deviceResources->RegisterDeviceNotify( this );
 
+    m_speechInput = ref new Speech::SpeechInput();
 	InitializeSpeechCommandList();
 }
 
@@ -108,6 +55,44 @@ void SpeechTestMain::InitializeSpeechCommandList()
 	m_speechCommandData->Insert( L"SpeechRecognizer", float4( 0.5f, 0.1f, 1.f, 1.f ) );
 }
 
+void SpeechTestMain::InitializeSpeech()
+{
+    m_speechInput->Available().then([this](bool hasMicPermission)
+    {
+        if (true == hasMicPermission)
+        {
+            OutputDebugString(L"Have microphone permissions\n");
+
+            // Here, we compile the list of voice commands by reading them from the map.
+            Platform::Collections::Vector<String^>^ speechCommandList = ref new Platform::Collections::Vector<String^>();
+            for each (auto pair in m_speechCommandData)
+            {
+                speechCommandList->Append(pair->Key);
+            }
+
+            m_speechInput->Initialize(speechCommandList).then([this](bool result)
+            {
+                if (true == result)
+                {
+                    OutputDebugString(L"Started recognizing speech commands\n");
+                    m_speechInput->Start().then([this](bool result) {
+                        m_speechInput->SetDelegate(this);
+                    });
+                }
+                else
+                {
+                    OutputDebugString(L"Could NOT start recognizing speech commands\n");
+                }
+            });
+        }
+        else
+        {
+            OutputDebugString(L"Could not get microphone permissions\n");
+        }
+    });
+}
+
+
 void SpeechTestMain::InitializeSpeechWithDelay()
 {
 	Windows::Foundation::TimeSpan delay;
@@ -119,160 +104,56 @@ void SpeechTestMain::InitializeSpeechWithDelay()
 		ref new TimerElapsedHandler( [this, dispatcher]( ThreadPoolTimer^ source ) {
 
 		// run this ThreadPoolTimer on the main UI thread
-		dispatcher->RunAsync(
-			CoreDispatcherPriority::Normal, ref new Windows::UI::Core::DispatchedHandler( [this, dispatcher]() {
-
-			create_task( RequestMicrophonePermissionAsync(), task_continuation_context::use_current() )
-				.then( [this]( bool hasMicPermission ) {
+		dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new Windows::UI::Core::DispatchedHandler( [this, dispatcher]() 
+        {
+            m_speechInput->Available().then( [this]( bool hasMicPermission ) 
+            {
 				if ( true == hasMicPermission )
 				{
 					OutputDebugString( L"Have microphone permissions\n" );
-					StartRecognizeSpeechCommands().then( []( bool result ) {
+
+                    // Here, we compile the list of voice commands by reading them from the map.
+                    Platform::Collections::Vector<String^>^ speechCommandList = ref new Platform::Collections::Vector<String^>();
+                    for each (auto pair in m_speechCommandData)
+                    {
+                        speechCommandList->Append(pair->Key);
+                    }
+
+                    m_speechInput->Initialize(speechCommandList).then( [this]( bool result ) 
+                    {
 						if ( true == result )
 						{
 							OutputDebugString( L"Started recognizing speech commands\n" );
+                            m_speechInput->Start().then([this](bool result) {
+                                m_speechInput->SetDelegate(this);
+                            });
 						}
 						else
 						{
 							OutputDebugString( L"Could NOT start recognizing speech commands\n" );
 						}
-					} );
+					});
 				}
 				else
 				{
 					OutputDebugString( L"Could not get microphone permissions\n" );
 				}
-			} );
-		} ) );
-	} ), delay );
+			});
+		}));
+	}), delay );
 }
 
-Concurrency::task<void> SpeechTestMain::StopCurrentRecognizerIfExists()
+void SpeechTestMain::OnActivated(bool activated)
 {
-	if ( m_speechRecognizer != nullptr )
-	{
-		return create_task( m_speechRecognizer->StopRecognitionAsync() ).then( [this]() {
-            m_speechRecognizer->RecognitionQualityDegrading -= m_speechRecognitionQualityDegradedToken;
-            m_speechRecognizer->StateChanged -= m_speechRecognizerStateChangedToken;
-
-			if ( m_speechRecognizer->ContinuousRecognitionSession != nullptr )
-			{
-				m_speechRecognizer->ContinuousRecognitionSession->ResultGenerated -= m_speechRecognizerResultEventToken;
-			}
-		} );
-	}
-	else
-	{
-		return create_task( [this]() {} );
-	}
+    if (activated)
+    {
+        InitializeSpeech();
+    }
+    else
+    {
+        m_speechInput->Stop();
+    }
 }
-
-bool SpeechTestMain::InitializeSpeechRecognizer()
-{
-	m_speechRecognizer = ref new SpeechRecognizer();
-
-	if ( !m_speechRecognizer )
-	{
-		return false;
-	}
-
-	m_speechRecognizerStateChangedToken = m_speechRecognizer->StateChanged +=
-		ref new TypedEventHandler<SpeechRecognizer^, SpeechRecognizerStateChangedEventArgs^>(
-			std::bind( &SpeechTestMain::OnRecognizerStateChanged, this, _1, _2 )
-			);
-
-	m_speechRecognitionQualityDegradedToken = m_speechRecognizer->RecognitionQualityDegrading +=
-		ref new TypedEventHandler<SpeechRecognizer^, SpeechRecognitionQualityDegradingEventArgs^>(
-			std::bind( &SpeechTestMain::OnSpeechQualityDegraded, this, _1, _2 )
-			);
-
-	m_speechRecognizerResultEventToken = m_speechRecognizer->ContinuousRecognitionSession->ResultGenerated +=
-		ref new TypedEventHandler<SpeechContinuousRecognitionSession^, SpeechContinuousRecognitionResultGeneratedEventArgs^>(
-			std::bind( &SpeechTestMain::OnResultGenerated, this, _1, _2 )
-			);
-
-	return true;
-}
-
-task<bool> SpeechTestMain::StartRecognizeSpeechCommands()
-{
-	return StopCurrentRecognizerIfExists().then( [this]() {
-		if ( !InitializeSpeechRecognizer() )
-		{
-			return task_from_result<bool>( false );
-		}
-
-		// Here, we compile the list of voice commands by reading them from the map.
-		Platform::Collections::Vector<String^>^ speechCommandList = ref new Platform::Collections::Vector<String^>();
-		for each ( auto pair in m_speechCommandData )
-		{
-			// The speech command string is what we are looking for here. Later, we can use the
-			// recognition result for this string to look up a color value.
-			auto command = pair->Key;
-
-			// Add it to the list.
-			speechCommandList->Append( command );
-		}
-
-		SpeechRecognitionListConstraint^ spConstraint = ref new SpeechRecognitionListConstraint( speechCommandList );
-		m_speechRecognizer->Constraints->Clear();
-		m_speechRecognizer->Constraints->Append( spConstraint );
-		return create_task( m_speechRecognizer->CompileConstraintsAsync() ).then( [this]( task<SpeechRecognitionCompilationResult^> previousTask ) {
-			try
-			{
-				SpeechRecognitionCompilationResult^ compilationResult = previousTask.get();
-
-				if ( compilationResult->Status == SpeechRecognitionResultStatus::Success )
-				{
-					// If compilation succeeds, we can start listening for results.
-					return create_task( m_speechRecognizer->ContinuousRecognitionSession->StartAsync() ).then( [this]( task<void> startAsyncTask ) {
-
-						try
-						{
-							// StartAsync may throw an exception if your app doesn't have Microphone permissions. 
-							// Make sure they're caught and handled appropriately (otherwise the app may silently not work as expected)
-							startAsyncTask.get();
-							OutputDebugString( L"Successfully started ContinuousRecognitionSession\n" );
-							return true;
-						}
-						catch ( Exception^ exception )
-						{
-							OutputDebugString(
-								( std::wstring( L"Exception while trying to start speech Recognition: " ) +
-									exception->Message->Data() +
-									L"\n" ).c_str()
-							);
-
-							return false;
-						}
-					} );
-				}
-				else
-				{
-					OutputDebugStringW( L"Could not initialize constraint-based speech engine!\n" );
-
-					// Handle errors here.
-					return create_task( [this] {return false; } );
-				}
-			}
-			catch ( Exception^ exception )
-			{
-				// Note that if you get an "Access is denied" exception, you might need to enable the microphone 
-				// privacy setting on the device and/or add the microphone capability to your app manifest.
-
-				OutputDebugString(
-					( std::wstring( L"Exception while trying to initialize speech command list:" ) +
-						exception->Message->Data() +
-						L"\n" ).c_str()
-				);
-
-				// Handle exceptions here.
-				return create_task( [this] {return false; } );
-			}
-		} );
-	} );
-}
-
 
 void SpeechTestMain::SetHolographicSpace( HolographicSpace^ holographicSpace )
 {
@@ -667,7 +548,7 @@ void SpeechTestMain::OnCameraRemoved(
 	m_deviceResources->RemoveHolographicCamera( args->Camera );
 }
 
-void SpeechTestMain::OnResultGenerated( SpeechContinuousRecognitionSession ^sender, SpeechContinuousRecognitionResultGeneratedEventArgs ^args )
+void SpeechTestMain::OnSpeechResultGenerated( SpeechContinuousRecognitionSession ^sender, SpeechContinuousRecognitionResultGeneratedEventArgs ^args )
 {
 	OutputDebugString( L"OnResultGenerated\n" );
 
