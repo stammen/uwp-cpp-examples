@@ -59,7 +59,6 @@ namespace SpeechTest
         // Handle HMD activated event
         void OnActivated(bool activated);
 
-
     private:
         // Asynchronously creates resources for new holographic cameras.
         void OnCameraAdded(

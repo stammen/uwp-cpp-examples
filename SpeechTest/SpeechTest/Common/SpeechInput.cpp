@@ -34,17 +34,13 @@ SpeechInput::SpeechInput()
 
 SpeechInput::~SpeechInput()
 {
-
+    Stop();
 }
 
 void SpeechInput::SetDelegate(IMRAppServiceListenerDelegate* delegate)
 {
     m_delegate = delegate;
 }
-
-IMRAppServiceListenerDelegate* m_delegate;
-
-
 
 Concurrency::task<bool> SpeechInput::Available()
 {
@@ -89,7 +85,6 @@ Concurrency::task<bool> SpeechInput::Start()
         // Cancelling recognition prevents any currently recognized speech from
         // generating a ResultGenerated event. StopAsync() will allow the final session to 
         // complete.
-
         return create_task([this]()
         {
             return create_task(m_speechRecognizer->ContinuousRecognitionSession->CancelAsync()).then([this]() {
@@ -256,39 +251,5 @@ void SpeechInput::ContinuousRecognitionSession_ResultGenerated(SpeechContinuousR
     {
         m_delegate->OnSpeechResultGenerated(sender, args);
     }
-
-    // The garbage rule will not have a tag associated with it, the other rules will return a string matching the tag provided
-    // when generating the grammar.
-    String^ tag = L"unknown";
-    if (args->Result->Constraint != nullptr)
-    {
-        tag = args->Result->Constraint->Tag;
-    }
-
-#if 0
-    // Developers may decide to use per-phrase confidence levels in order to tune the behavior of their 
-    // grammar based on testing.
-    if (args->Result->Confidence == SpeechRecognitionConfidence::Medium ||
-        args->Result->Confidence == SpeechRecognitionConfidence::High)
-    {
-        Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, args, tag]()
-        {
-            heardYouSayTextBlock->Visibility = Windows::UI::Xaml::Visibility::Visible;
-            resultTextBlock->Visibility = Windows::UI::Xaml::Visibility::Visible;
-            resultTextBlock->Text = L"Heard: '" + args->Result->Text + L"', Tag( '" + tag + L"', Confidence: " + args->Result->Confidence.ToString() + ")";
-        }));
-    }
-    else
-    {
-        // In some scenarios, a developer may choose to ignore giving the user feedback in this case, if speech
-        // is not the primary input mechanism for the application.
-        Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, args, tag]()
-        {
-            heardYouSayTextBlock->Visibility = Windows::UI::Xaml::Visibility::Collapsed;
-            resultTextBlock->Visibility = Windows::UI::Xaml::Visibility::Visible;
-            resultTextBlock->Text = L"Sorry, I didn't catch that. (Heard: '" + args->Result->Text + L"', (Tag: '" + tag + L"', Confidence: " + args->Result->Confidence.ToString() + L")";
-        }));
-    }
-#endif
 }
 
