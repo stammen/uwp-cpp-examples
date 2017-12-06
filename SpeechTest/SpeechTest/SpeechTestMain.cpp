@@ -27,8 +27,12 @@ using namespace Windows::Media::Capture;
 
 
 // Loads and initializes application assets when the application is loaded.
-SpeechTestMain::SpeechTestMain( const std::shared_ptr<DX::DeviceResources>& deviceResources ) :
-	m_deviceResources( deviceResources )
+SpeechTestMain::SpeechTestMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
+    m_deviceResources(deviceResources),
+    m_speechInitialized(false),
+    m_activated(false),
+    m_micInitialized(false),
+    m_hasMicPermission(false)
 {
 	// Register to be notified if the device is lost or recreated.
 	m_deviceResources->RegisterDeviceNotify( this );
@@ -54,6 +58,23 @@ void SpeechTestMain::InitializeSpeechCommandList()
 	// You can use non-dictionary words as speech commands.
 	m_speechCommandData->Insert( L"SpeechRecognizer", float4( 0.5f, 0.1f, 1.f, 1.f ) );
 }
+
+void SpeechTestMain::InitializeMicrophone()
+{
+    m_speechInput->Available().then([this](bool hasMicPermission)
+    {
+        m_hasMicPermission = hasMicPermission;
+        if (m_hasMicPermission)
+        {
+            OutputDebugString(L"Microphone permission enabled\n");
+        }
+        else
+        {
+            OutputDebugString(L"Microphone permission disabled\n");
+        }
+    });
+}
+
 
 void SpeechTestMain::InitializeSpeech()
 {
@@ -106,53 +127,14 @@ void SpeechTestMain::InitializeSpeechWithDelay()
 		// run this ThreadPoolTimer on the main UI thread
 		dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new Windows::UI::Core::DispatchedHandler( [this, dispatcher]() 
         {
-            m_speechInput->Available().then( [this]( bool hasMicPermission ) 
-            {
-				if ( true == hasMicPermission )
-				{
-					OutputDebugString( L"Have microphone permissions\n" );
-
-                    // Here, we compile the list of voice commands by reading them from the map.
-                    Platform::Collections::Vector<String^>^ speechCommandList = ref new Platform::Collections::Vector<String^>();
-                    for each (auto pair in m_speechCommandData)
-                    {
-                        speechCommandList->Append(pair->Key);
-                    }
-
-                    m_speechInput->Initialize(speechCommandList).then( [this]( bool result ) 
-                    {
-						if ( true == result )
-						{
-							OutputDebugString( L"Started recognizing speech commands\n" );
-                            m_speechInput->Start().then([this](bool result) {
-                                m_speechInput->SetDelegate(this);
-                            });
-						}
-						else
-						{
-							OutputDebugString( L"Could NOT start recognizing speech commands\n" );
-						}
-					});
-				}
-				else
-				{
-					OutputDebugString( L"Could not get microphone permissions\n" );
-				}
-			});
+            InitializeSpeech();
 		}));
 	}), delay );
 }
 
 void SpeechTestMain::OnActivated(bool activated)
 {
-    if (activated)
-    {
-        InitializeSpeech();
-    }
-    else
-    {
-        m_speechInput->Stop();
-    }
+    m_activated = activated;
 }
 
 void SpeechTestMain::SetHolographicSpace( HolographicSpace^ holographicSpace )
@@ -257,9 +239,42 @@ SpeechTestMain::~SpeechTestMain()
 	UnregisterHolographicEventHandlers();
 }
 
+void SpeechTestMain::UpdateSpeechRecognizer(double time)
+{
+    if (time > 6.0)
+    {
+        if (m_activated && !m_micInitialized)
+        {
+            m_micInitialized = true;
+            InitializeMicrophone();
+            OutputDebugString(L"Requesting mic permission\n");
+        }
+
+        if (m_hasMicPermission)
+        {
+            if (m_activated && !m_speechInitialized)
+            {
+                m_speechInitialized = true;
+                InitializeSpeech();
+                OutputDebugString(L"Starting speech recognition\n");
+            }
+            else if (!m_activated && m_speechInitialized)
+            {
+                m_speechInitialized = false;
+                m_micInitialized = false;
+                m_hasMicPermission = false;
+                m_speechInput->Stop();
+                OutputDebugString(L"Stopping speech recognition\n");
+            }
+        }
+    }
+}
+
 // Updates the application state once per frame.
 HolographicFrame^ SpeechTestMain::Update()
 {
+    UpdateSpeechRecognizer(m_timer.GetTotalSeconds());
+
 	// Before doing the timer update, there is some work to do per-frame
 	// to maintain holographic rendering. First, we will get information
 	// about the current frame.

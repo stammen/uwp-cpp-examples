@@ -60,6 +60,9 @@ namespace SpeechTest
         void OnActivated(bool activated);
 
     private:
+        void UpdateSpeechRecognizer(double time);
+        void InitializeMicrophone();
+
         // Asynchronously creates resources for new holographic cameras.
         void OnCameraAdded(
             Windows::Graphics::Holographic::HolographicSpace^ sender,
@@ -133,5 +136,11 @@ namespace SpeechTest
         Windows::Foundation::EventRegistrationToken                     m_locatabilityChangedToken;
 
         Speech::SpeechInput^                                             m_speechInput;
+        bool                                                             m_speechInitialized;
+        bool                                                             m_activated;
+        bool                                                             m_micInitialized;
+        bool                                                             m_hasMicPermission;
+
+        
     };
 }
