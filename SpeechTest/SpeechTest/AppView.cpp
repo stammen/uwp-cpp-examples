@@ -63,6 +63,10 @@ void AppView::SetWindow(CoreWindow^ window)
     window->KeyDown +=
         ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &AppView::OnKeyPressed);
 
+    // Register for pointer pressed notifications.
+    window->PointerPressed +=
+        ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &AppView::OnPointerPressed);
+
     // Register for notification that the app window is being closed.
     window->Closed +=
         ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &AppView::OnWindowClosed);
@@ -88,9 +92,6 @@ void AppView::SetWindow(CoreWindow^ window)
 
     // The main class uses the holographic space for updates and rendering.
     m_main->SetHolographicSpace(m_holographicSpace);
-
-	OutputDebugString( L"SetWindow()\n" );
-	//m_main->InitializeSpeechWithDelay();
 }
 
 // The Load method can be used to initialize scene resources or to load a
@@ -136,6 +137,18 @@ void AppView::Uninitialize()
 
 
 // Application lifecycle event handlers
+
+// Called when the app is prelaunched. Use this method to load resources ahead of time
+// and enable faster launch times.
+void AppView::OnLaunched(LaunchActivatedEventArgs^ args)
+{
+    if (args->PrelaunchActivated)
+    {
+        //
+        // TODO: Insert code to preload resources here.
+        //
+    }
+}
 
 // Called when the app view is activated. Activates the app's CoreWindow.
 void AppView::OnViewActivated(CoreApplicationView^ sender, IActivatedEventArgs^ args)
@@ -233,3 +246,13 @@ void AppView::OnKeyPressed(CoreWindow^ sender, KeyEventArgs^ args)
     //       your holographic app.
     //
 }
+
+void AppView::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
+{
+    // Allow the user to interact with the holographic world using the mouse.
+    if (m_main != nullptr)
+    {
+        m_main->OnPointerPressed();
+    }
+}
+

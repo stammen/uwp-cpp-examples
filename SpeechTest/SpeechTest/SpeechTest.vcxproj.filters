@@ -2,17 +2,17 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Common">
-      <UniqueIdentifier>5003d028-5cc4-4041-85d6-b3ff071857bd</UniqueIdentifier>
+      <UniqueIdentifier>ae247418-9e90-40b7-a3e3-da799f0945c6</UniqueIdentifier>
     </Filter>
     <Filter Include="Assets">
-      <UniqueIdentifier>7f18a61f-6319-4677-b287-4fa233c3f8c7</UniqueIdentifier>
+      <UniqueIdentifier>b5d21796-b7c8-4ae7-8b76-4d83c770a028</UniqueIdentifier>
       <Extensions>bmp;fbx;gif;jpg;jpeg;tga;tiff;tif;png</Extensions>
     </Filter>
     <Filter Include="Content">
-      <UniqueIdentifier>72362063-11db-4949-9097-eab8ccce5f31</UniqueIdentifier>
+      <UniqueIdentifier>6bf935b9-d54f-498a-898b-210b9e557428</UniqueIdentifier>
     </Filter>
     <Filter Include="Content\Shaders">
-      <UniqueIdentifier>a5435006-1b2e-426e-969e-2fc9cf4e429f</UniqueIdentifier>
+      <UniqueIdentifier>d25d080e-34b9-4252-ab67-2156a261275b</UniqueIdentifier>
     </Filter>
     <ClInclude Include="Common\DirectXHelper.h">
       <Filter>Common</Filter>
@@ -92,6 +92,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Content\VertexShaderShared.hlsl">
+      <Filter>Content\Shaders</Filter>
+    </None>
     <FxCompile Include="Content\VertexShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>

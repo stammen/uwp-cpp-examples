@@ -81,7 +81,7 @@ void DX::DeviceResources::InitializeUsingHolographicSpace()
     // the corresponding DXGI adapter and use it to create Direct3D devices
     // and device contexts. Otherwise, there is no restriction on the DXGI
     // adapter the app can use.
-    if ((id.HighPart != 0) && (id.LowPart != 0))
+    if ((id.HighPart != 0) || (id.LowPart != 0))
     {
         UINT createFlags = 0;
 #ifdef DEBUG
@@ -152,9 +152,10 @@ void DX::DeviceResources::CreateDeviceResources()
     ComPtr<ID3D11Device> device;
     ComPtr<ID3D11DeviceContext> context;
 
+    const D3D_DRIVER_TYPE driverType = m_dxgiAdapter == nullptr ? D3D_DRIVER_TYPE_HARDWARE : D3D_DRIVER_TYPE_UNKNOWN;
     const HRESULT hr = D3D11CreateDevice(
         m_dxgiAdapter.Get(),        // Either nullptr, or the primary adapter determined by Windows Holographic.
-        D3D_DRIVER_TYPE_HARDWARE,   // Create a device using the hardware graphics driver.
+        driverType,                 // Create a device using the hardware graphics driver.
         0,                          // Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
         creationFlags,              // Set debug and Direct2D compatibility flags.
         featureLevels,              // List of feature levels this app can support.
