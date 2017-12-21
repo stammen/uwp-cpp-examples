@@ -749,7 +749,8 @@ void SpeechTest::SpeechTestMain::OnRecognizerStateChanged(Windows::Media::Speech
 
 void SpeechTest::SpeechTestMain::OnSpeechRecognizerError(Platform::String^ error)
 {
-
+	auto messageDialog = ref new Windows::UI::Popups::MessageDialog(error, "Error");
+	create_task(messageDialog->ShowAsync());
 
 }
 

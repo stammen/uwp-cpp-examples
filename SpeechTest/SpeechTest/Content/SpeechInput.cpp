@@ -103,7 +103,7 @@ void SpeechInput::Start(IMRAppServiceListenerDelegate* delegate, Platform::Colle
 
 	if (m_cancellationToken.get() != nullptr || m_speechRecognizer != nullptr)
 	{
-
+		throw ref new Platform::Exception(-1, L"Reentrant call to Start()");
 	}
 
 	m_cancellationToken = std::make_shared<Concurrency::cancellation_token_source>(cancellation_token_source());
