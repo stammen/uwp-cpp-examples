@@ -32,16 +32,15 @@ namespace Speech
     public:
         SpeechInput();
         virtual ~SpeechInput();
-        void Stop();
 
     internal:
-		Concurrency::task<bool> Initialize(Platform::Collections::Vector<Platform::String^>^ keys);
 		void Start(IMRAppServiceListenerDelegate* delegate, Platform::Collections::Vector<Platform::String^>^ keys);
 		static Concurrency::task<bool> Available();
 
     private:
-
+		Concurrency::task<bool> Initialize(Platform::Collections::Vector<Platform::String^>^ keys);
 		Concurrency::task<void> StartSpeechRecognition();
+		void Stop();
 		void StopSpeechRecognition();
 
 		void SetDelegate(IMRAppServiceListenerDelegate* delegate);

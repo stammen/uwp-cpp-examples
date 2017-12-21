@@ -185,8 +185,6 @@ void SpeechInput::Start(IMRAppServiceListenerDelegate* delegate, Platform::Colle
 	});
 }
 
-
-
 Concurrency::task<void> SpeechInput::StartSpeechRecognition()
 {
     // The recognizer can only start listening in a continuous fashion if the recognizer is currently idle.
@@ -203,8 +201,6 @@ Concurrency::task<void> SpeechInput::StartSpeechRecognition()
 		return create_task(m_speechRecognizer->ContinuousRecognitionSession->CancelAsync());
 	}
 }
-
-
 
 Concurrency::task<bool> SpeechInput::Initialize(Platform::Collections::Vector<Platform::String^>^ keys)
 {
