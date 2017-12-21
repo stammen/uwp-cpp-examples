@@ -111,6 +111,9 @@ namespace SpeechTest
 			Windows::Media::SpeechRecognition::SpeechRecognizer^ recognizer,
 			Windows::Media::SpeechRecognition::SpeechRecognizerStateChangedEventArgs^ args
 		);
+
+		void OnSpeechRecognizerError(Platform::String^ error);
+
  
 
 

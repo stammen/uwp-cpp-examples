@@ -46,7 +46,6 @@ SpeechTestMain::SpeechTestMain(const std::shared_ptr<DX::DeviceResources>& devic
         OnGamepadAdded(nullptr, gamepad);
     }
 
-    m_speechInput = ref new Speech::SpeechInput();
     InitializeSpeechCommandList();
 }
 
@@ -568,7 +567,7 @@ void SpeechTestMain::InitializeSpeechCommandList()
 
 void SpeechTestMain::InitializeMicrophone()
 {
-    m_speechInput->Available().then([this](bool hasMicPermission)
+	Speech::SpeechInput::Available().then([this](bool hasMicPermission)
     {
         m_hasMicPermission = hasMicPermission;
         if (m_hasMicPermission)
@@ -584,41 +583,18 @@ void SpeechTestMain::InitializeMicrophone()
 
 void SpeechTestMain::InitializeSpeech()
 {
-    m_speechInput->Available().then([this](bool hasMicPermission)
-    {
-        if (true == hasMicPermission)
-        {
-            OutputDebugString(L"Have microphone permissions\n");
+	m_speechInput = nullptr;
 
-            // Here, we compile the list of voice commands by reading them from the map.
-            Platform::Collections::Vector<String^>^ speechCommandList = ref new Platform::Collections::Vector<String^>();
-            for each (auto pair in m_speechCommandData)
-            {
-                speechCommandList->Append(pair->Key);
-            }
+	// Here, we compile the list of voice commands by reading them from the map.
+	Platform::Collections::Vector<String^>^ speechCommandList = ref new Platform::Collections::Vector<String^>();
+	for each (auto pair in m_speechCommandData)
+	{
+		speechCommandList->Append(pair->Key);
+	}
 
-            m_speechInput->Initialize(speechCommandList).then([this](bool result)
-            {
-                if (true == result)
-                {
-                    OutputDebugString(L"Started recognizing speech commands\n");
-                    m_speechInput->Start().then([this](bool result) {
-                        m_speechInput->SetDelegate(this);
-                    });
-                }
-                else
-                {
-                    OutputDebugString(L"Could NOT start recognizing speech commands\n");
-                }
-            });
-        }
-        else
-        {
-            OutputDebugString(L"Could not get microphone permissions\n");
-        }
-    });
+	m_speechInput = ref new Speech::SpeechInput();
+	m_speechInput->Start(this, speechCommandList);
 }
-
 
 void SpeechTestMain::InitializeSpeechWithDelay()
 {
@@ -640,7 +616,7 @@ void SpeechTestMain::InitializeSpeechWithDelay()
 
 void SpeechTestMain::OnActivated(bool activated)
 {
-    m_activated = activated;
+	m_activated = activated;
 }
 
 void SpeechTestMain::UpdateSpeechRecognizer(double time)
@@ -667,7 +643,7 @@ void SpeechTestMain::UpdateSpeechRecognizer(double time)
                 m_speechInitialized = false;
                 m_micInitialized = false;
                 m_hasMicPermission = false;
-                m_speechInput->Stop();
+				m_speechInput = nullptr;
                 OutputDebugString(L"Stopping speech recognition\n");
             }
         }
@@ -770,6 +746,13 @@ void SpeechTest::SpeechTestMain::OnRecognizerStateChanged(Windows::Media::Speech
         break;
     }
 }
+
+void SpeechTest::SpeechTestMain::OnSpeechRecognizerError(Platform::String^ error)
+{
+
+
+}
+
 
 
 

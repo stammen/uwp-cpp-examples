@@ -13,6 +13,8 @@
 
 #include <collection.h>
 #include <ppltasks.h>
+#include <pplcancellation_token.h>
+#include <memory>
 
 namespace Speech
 {
@@ -20,8 +22,9 @@ namespace Speech
     {
         virtual void OnSpeechQualityDegraded(Windows::Media::SpeechRecognition::SpeechRecognizer^ recognizer, Windows::Media::SpeechRecognition::SpeechRecognitionQualityDegradingEventArgs^ args) = 0;
         virtual void OnSpeechResultGenerated(Windows::Media::SpeechRecognition::SpeechContinuousRecognitionSession ^sender, Windows::Media::SpeechRecognition::SpeechContinuousRecognitionResultGeneratedEventArgs ^args) = 0;
-        virtual void OnRecognizerStateChanged(Windows::Media::SpeechRecognition::SpeechRecognizer^ recognizer, Windows::Media::SpeechRecognition::SpeechRecognizerStateChangedEventArgs^ args) = 0;
-    };
+		virtual void OnRecognizerStateChanged(Windows::Media::SpeechRecognition::SpeechRecognizer^ recognizer, Windows::Media::SpeechRecognition::SpeechRecognizerStateChangedEventArgs^ args) = 0;
+		virtual void OnSpeechRecognizerError(Platform::String^ error) = 0;
+	};
 
 
     ref class SpeechInput sealed
@@ -32,12 +35,17 @@ namespace Speech
         void Stop();
 
     internal:
-        void SetDelegate(IMRAppServiceListenerDelegate* delegate);
-        Concurrency::task<bool> Available();
-        Concurrency::task<bool> Start();
-        Concurrency::task<bool> Initialize(Platform::Collections::Vector<Platform::String^>^ keys);
+		Concurrency::task<bool> Initialize(Platform::Collections::Vector<Platform::String^>^ keys);
+		void Start(IMRAppServiceListenerDelegate* delegate, Platform::Collections::Vector<Platform::String^>^ keys);
+		static Concurrency::task<bool> Available();
 
     private:
+
+		Concurrency::task<void> StartSpeechRecognition();
+		void StopSpeechRecognition();
+
+		void SetDelegate(IMRAppServiceListenerDelegate* delegate);
+
         static const unsigned int HResultPrivacyStatementDeclined = 0x80045509;
         static const unsigned int HResultRecognizerNotFound = 0x8004503a;
 
@@ -61,6 +69,8 @@ namespace Speech
 
         IMRAppServiceListenerDelegate* m_delegate;
 
-        bool m_bHasMicPermissions;
+		std::shared_ptr<Concurrency::cancellation_token_source> m_cancellationToken;
+		Platform::String^ m_errorMessage;
+
     };
 }
