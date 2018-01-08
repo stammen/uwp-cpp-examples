@@ -20,6 +20,7 @@ namespace SpeechTest
 
     protected:
         // Application lifecycle event handlers.
+        void OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args);
         void OnViewActivated(Windows::ApplicationModel::Core::CoreApplicationView^ sender, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
         void OnSuspending(Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args);
         void OnResuming(Platform::Object^ sender, Platform::Object^ args);
@@ -27,10 +28,11 @@ namespace SpeechTest
         // Window event handlers.
         void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args);
         void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ args);
-        void OnActivated(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowActivatedEventArgs^ args);
 
         // CoreWindow input event handlers.
         void OnKeyPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+        void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+        void OnActivated(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowActivatedEventArgs^ args);
 
     private:
         std::unique_ptr<SpeechTestMain> m_main;
@@ -50,4 +52,3 @@ namespace SpeechTest
         virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView();
     };
 }
-

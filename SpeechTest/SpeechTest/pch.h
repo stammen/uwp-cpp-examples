@@ -8,6 +8,7 @@
 #include <dwrite_2.h>
 #include <map>
 #include <mutex>
+#include <vector>
 #include <wincodec.h>
 #include <WindowsNumerics.h>
 

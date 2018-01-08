@@ -46,6 +46,9 @@ namespace SpeechTest
         void SaveAppState();
         void LoadAppState();
 
+        // Handle mouse input.
+        void OnPointerPressed();
+
         // IDeviceNotify
         virtual void OnDeviceLost();
         virtual void OnDeviceRestored();
@@ -60,6 +63,9 @@ namespace SpeechTest
         void OnActivated(bool activated);
 
     private:
+        void UpdateSpeechRecognizer(double time);
+        void InitializeMicrophone();
+
         // Asynchronously creates resources for new holographic cameras.
         void OnCameraAdded(
             Windows::Graphics::Holographic::HolographicSpace^ sender,
@@ -75,6 +81,15 @@ namespace SpeechTest
         void OnLocatabilityChanged(
             Windows::Perception::Spatial::SpatialLocator^ sender,
             Platform::Object^ args);
+
+        // Used to be aware of gamepads that are plugged in after the app starts.
+        void OnGamepadAdded(Platform::Object^, Windows::Gaming::Input::Gamepad^ args);
+
+        // Used to stop updating gamepads that are removed while the app is running.
+        void OnGamepadRemoved(Platform::Object^, Windows::Gaming::Input::Gamepad^ args);
+
+        // Used to respond to changes to the default spatial locator.
+        void OnHolographicDisplayIsAvailableChanged(Platform::Object^, Platform::Object^);
 
         // Clears event registration state. Used when changing to a new HolographicSpace
         // and when tearing down AppMain.
@@ -96,6 +111,9 @@ namespace SpeechTest
 			Windows::Media::SpeechRecognition::SpeechRecognizer^ recognizer,
 			Windows::Media::SpeechRecognition::SpeechRecognizerStateChangedEventArgs^ args
 		);
+
+		void OnSpeechRecognizerError(Platform::String^ error);
+
  
 
 
@@ -121,17 +139,41 @@ namespace SpeechTest
         // Represents the holographic space around the user.
         Windows::Graphics::Holographic::HolographicSpace^               m_holographicSpace;
 
-        // SpatialLocator that is attached to the primary camera.
-        Windows::Perception::Spatial::SpatialLocator^                   m_locator;
+        // SpatialLocator that is attached to the default HolographicDisplay.
+        Windows::Perception::Spatial::SpatialLocator^                   m_spatialLocator;
 
-        // A reference frame attached to the holographic camera.
-        Windows::Perception::Spatial::SpatialStationaryFrameOfReference^ m_referenceFrame;
+        // A stationary reference frame based on spatialLocator.
+        Windows::Perception::Spatial::SpatialStationaryFrameOfReference^ m_stationaryReferenceFrame;
 
         // Event registration tokens.
         Windows::Foundation::EventRegistrationToken                     m_cameraAddedToken;
         Windows::Foundation::EventRegistrationToken                     m_cameraRemovedToken;
         Windows::Foundation::EventRegistrationToken                     m_locatabilityChangedToken;
+        Windows::Foundation::EventRegistrationToken                     m_gamepadAddedEventToken;
+        Windows::Foundation::EventRegistrationToken                     m_gamepadRemovedEventToken;
+        Windows::Foundation::EventRegistrationToken                     m_holographicDisplayIsAvailableChangedEventToken;
 
+        // Keep track of gamepads.
+        struct GamepadWithButtonState
+        {
+            GamepadWithButtonState(
+                Windows::Gaming::Input::Gamepad^ gamepad,
+                bool buttonAWasPressedLastFrame)
+            {
+                this->gamepad = gamepad;
+                this->buttonAWasPressedLastFrame = buttonAWasPressedLastFrame;
+            }
+            Windows::Gaming::Input::Gamepad^ gamepad;
+            bool buttonAWasPressedLastFrame = false;
+        };
+        std::vector<GamepadWithButtonState>                             m_gamepads;
+
+        // Keep track of mouse input.
+        bool                                                            m_pointerPressed = false;
         Speech::SpeechInput^                                             m_speechInput;
+        bool                                                             m_speechInitialized;
+        bool                                                             m_activated;
+        bool                                                             m_micInitialized;
+        bool                                                             m_hasMicPermission;
     };
 }

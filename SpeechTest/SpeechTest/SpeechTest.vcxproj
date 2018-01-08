@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5003d028-5cc4-4041-85d6-b3ff071857bd}</ProjectGuid>
+    <ProjectGuid>{ae247418-9e90-40b7-a3e3-da799f0945c6}</ProjectGuid>
     <Keyword>HolographicApp</Keyword>
     <RootNamespace>SpeechTest</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
@@ -180,6 +180,7 @@
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
+    <None Include="Content\VertexShaderShared.hlsl" />
     <FxCompile Include="Content\VertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
