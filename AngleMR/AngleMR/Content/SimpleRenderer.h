@@ -9,12 +9,13 @@ namespace AngleMR
     class SimpleRenderer
     {
     public:
-        SimpleRenderer();
+        SimpleRenderer(bool isHolographic = true);
         ~SimpleRenderer();
         void Render();
         void Update(const DX::StepTimer& timer);
 
         void UpdateWindowSize(GLsizei width, GLsizei height);
+        void UpdateProjections(const DirectX::XMFLOAT4X4* proj);
         void CreateDeviceDependentResources();
         void ReleaseDeviceDependentResources();
 
@@ -38,11 +39,15 @@ namespace AngleMR
         GLint mModelUniformLocation;
         GLint mViewUniformLocation;
         GLint mProjUniformLocation;
+        GLint mRtvIndexAttribLocation;
+        GLint mHolographicViewProjectionMatrix;
 
         GLuint mVertexPositionBuffer;
         GLuint mVertexColorBuffer;
         GLuint mIndexBuffer;
+        GLuint mRenderTargetArrayIndices;
 
         int mDrawCount;
+        bool mIsHolographic;
     };
 }

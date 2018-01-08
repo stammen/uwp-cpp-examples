@@ -91,7 +91,7 @@ void AngleMRMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
     //   occurred.
 
     // Initialize the sample hologram.
-    m_renderer = std::make_unique<SimpleRenderer>();
+    m_renderer = std::make_unique<SimpleRenderer>(true);
 }
 
 void AngleMRMain::UnregisterHolographicEventHandlers()
@@ -290,8 +290,11 @@ bool AngleMRMain::Render(Windows::Graphics::Holographic::HolographicFrame^ holog
             if (cameraActive)
             {
                 // Draw the sample hologram.
+                auto projections = pCameraResources->getCameraProjections();
+                m_renderer->UpdateProjections(projections);
+
                 auto size = pCameraResources->GetRenderTargetSize();
-                m_renderer->UpdateWindowSize(size.Width, size.Height);
+                m_renderer->UpdateWindowSize(static_cast<GLsizei>(size.Width), static_cast<GLsizei>(size.Height));
                 m_renderer->Render();
             }
 #endif

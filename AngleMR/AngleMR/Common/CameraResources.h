@@ -53,6 +53,10 @@ namespace DX
         // The holographic camera these resources are for.
         Windows::Graphics::Holographic::HolographicCamera^ GetHolographicCamera() const { return m_holographicCamera; }
 
+        const DirectX::XMFLOAT4X4* getCameraProjections() {
+            return &m_viewProj[0];
+        };
+
     private:
         // Direct3D rendering objects. Required for 3D.
         Microsoft::WRL::ComPtr<ID3D11RenderTargetView>      m_d3dRenderTargetView;
@@ -79,6 +83,9 @@ namespace DX
         std::shared_ptr<ANGLE::AngleResources>              m_angleResources;
 
         std::map<Microsoft::WRL::ComPtr<ID3D11Texture2D>, HANDLE> m_backBuffers;
+
+        DirectX::XMFLOAT4X4 m_viewProj[2];
+
 
     };
 }

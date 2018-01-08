@@ -94,10 +94,11 @@ GLuint CompileProgram(const std::string &vsSource, const std::string &fsSource)
     return program;
 }
 
-SimpleRenderer::SimpleRenderer() :
+SimpleRenderer::SimpleRenderer(bool isHolographic) :
     mWindowWidth(0),
     mWindowHeight(0),
-    mDrawCount(0)
+    mDrawCount(0),
+    mIsHolographic(isHolographic)
 {
     CreateDeviceDependentResources();
 
@@ -203,6 +204,11 @@ void SimpleRenderer::Update(const DX::StepTimer& timer)
 void SimpleRenderer::Render()
 {
     glEnable(GL_DEPTH_TEST);
+
+    // On HoloLens, it is important to clear to transparent.
+    glClearColor(0.0f, 0.f, 0.f, 0.f);
+
+    // On HoloLens, this will also update the camera buffers (constant and back).
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (mProgram == 0)
@@ -218,33 +224,80 @@ void SimpleRenderer::Render()
     glEnableVertexAttribArray(mColorAttribLocation);
     glVertexAttribPointer(mColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 50.0f);
+    MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -2.f);
+    MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 50.0f, position);
     glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
 
-    MathHelper::Matrix4 viewMatrix = MathHelper::SimpleViewMatrix();
-    glUniformMatrix4fv(mViewUniformLocation, 1, GL_FALSE, &(viewMatrix.m[0][0]));
+    if (mIsHolographic)
+    {
+        // Load the render target array indices into an array.
+        glBindBuffer(GL_ARRAY_BUFFER, mRenderTargetArrayIndices);
+        glVertexAttribPointer(mRtvIndexAttribLocation, 1, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(mRtvIndexAttribLocation);
 
-    MathHelper::Matrix4 projectionMatrix = MathHelper::SimpleProjectionMatrix(float(mWindowWidth) / float(mWindowHeight));
-    glUniformMatrix4fv(mProjUniformLocation, 1, GL_FALSE, &(projectionMatrix.m[0][0]));
+        // Enable instancing.
+        glVertexAttribDivisorANGLE(mRtvIndexAttribLocation, 1);
 
-    // Draw 36 indices: six faces, two triangles per face, 3 indices per triangle
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-    glDrawElements(GL_TRIANGLES, (6 * 2) * 3, GL_UNSIGNED_SHORT, 0);
+        // Draw 36 indices: six faces, two triangles per face, 3 indices per triangle
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
+        glDrawElementsInstancedANGLE(GL_TRIANGLES, (6 * 2) * 3, GL_UNSIGNED_SHORT, 0, 2);
+    }
+    else
+    {
+        MathHelper::Matrix4 viewMatrix = MathHelper::SimpleViewMatrix();
+        glUniformMatrix4fv(mViewUniformLocation, 1, GL_FALSE, &(viewMatrix.m[0][0]));
+
+        MathHelper::Matrix4 projectionMatrix = MathHelper::SimpleProjectionMatrix(float(mWindowWidth) / float(mWindowHeight));
+        glUniformMatrix4fv(mProjUniformLocation, 1, GL_FALSE, &(projectionMatrix.m[0][0]));
+
+        // Draw 36 indices: six faces, two triangles per face, 3 indices per triangle
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
+        glDrawElements(GL_TRIANGLES, (6 * 2) * 3, GL_UNSIGNED_SHORT, 0);
+    }
+
     glFlush();
     mDrawCount += 1;
 }
 
+void SimpleRenderer::UpdateProjections(const DirectX::XMFLOAT4X4* proj)
+{
+    glUniformMatrix4fv(mHolographicViewProjectionMatrix, 2, GL_FALSE, (GLfloat*)proj);
+}
+
 void SimpleRenderer::UpdateWindowSize(GLsizei width, GLsizei height)
 {
-    glViewport(0, 0, width, height);
-    mWindowWidth = width;
-    mWindowHeight = height;
+    //if (!mIsHolographic)
+    {
+        glViewport(0, 0, width, height);
+
+        mWindowWidth = width;
+        mWindowHeight = height;
+    }
 }
 
 void SimpleRenderer::CreateDeviceDependentResources()
 {
     // Vertex Shader source
-    const std::string vs = STRING
+    const std::string vs = mIsHolographic ?
+        STRING
+        (
+            // holographic version
+
+            uniform mat4 uModelMatrix;
+    uniform mat4 uHolographicViewProjectionMatrix[2];
+    attribute vec4 aPosition;
+    attribute vec4 aColor;
+    attribute float aRenderTargetArrayIndex;
+    varying vec4 vColor;
+    varying float vRenderTargetArrayIndex;
+    void main()
+    {
+        int arrayIndex = int(aRenderTargetArrayIndex); // % 2; // TODO: integer modulus operation supported on ES 3.00 only
+        gl_Position = uHolographicViewProjectionMatrix[arrayIndex] * uModelMatrix * aPosition;
+        vColor = aColor;
+        vRenderTargetArrayIndex = aRenderTargetArrayIndex;
+    }
+    ) : STRING
     (
         uniform mat4 uModelMatrix;
     uniform mat4 uViewMatrix;
@@ -260,7 +313,18 @@ void SimpleRenderer::CreateDeviceDependentResources()
     );
 
     // Fragment Shader source
-    const std::string fs = STRING
+    const std::string fs = mIsHolographic ? // TODO: this should not be necessary
+        STRING
+        (
+            precision mediump float;
+    varying vec4 vColor;
+    varying float vRenderTargetArrayIndex; // TODO: this should not be necessary
+    void main()
+    {
+        gl_FragColor = vColor;
+        float index = vRenderTargetArrayIndex;
+    }
+    ) : STRING
     (
         precision mediump float;
     varying vec4 vColor;
@@ -274,21 +338,24 @@ void SimpleRenderer::CreateDeviceDependentResources()
     mProgram = CompileProgram(vs, fs);
     mPositionAttribLocation = glGetAttribLocation(mProgram, "aPosition");
     mColorAttribLocation = glGetAttribLocation(mProgram, "aColor");
+    mRtvIndexAttribLocation = glGetAttribLocation(mProgram, "aRenderTargetArrayIndex");
     mModelUniformLocation = glGetUniformLocation(mProgram, "uModelMatrix");
     mViewUniformLocation = glGetUniformLocation(mProgram, "uViewMatrix");
     mProjUniformLocation = glGetUniformLocation(mProgram, "uProjMatrix");
-
+    mHolographicViewProjectionMatrix = glGetUniformLocation(mProgram, "uHolographicViewProjectionMatrix");
+    
     // Then set up the cube geometry.
+    float halfWidth = mIsHolographic ? 0.1f : 0.5f;
     GLfloat vertexPositions[] =
     {
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f,  1.0f,
-        1.0f,  1.0f, -1.0f,
-        1.0f,  1.0f,  1.0f,
+        -halfWidth, -halfWidth, -halfWidth,
+        -halfWidth, -halfWidth,  halfWidth,
+        -halfWidth,  halfWidth, -halfWidth,
+        -halfWidth,  halfWidth,  halfWidth,
+        halfWidth, -halfWidth, -halfWidth,
+        halfWidth, -halfWidth,  halfWidth,
+        halfWidth,  halfWidth, -halfWidth,
+        halfWidth,  halfWidth,  halfWidth,
     };
 
     glGenBuffers(1, &mVertexPositionBuffer);
@@ -335,7 +402,13 @@ void SimpleRenderer::CreateDeviceDependentResources()
     glGenBuffers(1, &mIndexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    float renderTargetArrayIndices[] = { 0.f, 1.f };
+    glGenBuffers(1, &mRenderTargetArrayIndices);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRenderTargetArrayIndices);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(renderTargetArrayIndices), renderTargetArrayIndices, GL_STATIC_DRAW);
 }
+
 
 void SimpleRenderer::ReleaseDeviceDependentResources()
 {

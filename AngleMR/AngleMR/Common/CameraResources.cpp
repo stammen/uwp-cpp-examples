@@ -246,7 +246,21 @@ void DX::CameraResources::UpdateViewProjectionBuffer(
             &viewProjectionConstantBufferData.viewProjection[1],
             XMMatrixTranspose(XMLoadFloat4x4(&viewCoordinateSystemTransform.Right) * XMLoadFloat4x4(&cameraProjectionTransform.Right))
             );
+
+        XMStoreFloat4x4(
+            &m_viewProj[0],
+            XMLoadFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&viewCoordinateSystemTransform.Left)) *
+            XMLoadFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&cameraProjectionTransform.Left))
+        );
+        DirectX::XMStoreFloat4x4(
+            &m_viewProj[1],
+            XMLoadFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&viewCoordinateSystemTransform.Right)) *
+            XMLoadFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&cameraProjectionTransform.Right))
+        );
     }
+
+
+
 
     // Use the D3D device context to update Direct3D device-based resources.
     const auto context = deviceResources->GetD3DDeviceContext();
