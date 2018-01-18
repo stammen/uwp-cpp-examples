@@ -35,7 +35,7 @@ namespace AngleMR
         std::unique_ptr<AngleMRMain> m_main;
 
         std::shared_ptr<DX::DeviceResources>                m_deviceResources;
-        std::shared_ptr<ANGLE::AngleResources>              m_angleResources;
+        std::shared_ptr<DX::ANGLE::AngleResources>              m_angleResources;
 
         bool                                                m_windowClosed  = false;
         bool                                                m_windowVisible = true;

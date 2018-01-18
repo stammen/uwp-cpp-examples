@@ -75,7 +75,7 @@ namespace AngleMR
 
         // Cached pointer to device resources.
         std::shared_ptr<DX::DeviceResources>                            m_deviceResources;
-        std::shared_ptr<ANGLE::AngleResources>                          m_angleResources;
+        std::shared_ptr<DX::ANGLE::AngleResources>                          m_angleResources;
 
         // Render loop timer.
         DX::StepTimer                                                   m_timer;

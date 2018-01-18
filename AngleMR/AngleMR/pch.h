@@ -19,6 +19,8 @@
 // OpenGL ES includes
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+#include <GLES3/gl3.h>
+#include <GLES3/gl31.h>
 
 // EGL includes
 #include <EGL/egl.h>
@@ -27,5 +29,9 @@
 
 // ANGLE include for Windows Store
 #include <angle_windowsstore.h>
+
+#define glRenderbufferStorageMultisample glRenderbufferStorageMultisampleANGLE
+#define glTexImage2DMultisample glTexStorage2DMultisample 
+#define GL_MULTISAMPLE GL_MULTISAMPLE_EXT
 
 

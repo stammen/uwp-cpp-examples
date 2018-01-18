@@ -1,23 +1,25 @@
 ﻿
 #include "pch.h"
 #include "AngleResources.h"
+#include "DeviceResources.h"
 
-
+using namespace Microsoft::WRL;
 using namespace Windows::UI::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Platform;
+using namespace DX;
 
 // Constructor for AngleResources.
-ANGLE::AngleResources::AngleResources(HANDLE sharedHandle, float width, float height) :
+ANGLE::AngleResources::AngleResources(DX::DeviceResources *pDeviceResources, Microsoft::WRL::ComPtr<ID3D11Texture2D> texture, float width, float height) :
     mEglDisplay(EGL_NO_DISPLAY),
     mEglContext(EGL_NO_CONTEXT),
     mEglSurface(EGL_NO_SURFACE),
-    m_defaultSharedTexture(sharedHandle),
+    m_defaultSharedTexture(texture),
     m_defaultWidth(width),
     m_defaultHeight(height)
 {
-    InitializeEGL(m_defaultSharedTexture, m_defaultWidth, m_defaultHeight);
+    InitializeEGL(pDeviceResources, m_defaultSharedTexture, m_defaultWidth, m_defaultHeight);
 }
 
 // Recreate all device resources and set them back to the current state.
@@ -25,7 +27,7 @@ ANGLE::AngleResources::AngleResources(HANDLE sharedHandle, float width, float he
 void ANGLE::AngleResources::HandleDeviceLost()
 {
     CleanupEGL();
-    InitializeEGL(m_defaultSharedTexture, m_defaultWidth, m_defaultHeight);
+    //InitializeEGL(m_defaultSharedTexture, m_defaultWidth, m_defaultHeight);
 }
 
 // Present the contents of the swap chain to the screen.
@@ -35,7 +37,7 @@ void ANGLE::AngleResources::Present()
     glFlush();
 }
 
-void ANGLE::AngleResources::InitializeEGL(HANDLE sharedHandle, float width, float height)
+void ANGLE::AngleResources::InitializeEGL(DX::DeviceResources *pDeviceResources, Microsoft::WRL::ComPtr<ID3D11Texture2D> texture, float width, float height)
 {
     const EGLint configAttributes[] =
     {
@@ -50,7 +52,7 @@ void ANGLE::AngleResources::InitializeEGL(HANDLE sharedHandle, float width, floa
 
     const EGLint contextAttributes[] =
     {
-        EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGL_CONTEXT_CLIENT_VERSION, 3,
         EGL_NONE
     };
 
@@ -161,7 +163,7 @@ void ANGLE::AngleResources::InitializeEGL(HANDLE sharedHandle, float width, floa
     }
 
  
-    AddSharedTexture(sharedHandle, width, height);
+    AddHolographicBackBuffer(pDeviceResources, texture, width, height);
 
 
 
@@ -171,18 +173,18 @@ void ANGLE::AngleResources::InitializeEGL(HANDLE sharedHandle, float width, floa
         throw Exception::CreateException(E_FAIL, L"Failed to create EGL context");
     }
 
-    MakeCurrect(sharedHandle);
+    MakeCurrent(texture);
 }
 
 void ANGLE::AngleResources::CleanupEGL()
 {
-    if (mEglDisplay != EGL_NO_DISPLAY && m_elgSurfaces.size() > 0)
+    if (mEglDisplay != EGL_NO_DISPLAY && m_surfaces.size() > 0)
     {
-        for (auto it = m_elgSurfaces.begin(); it != m_elgSurfaces.end(); ++it)
+        for (auto it = m_surfaces.begin(); it != m_surfaces.end(); ++it)
         {
             eglDestroySurface(mEglDisplay, it->second);
         }
-        m_elgSurfaces.clear();
+        m_surfaces.clear();
     }
 
     if (mEglDisplay != EGL_NO_DISPLAY && mEglSurface != EGL_NO_SURFACE)
@@ -204,6 +206,93 @@ void ANGLE::AngleResources::CleanupEGL()
     }
 }
 
+ID3D11Texture2D *ANGLE::AngleResources::ResolveTexture(DX::DeviceResources *pDeviceResources, ID3D11Texture2D *source, unsigned int subresource)
+{
+    D3D11_TEXTURE2D_DESC textureDesc;
+    source->GetDesc(&textureDesc);
+
+    auto device = pDeviceResources->GetD3DDevice();
+
+    if (textureDesc.ArraySize > 0)
+    {
+        D3D11_TEXTURE2D_DESC resolveDesc = { 0 };
+        resolveDesc.Width = textureDesc.Width;
+        resolveDesc.Height = textureDesc.Height;
+        resolveDesc.MipLevels = 1;
+        resolveDesc.ArraySize = 1;
+        resolveDesc.Format = textureDesc.Format;
+        resolveDesc.SampleDesc.Count = 1;
+        resolveDesc.SampleDesc.Quality = 0;
+        resolveDesc.Usage = textureDesc.Usage;
+        resolveDesc.BindFlags = textureDesc.BindFlags;
+        resolveDesc.CPUAccessFlags = textureDesc.MiscFlags;
+        resolveDesc.MiscFlags = textureDesc.MiscFlags;
+
+        ID3D11Texture2D *resolveTexture = NULL;
+        const auto device = pDeviceResources->GetD3DDevice();
+
+        HRESULT result = device->CreateTexture2D(&textureDesc, NULL, &resolveTexture);
+        if (FAILED(result))
+        {
+            return NULL;
+        }
+
+        const auto context = pDeviceResources->GetD3DDeviceContext();
+        context->ResolveSubresource(resolveTexture, 0, source, subresource, textureDesc.Format);
+        resolveTexture->GetDesc(&textureDesc);
+
+
+        return resolveTexture;
+    }
+    else
+    {
+        source->AddRef();
+        return source;
+    }
+}
+
+
+void ANGLE::AngleResources::AddHolographicBackBuffer(DX::DeviceResources *pDeviceResources, Microsoft::WRL::ComPtr<ID3D11Texture2D> texture, float width, float height)
+{
+    auto it = m_surfaces.find(texture);
+    if (it == m_surfaces.end())
+    {
+        ComPtr<ID3D11Texture2D> d3dTex = ResolveTexture(pDeviceResources, texture.Get(), 0);
+
+        ComPtr<IDXGIResource> dxgiResource;
+        HANDLE sharedHandle;
+        HRESULT hr = d3dTex.As(&dxgiResource);
+        if FAILED(hr)
+        {
+            // error handling code
+        }
+
+        hr = dxgiResource->GetSharedHandle(&sharedHandle);
+        if FAILED(hr)
+        {
+            // error handling code
+        }
+
+        EGLSurface surface = EGL_NO_SURFACE;
+
+        EGLint pBufferAttributes[] =
+        {
+            EGL_WIDTH, static_cast<EGLint>(width),
+            EGL_HEIGHT, static_cast<EGLint>(height),
+            EGL_TEXTURE_TARGET, EGL_TEXTURE_2D,
+            EGL_TEXTURE_FORMAT, EGL_TEXTURE_RGBA,
+            EGL_NONE
+        };
+
+        surface = eglCreatePbufferFromClientBuffer(mEglDisplay, EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE, sharedHandle, mEGLConfig, pBufferAttributes);
+        if (surface != EGL_NO_SURFACE)
+        {
+            m_surfaces[texture] = surface;
+        }
+    }
+}
+
+#if 0
 void ANGLE::AngleResources::AddSharedTexture(HANDLE sharedHandle, float width, float height)
 {
     auto it = m_elgSurfaces.find(sharedHandle);
@@ -225,25 +314,56 @@ void ANGLE::AngleResources::AddSharedTexture(HANDLE sharedHandle, float width, f
         }
     }
 }
+#endif
 
-void ANGLE::AngleResources::MakeCurrect(HANDLE sharedHandle)
+void ANGLE::AngleResources::MakeCurrent(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture)
 {
-    auto it = m_elgSurfaces.find(sharedHandle);
-    if (it != m_elgSurfaces.end())
+    auto it = m_surfaces.find(texture);
+    if (it != m_surfaces.end())
     {
         EGLSurface surface = it->second;
         auto result = eglMakeCurrent(mEglDisplay, surface, surface, mEglContext);
         assert(result == EGL_TRUE);
     }
-}
-
-void ANGLE::AngleResources::RemoveSharedTexture(HANDLE sharedHandle)
-{
-    auto it = m_elgSurfaces.find(sharedHandle);
-    if (it != m_elgSurfaces.end())
+    else
     {
-        eglDestroySurface(mEglDisplay, it->second);       
-        m_elgSurfaces.erase(it);
+        assert(false);
     }
 }
+
+void ANGLE::AngleResources::RemoveTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture)
+{
+    auto it = m_surfaces.find(texture);
+    if (it != m_surfaces.end())
+    {
+        eglDestroySurface(mEglDisplay, it->second);       
+        m_surfaces.erase(it);
+    }
+}
+
+ANGLE::StereoTexture::StereoTexture()
+{
+
+}
+
+ANGLE::StereoTexture::~StereoTexture()
+{
+
+}
+
+void ANGLE::StereoTexture::UpdateTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture, unsigned int index)
+{
+
+}
+
+EGLSurface ANGLE::StereoTexture::GetSurface(unsigned int index)
+{
+    assert(index < 2);
+    return m_surfaces[index];
+}
+
+
+
+
+
 

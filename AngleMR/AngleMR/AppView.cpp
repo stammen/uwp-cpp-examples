@@ -99,30 +99,10 @@ void AppView::SetWindow(CoreWindow^ window)
 
     Microsoft::WRL::ComPtr<ID3D11Texture2D> d3dTex;
     HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, &d3dTex);
-    if FAILED(hr)
-    {
-        // error handling code
-    }
-
-    Microsoft::WRL::ComPtr<IDXGIResource> dxgiResource;
-    HANDLE sharedHandle;
-    hr = d3dTex.As(&dxgiResource);
-    if FAILED(hr)
-    {
-        // error handling code
-    }
-
-    hr = dxgiResource->GetSharedHandle(&sharedHandle);
-    if FAILED(hr)
-    {
-        // error handling code
-    }
 
 
-    m_angleResources = std::make_shared<ANGLE::AngleResources>(sharedHandle, 256.0f, 256.0f);
+    m_angleResources = std::make_shared<DX::ANGLE::AngleResources>(m_deviceResources.get(), d3dTex, 256.0f, 256.0f);
     m_deviceResources->SetAngleResources(m_angleResources);
-
-
 
     // The main class uses the holographic space for updates and rendering.
     m_main->SetHolographicSpace(m_holographicSpace);

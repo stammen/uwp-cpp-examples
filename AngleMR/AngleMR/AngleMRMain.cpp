@@ -91,7 +91,7 @@ void AngleMRMain::SetHolographicSpace(HolographicSpace^ holographicSpace)
     //   occurred.
 
     // Initialize the sample hologram.
-    m_renderer = std::make_unique<SimpleRenderer>(true);
+    m_renderer = std::make_unique<SimpleRenderer>(false);
 }
 
 void AngleMRMain::UnregisterHolographicEventHandlers()

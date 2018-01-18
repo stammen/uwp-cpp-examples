@@ -3,41 +3,61 @@
 
 #include <map>
 
-namespace ANGLE
+namespace DX
 {
+    class DeviceResources;
 
-
-    // Creates and manages a Direct3D device and immediate context, Direct2D device and context (for debug), and the holographic swap chain.
-    class AngleResources
+    namespace ANGLE
     {
-    public:
-        AngleResources(HANDLE sharedHandle = NULL, float width = 0.0f, float height = 0.0f);
+        class StereoTexture
+        {
+        public:
+            StereoTexture();
+            ~StereoTexture();
+            void UpdateTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture, unsigned int index);
+            EGLSurface GetSurface(unsigned int index);
 
-        void AddSharedTexture(HANDLE sharedHandle, float width, float height);
-        void MakeCurrect(HANDLE sharedHandle);
+        private:
+            EGLSurface m_surfaces[2];
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> m_textures[2];
+            HANDLE m_sharedHandles[2];
+            float m_width;
+            float m_height;
+        };
 
-        void RemoveSharedTexture(HANDLE sharedHandle);
+        // Creates and manages a Direct3D device and immediate context, Direct2D device and context (for debug), and the holographic swap chain.
+        class AngleResources
+        {
+        public:
+            AngleResources(DX::DeviceResources *pDeviceResources, Microsoft::WRL::ComPtr<ID3D11Texture2D> texture = nullptr, float width = 0.0f, float height = 0.0f);
 
-        // Public methods related to Direct3D devices.
-        void HandleDeviceLost();
-        void Present();
-        void InitializeEGL(HANDLE sharedHandle, float width, float height);
-        void CleanupEGL();
-    private:
+            void AddHolographicBackBuffer(DX::DeviceResources* pDeviceResources, Microsoft::WRL::ComPtr<ID3D11Texture2D> texture, float width, float height);
+            void MakeCurrent(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture);
 
+            void RemoveTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> texture);
 
-        std::map<HANDLE, EGLSurface> m_elgSurfaces;
-        std::mutex  m_mutex;
+            // Public methods related to Direct3D devices.
+            void HandleDeviceLost();
+            void Present();
+            void InitializeEGL(DX::DeviceResources *pDeviceResources, Microsoft::WRL::ComPtr<ID3D11Texture2D> texture, float width, float height);
+            void CleanupEGL();
+        private:
+            void CreateDeviceDependentResources();
+            ID3D11Texture2D * ResolveTexture(DX::DeviceResources *pDeviceResources, ID3D11Texture2D *source, unsigned int subresource);
 
-        EGLDisplay mEglDisplay;
-        EGLContext mEglContext;
-        EGLSurface mEglSurface;
-        EGLConfig mEGLConfig;
+            std::map<Microsoft::WRL::ComPtr<ID3D11Texture2D>, EGLSurface> m_surfaces;
+            std::mutex  m_mutex;
 
-        HANDLE m_defaultSharedTexture;
-        float m_defaultWidth;
-        float m_defaultHeight;
-    };
+            EGLDisplay mEglDisplay;
+            EGLContext mEglContext;
+            EGLSurface mEglSurface;
+            EGLConfig mEGLConfig;
+
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> m_defaultSharedTexture;
+            float m_defaultWidth;
+            float m_defaultHeight;
+        };
+    }
 }
 
 

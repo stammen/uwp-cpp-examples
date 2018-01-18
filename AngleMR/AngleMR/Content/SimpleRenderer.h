@@ -6,6 +6,15 @@
 
 namespace AngleMR
 {
+    struct FramebufferDesc
+    {
+        GLuint m_nDepthBufferId;
+        GLuint m_nRenderTextureId;
+        GLuint m_nRenderFramebufferId;
+        GLuint m_nResolveTextureId;
+        GLuint m_nResolveFramebufferId;
+    };
+
     class SimpleRenderer
     {
     public:
@@ -28,6 +37,15 @@ namespace AngleMR
 
     private:
         Windows::Foundation::Numerics::float3           m_position = { 0.f, 0.f, -2.f };
+
+        bool CreateFrameBuffer(int nWidth, int nHeight, FramebufferDesc &framebufferDesc);
+        void RenderStereoTargets();
+
+        FramebufferDesc m_leftEyeDesc;
+        FramebufferDesc m_rightEyeDesc;
+
+        uint32_t m_nRenderWidth;
+        uint32_t m_nRenderHeight;
 
         GLuint mProgram;
         GLsizei mWindowWidth;

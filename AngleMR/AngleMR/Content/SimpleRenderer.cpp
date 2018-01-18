@@ -101,34 +101,11 @@ SimpleRenderer::SimpleRenderer(bool isHolographic) :
     mIsHolographic(isHolographic)
 {
     CreateDeviceDependentResources();
-
 }
 
 SimpleRenderer::~SimpleRenderer()
 {
-    if (mProgram != 0)
-    {
-        glDeleteProgram(mProgram);
-        mProgram = 0;
-    }
-
-    if (mVertexPositionBuffer != 0)
-    {
-        glDeleteBuffers(1, &mVertexPositionBuffer);
-        mVertexPositionBuffer = 0;
-    }
-
-    if (mVertexColorBuffer != 0)
-    {
-        glDeleteBuffers(1, &mVertexColorBuffer);
-        mVertexColorBuffer = 0;
-    }
-
-    if (mIndexBuffer != 0)
-    {
-        glDeleteBuffers(1, &mIndexBuffer);
-        mIndexBuffer = 0;
-    }
+    ReleaseDeviceDependentResources();
 }
 
 // This function uses a SpatialPointerPose to position the world-locked hologram
@@ -153,6 +130,93 @@ void SimpleRenderer::PositionHologram(SpatialPointerPose^ pointerPose)
 #endif
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Creates a frame buffer. Returns true if the buffer was set up.
+//          Returns false if the setup failed.
+//-----------------------------------------------------------------------------
+bool SimpleRenderer::CreateFrameBuffer(int nWidth, int nHeight, FramebufferDesc &framebufferDesc)
+{
+    glGenFramebuffers(1, &framebufferDesc.m_nRenderFramebufferId);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferDesc.m_nRenderFramebufferId);
+
+    glGenRenderbuffers(1, &framebufferDesc.m_nDepthBufferId);
+    glBindRenderbuffer(GL_RENDERBUFFER, framebufferDesc.m_nDepthBufferId);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 2, GL_DEPTH_COMPONENT24, nWidth, nHeight);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, framebufferDesc.m_nDepthBufferId);
+
+    glGenTextures(1, &framebufferDesc.m_nRenderTextureId);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, framebufferDesc.m_nRenderTextureId);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA8, nWidth, nHeight, true);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, framebufferDesc.m_nRenderTextureId, 0);
+
+    glGenFramebuffers(1, &framebufferDesc.m_nResolveFramebufferId);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferDesc.m_nResolveFramebufferId);
+
+    glGenTextures(1, &framebufferDesc.m_nResolveTextureId);
+    glBindTexture(GL_TEXTURE_2D, framebufferDesc.m_nResolveTextureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nWidth, nHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebufferDesc.m_nResolveTextureId, 0);
+
+    // check FBO status
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        return false;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void SimpleRenderer::RenderStereoTargets()
+{
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glEnable(GL_MULTISAMPLE);
+
+    // Left Eye
+    glBindFramebuffer(GL_FRAMEBUFFER, m_leftEyeDesc.m_nRenderFramebufferId);
+    glViewport(0, 0, m_nRenderWidth, m_nRenderHeight);
+    RenderScene(vr::Eye_Left);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glDisable(GL_MULTISAMPLE);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_leftEyeDesc.m_nRenderFramebufferId);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_leftEyeDesc.m_nResolveFramebufferId);
+
+    glBlitFramebuffer(0, 0, m_nRenderWidth, m_nRenderHeight, 0, 0, m_nRenderWidth, m_nRenderHeight,
+        GL_COLOR_BUFFER_BIT,
+        GL_LINEAR);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+    glEnable(GL_MULTISAMPLE);
+
+    // Right Eye
+    glBindFramebuffer(GL_FRAMEBUFFER, m_leftEyeDesc.m_nRenderFramebufferId);
+    glViewport(0, 0, m_nRenderWidth, m_nRenderHeight);
+    RenderScene(vr::Eye_Right);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glDisable(GL_MULTISAMPLE);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_leftEyeDesc.m_nRenderFramebufferId);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_leftEyeDesc.m_nResolveFramebufferId);
+
+    glBlitFramebuffer(0, 0, m_nRenderWidth, m_nRenderHeight, 0, 0, m_nRenderWidth, m_nRenderHeight,
+        GL_COLOR_BUFFER_BIT,
+        GL_LINEAR);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
 
 // Called once per frame. Rotates the cube, and calculates and sets the model matrix
 // relative to the position transform indicated by hologramPositionTransform.
@@ -269,7 +333,6 @@ void SimpleRenderer::UpdateWindowSize(GLsizei width, GLsizei height)
     //if (!mIsHolographic)
     {
         glViewport(0, 0, width, height);
-
         mWindowWidth = width;
         mWindowHeight = height;
     }
@@ -283,7 +346,7 @@ void SimpleRenderer::CreateDeviceDependentResources()
         (
             // holographic version
 
-            uniform mat4 uModelMatrix;
+    uniform mat4 uModelMatrix;
     uniform mat4 uHolographicViewProjectionMatrix[2];
     attribute vec4 aPosition;
     attribute vec4 aColor;
@@ -299,7 +362,8 @@ void SimpleRenderer::CreateDeviceDependentResources()
     }
     ) : STRING
     (
-        uniform mat4 uModelMatrix;
+        uniform mat4 uHolographicViewProjectionMatrix[2];
+    uniform mat4 uModelMatrix;
     uniform mat4 uViewMatrix;
     uniform mat4 uProjMatrix;
     attribute vec4 aPosition;
@@ -307,7 +371,7 @@ void SimpleRenderer::CreateDeviceDependentResources()
     varying vec4 vColor;
     void main()
     {
-        gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
+        gl_Position = uHolographicViewProjectionMatrix[0] * uModelMatrix * aPosition;
         vColor = aColor;
     }
     );
@@ -317,21 +381,21 @@ void SimpleRenderer::CreateDeviceDependentResources()
         STRING
         (
             precision mediump float;
-    varying vec4 vColor;
-    varying float vRenderTargetArrayIndex; // TODO: this should not be necessary
-    void main()
-    {
-        gl_FragColor = vColor;
-        float index = vRenderTargetArrayIndex;
-    }
-    ) : STRING
-    (
-        precision mediump float;
-    varying vec4 vColor;
-    void main()
-    {
-        gl_FragColor = vColor;
-    }
+            varying vec4 vColor;
+            varying float vRenderTargetArrayIndex; // TODO: this should not be necessary
+            void main()
+            {
+                gl_FragColor = vColor;
+                float index = vRenderTargetArrayIndex;
+            }
+            ) : STRING
+            (
+                precision mediump float;
+            varying vec4 vColor;
+            void main()
+            {
+                gl_FragColor = vColor;
+            }
     );
 
     // Set up the shader and its uniform/attribute locations.
@@ -345,7 +409,7 @@ void SimpleRenderer::CreateDeviceDependentResources()
     mHolographicViewProjectionMatrix = glGetUniformLocation(mProgram, "uHolographicViewProjectionMatrix");
     
     // Then set up the cube geometry.
-    float halfWidth = mIsHolographic ? 0.1f : 0.5f;
+    float halfWidth = mIsHolographic ? 0.1f : 0.1f;
     GLfloat vertexPositions[] =
     {
         -halfWidth, -halfWidth, -halfWidth,
@@ -407,10 +471,48 @@ void SimpleRenderer::CreateDeviceDependentResources()
     glGenBuffers(1, &mRenderTargetArrayIndices);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRenderTargetArrayIndices);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(renderTargetArrayIndices), renderTargetArrayIndices, GL_STATIC_DRAW);
+
+    m_nRenderWidth = m_nRenderHeight = 1024;
+    CreateFrameBuffer(m_nRenderWidth, m_nRenderHeight, m_leftEyeDesc);
+    CreateFrameBuffer(m_nRenderWidth, m_nRenderHeight, m_rightEyeDesc); 
 }
 
 
 void SimpleRenderer::ReleaseDeviceDependentResources()
 {
+    if (mProgram != 0)
+    {
+        glDeleteProgram(mProgram);
+        mProgram = 0;
+    }
 
+    if (mVertexPositionBuffer != 0)
+    {
+        glDeleteBuffers(1, &mVertexPositionBuffer);
+        mVertexPositionBuffer = 0;
+    }
+
+    if (mVertexColorBuffer != 0)
+    {
+        glDeleteBuffers(1, &mVertexColorBuffer);
+        mVertexColorBuffer = 0;
+    }
+
+    if (mIndexBuffer != 0)
+    {
+        glDeleteBuffers(1, &mIndexBuffer);
+        mIndexBuffer = 0;
+    }
+
+    glDeleteRenderbuffers(1, &m_leftEyeDesc.m_nDepthBufferId);
+    glDeleteTextures(1, &m_leftEyeDesc.m_nRenderTextureId);
+    glDeleteFramebuffers(1, &m_leftEyeDesc.m_nRenderFramebufferId);
+    glDeleteTextures(1, &m_leftEyeDesc.m_nResolveTextureId);
+    glDeleteFramebuffers(1, &m_leftEyeDesc.m_nResolveFramebufferId);
+
+    glDeleteRenderbuffers(1, &m_rightEyeDesc.m_nDepthBufferId);
+    glDeleteTextures(1, &m_rightEyeDesc.m_nRenderTextureId);
+    glDeleteFramebuffers(1, &m_rightEyeDesc.m_nRenderFramebufferId);
+    glDeleteTextures(1, &m_rightEyeDesc.m_nResolveTextureId);
+    glDeleteFramebuffers(1, &m_rightEyeDesc.m_nResolveFramebufferId);
 }

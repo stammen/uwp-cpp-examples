@@ -82,7 +82,9 @@ void DX::CameraResources::CreateResourcesForBackBuffer(
             if SUCCEEDED(hr)
             {
                 m_backBuffers[m_d3dBackBuffer] = sharedHandle;
-                m_angleResources->AddSharedTexture(sharedHandle, m_holographicCamera->RenderTargetSize.Width, m_holographicCamera->RenderTargetSize.Height);
+                //m_angleResources->AddSharedTexture(sharedHandle, m_holographicCamera->RenderTargetSize.Width, m_holographicCamera->RenderTargetSize.Height);
+                m_angleResources->AddHolographicBackBuffer(pDeviceResources, m_d3dBackBuffer, m_holographicCamera->RenderTargetSize.Width, m_holographicCamera->RenderTargetSize.Height);
+
             }
         }
     
@@ -166,13 +168,8 @@ void DX::CameraResources::CreateResourcesForBackBuffer(
             );
     }
 
-    HANDLE sharedHandle = NULL;
-    auto it = m_backBuffers.find(m_d3dBackBuffer);
-    if (it != m_backBuffers.end())
-    {
-        HANDLE sharedHandle = it->second;
-        m_angleResources->MakeCurrect(sharedHandle);
-    }
+    m_angleResources->MakeCurrent(m_d3dBackBuffer);
+
 }
 
 // Releases resources associated with a back buffer.
@@ -182,7 +179,7 @@ void DX::CameraResources::ReleaseResourcesForBackBuffer(DX::DeviceResources* pDe
 
     for (auto it = m_backBuffers.begin(); it != m_backBuffers.end(); ++it)
     {
-        m_angleResources->RemoveSharedTexture(it->second);
+        m_angleResources->RemoveTexture(it->first);
     }
     m_backBuffers.clear();
 
