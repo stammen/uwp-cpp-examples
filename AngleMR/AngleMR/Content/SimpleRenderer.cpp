@@ -182,7 +182,7 @@ void SimpleRenderer::RenderStereoTargets()
     // Left Eye
     glBindFramebuffer(GL_FRAMEBUFFER, m_leftEyeDesc.m_nRenderFramebufferId);
     glViewport(0, 0, m_nRenderWidth, m_nRenderHeight);
-    RenderScene(vr::Eye_Left);
+    Render(Eye_Left);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glDisable(GL_MULTISAMPLE);
@@ -202,7 +202,7 @@ void SimpleRenderer::RenderStereoTargets()
     // Right Eye
     glBindFramebuffer(GL_FRAMEBUFFER, m_leftEyeDesc.m_nRenderFramebufferId);
     glViewport(0, 0, m_nRenderWidth, m_nRenderHeight);
-    RenderScene(vr::Eye_Right);
+    Render(Eye_Right);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glDisable(GL_MULTISAMPLE);
@@ -265,8 +265,9 @@ void SimpleRenderer::Update(const DX::StepTimer& timer)
 #endif
 }
 
-void SimpleRenderer::Render()
+void SimpleRenderer::Render(EVREye eye)
 {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
     // On HoloLens, it is important to clear to transparent.
@@ -318,6 +319,7 @@ void SimpleRenderer::Render()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
         glDrawElements(GL_TRIANGLES, (6 * 2) * 3, GL_UNSIGNED_SHORT, 0);
     }
+    glUseProgram(0);
 
     glFlush();
     mDrawCount += 1;

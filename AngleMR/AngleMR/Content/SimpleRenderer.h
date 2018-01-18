@@ -6,6 +6,12 @@
 
 namespace AngleMR
 {
+    enum EVREye
+    {
+        Eye_Left = 0,
+        Eye_Right = 1
+    };
+
     struct FramebufferDesc
     {
         GLuint m_nDepthBufferId;
@@ -20,7 +26,7 @@ namespace AngleMR
     public:
         SimpleRenderer(bool isHolographic = true);
         ~SimpleRenderer();
-        void Render();
+        void RenderStereoTargets();
         void Update(const DX::StepTimer& timer);
 
         void UpdateWindowSize(GLsizei width, GLsizei height);
@@ -36,10 +42,10 @@ namespace AngleMR
         Windows::Foundation::Numerics::float3 GetPosition() { return m_position; }
 
     private:
+        void Render(EVREye eye);
         Windows::Foundation::Numerics::float3           m_position = { 0.f, 0.f, -2.f };
 
         bool CreateFrameBuffer(int nWidth, int nHeight, FramebufferDesc &framebufferDesc);
-        void RenderStereoTargets();
 
         FramebufferDesc m_leftEyeDesc;
         FramebufferDesc m_rightEyeDesc;

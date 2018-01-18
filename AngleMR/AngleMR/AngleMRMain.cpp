@@ -295,7 +295,7 @@ bool AngleMRMain::Render(Windows::Graphics::Holographic::HolographicFrame^ holog
 
                 auto size = pCameraResources->GetRenderTargetSize();
                 m_renderer->UpdateWindowSize(static_cast<GLsizei>(size.Width), static_cast<GLsizei>(size.Height));
-                m_renderer->Render();
+                m_renderer->RenderStereoTargets();
             }
 #endif
             atLeastOneCameraRendered = true;
