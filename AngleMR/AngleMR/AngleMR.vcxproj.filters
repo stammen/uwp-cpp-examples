@@ -96,7 +96,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AngleMR_TemporaryKey.pfx" />
-    <None Include="$(AngleBinPath)libEGL.dll" />
-    <None Include="$(AngleBinPath)libGLESv2.dll" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
