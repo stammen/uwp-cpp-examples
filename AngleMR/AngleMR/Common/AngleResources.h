@@ -7,6 +7,12 @@ namespace DX
 
     namespace ANGLE
     {
+        enum EyeIndex
+        {
+            Eye_Left = 0,
+            Eye_Right = 1
+        };
+
         // Creates and manages a Direct3D device and immediate context, Direct2D device and context (for debug), and the holographic swap chain.
         class AngleResources
         {
@@ -15,7 +21,7 @@ namespace DX
             void InitializeEGL(float width, float height);
 
             void UpdateWindowSize(float width, float height);
-            void Submit(ID3D11DeviceContext* context, ID3D11Texture2D* texture, float width, float height);
+            void Submit(ID3D11DeviceContext* context, ID3D11Texture2D* texture, EyeIndex eye, float width, float height);
 
             // Public methods related to Direct3D devices.
             void HandleDeviceLost();

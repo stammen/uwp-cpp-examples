@@ -102,14 +102,16 @@ SimpleRenderer::SimpleRenderer() :
     const std::string vs = STRING
     (
         uniform mat4 uModelMatrix;
-        uniform mat4 uViewMatrix;
-        uniform mat4 uProjMatrix;
+        uniform mat4 uHolographicViewProjectionMatrix[2];
+        uniform int uProjectionArrayIndex;
         attribute vec4 aPosition;
         attribute vec4 aColor;
         varying vec4 vColor;
+
         void main()
         {
-            gl_Position = uProjMatrix * uViewMatrix * uModelMatrix * aPosition;
+            int arrayIndex = int(uProjectionArrayIndex); // % 2; // TODO: integer modulus operation supported on ES 3.00 only
+            gl_Position = uHolographicViewProjectionMatrix[arrayIndex] * uModelMatrix * aPosition;
             vColor = aColor;
         }
     );
@@ -130,21 +132,21 @@ SimpleRenderer::SimpleRenderer() :
     mPositionAttribLocation = glGetAttribLocation(mProgram, "aPosition");
     mColorAttribLocation = glGetAttribLocation(mProgram, "aColor");
     mModelUniformLocation = glGetUniformLocation(mProgram, "uModelMatrix");
-    mViewUniformLocation = glGetUniformLocation(mProgram, "uViewMatrix");
-    mProjUniformLocation = glGetUniformLocation(mProgram, "uProjMatrix");
     mHolographicViewProjectionMatrix = glGetUniformLocation(mProgram, "uHolographicViewProjectionMatrix");
+    mRtvIndexUniformLocation = glGetUniformLocation(mProgram, "uProjectionArrayIndex");
 
     // Then set up the cube geometry.
+    float halfWidth = 0.1f;
     GLfloat vertexPositions[] =
     {
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f,  1.0f,
+        -halfWidth, -halfWidth, -halfWidth,
+        -halfWidth, -halfWidth,  halfWidth,
+        -halfWidth,  halfWidth, -halfWidth,
+        -halfWidth,  halfWidth,  halfWidth,
+        halfWidth, -halfWidth, -halfWidth,
+        halfWidth, -halfWidth,  halfWidth,
+        halfWidth,  halfWidth, -halfWidth,
+        halfWidth,  halfWidth,  halfWidth,
     };
 
     glGenBuffers(1, &mVertexPositionBuffer);
@@ -222,12 +224,16 @@ SimpleRenderer::~SimpleRenderer()
 
 void SimpleRenderer::Render(EVREye eye)
 {
-    Draw();
-    mDrawCount += 1;
+    Draw(eye);
     glFlush();
+    
+    if (eye == EVREye::Eye_Right)
+    {
+        mDrawCount += 1;
+    }
 }
 
-void SimpleRenderer::Draw()
+void SimpleRenderer::Draw(EVREye eye)
 {
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -248,16 +254,10 @@ void SimpleRenderer::Draw()
     MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 50.0f);
     glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
 
-    MathHelper::Matrix4 viewMatrix = MathHelper::SimpleViewMatrix();
-    glUniformMatrix4fv(mViewUniformLocation, 1, GL_FALSE, &(viewMatrix.m[0][0]));
-
-    MathHelper::Matrix4 projectionMatrix = MathHelper::SimpleProjectionMatrix(float(mWindowWidth) / float(mWindowHeight));
-    glUniformMatrix4fv(mProjUniformLocation, 1, GL_FALSE, &(projectionMatrix.m[0][0]));
-
+    glUniform1i(mRtvIndexUniformLocation, eye == EVREye::Eye_Left ? 0 : 1);
     // Draw 36 indices: six faces, two triangles per face, 3 indices per triangle
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
     glDrawElements(GL_TRIANGLES, (6 * 2) * 3, GL_UNSIGNED_SHORT, 0);
-
 }
 
 void SimpleRenderer::UpdateWindowSize(GLsizei width, GLsizei height)

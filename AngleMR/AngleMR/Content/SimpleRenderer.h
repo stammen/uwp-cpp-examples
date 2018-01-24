@@ -18,7 +18,7 @@ namespace AngleMR
         ~SimpleRenderer();
         void Render(EVREye eye);
 
-        void Draw();
+        void Draw(EVREye eye);
         void UpdateWindowSize(GLsizei width, GLsizei height);
 
         // Repositions the sample hologram.
@@ -43,8 +43,7 @@ namespace AngleMR
         GLint mHolographicViewProjectionMatrix;
 
         GLint mModelUniformLocation;
-        GLint mViewUniformLocation;
-        GLint mProjUniformLocation;
+        GLint mRtvIndexUniformLocation;
 
         GLuint mVertexPositionBuffer;
         GLuint mVertexColorBuffer;
