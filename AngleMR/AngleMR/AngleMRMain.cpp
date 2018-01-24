@@ -298,10 +298,9 @@ bool AngleMRMain::Render(Windows::Graphics::Holographic::HolographicFrame^ holog
                 m_angleResources->UpdateWindowSize(size.Width, size.Height);
                 m_renderer->UpdateWindowSize(static_cast<GLsizei>(size.Width), static_cast<GLsizei>(size.Height));
                 m_renderer->Render(EVREye::Eye_Left);
-                m_angleResources->Submit(context, pCameraResources->GetBackBufferTexture2D(), DX::ANGLE::EyeIndex::Eye_Left, size.Width, size.Height);
+                m_angleResources->Submit(context, pCameraResources->GetBackBufferTexture2D(), DX::ANGLE::EyeIndex::Eye_Left);
                 m_renderer->Render(EVREye::Eye_Right);
-                m_angleResources->Submit(context, pCameraResources->GetBackBufferTexture2D(), DX::ANGLE::EyeIndex::Eye_Right, size.Width, size.Height);
-
+                m_angleResources->Submit(context, pCameraResources->GetBackBufferTexture2D(), DX::ANGLE::EyeIndex::Eye_Right);
             }
 #endif
             atLeastOneCameraRendered = true;

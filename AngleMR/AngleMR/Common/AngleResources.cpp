@@ -234,10 +234,16 @@ void ANGLE::AngleResources::UpdateWindowSize(float width, float height)
     }
 }
 
-void ANGLE::AngleResources::Submit(ID3D11DeviceContext* context, ID3D11Texture2D* texture, EyeIndex eye, float width, float height)
+void ANGLE::AngleResources::Submit(ID3D11DeviceContext* context, ID3D11Texture2D* texture, EyeIndex eye)
 {
-    UINT index = eye == EyeIndex::Eye_Left ? 0 : 1;
-    context->CopySubresourceRegion(texture, index, 0, 0, 0, m_defaultSharedTexture.Get(), 0, nullptr);
+    if (eye == EyeIndex::Eye_Left)
+    {
+        context->CopySubresourceRegion(texture, 0, 0, 0, 0, m_defaultSharedTexture.Get(), 0, nullptr);
+    }
+    else
+    {
+        context->CopySubresourceRegion(texture, 1, 0, 0, 0, m_defaultSharedTexture.Get(), 0, nullptr);
+    }
 }
 
 EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height)

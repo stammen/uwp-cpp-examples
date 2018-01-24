@@ -19,9 +19,9 @@ namespace DX
         public:
             AngleResources(const std::shared_ptr<DX::DeviceResources>& deviceResources);
             void InitializeEGL(float width, float height);
-
+            void PrepareEye(EyeIndex eye);
             void UpdateWindowSize(float width, float height);
-            void Submit(ID3D11DeviceContext* context, ID3D11Texture2D* texture, EyeIndex eye, float width, float height);
+            void Submit(ID3D11DeviceContext* context, ID3D11Texture2D* texture, EyeIndex eye);
 
             // Public methods related to Direct3D devices.
             void HandleDeviceLost();
