@@ -28,7 +28,6 @@ namespace ANGLE
         void CleanupEGL();
     private:
         void CreateDeviceDependentResources();
-        ID3D11Texture2D * ResolveTexture(ID3D11Texture2D *source, unsigned int subresource);
 
         void CreateSurfaces(float width, float height);
         EGLSurface CreateSurface(float width, float height, EyeIndex eye);

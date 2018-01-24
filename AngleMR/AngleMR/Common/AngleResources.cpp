@@ -264,7 +264,6 @@ void ANGLE::AngleResources::PrepareEye(EyeIndex eye)
     {
         eglMakeCurrent(mEglDisplay, mRightSurface, mRightSurface, mEglContext);
     }
-
 }
 
 void ANGLE::AngleResources::CreateSurfaces(float width, float height)
@@ -297,7 +296,7 @@ EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height, EyeIn
     HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, texture.GetAddressOf());
     if FAILED(hr)
     {
-        // error handling code
+        throw Exception::CreateException(E_FAIL, L"Failed to create texture");
     }
 
     ComPtr<IDXGIResource> dxgiResource;
@@ -305,13 +304,13 @@ EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height, EyeIn
     hr = texture.As(&dxgiResource);
     if FAILED(hr)
     {
-        // error handling code
+        throw Exception::CreateException(E_FAIL, L"Failed to get texture dxgiResource");
     }
 
     hr = dxgiResource->GetSharedHandle(&sharedHandle);
     if FAILED(hr)
     {
-        // error handling code
+        throw Exception::CreateException(E_FAIL, L"Failed to get shared handle");
     }
 
     EGLint pBufferAttributes[] =
@@ -334,47 +333,7 @@ EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height, EyeIn
     return eglCreatePbufferFromClientBuffer(mEglDisplay, EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE, sharedHandle, mEGLConfig, pBufferAttributes);
 }
 
-ID3D11Texture2D *ANGLE::AngleResources::ResolveTexture(ID3D11Texture2D *source, unsigned int subresource)
-{
-    D3D11_TEXTURE2D_DESC textureDesc;
-    source->GetDesc(&textureDesc);
 
-    if (textureDesc.ArraySize > 0)
-    {
-        D3D11_TEXTURE2D_DESC resolveDesc = { 0 };
-        resolveDesc.Width = textureDesc.Width;
-        resolveDesc.Height = textureDesc.Height;
-        resolveDesc.MipLevels = 1;
-        resolveDesc.ArraySize = 1;
-        resolveDesc.Format = textureDesc.Format;
-        resolveDesc.SampleDesc.Count = 1;
-        resolveDesc.SampleDesc.Quality = 0;
-        resolveDesc.Usage = textureDesc.Usage;
-        resolveDesc.BindFlags = textureDesc.BindFlags;
-        resolveDesc.CPUAccessFlags = textureDesc.MiscFlags;
-        resolveDesc.MiscFlags = textureDesc.MiscFlags;
-
-        ID3D11Texture2D *resolveTexture = NULL;
-
-        auto device = m_deviceResources->GetD3DDevice();
-        HRESULT result = device->CreateTexture2D(&textureDesc, NULL, &resolveTexture);
-        if (FAILED(result))
-        {
-            return NULL;
-        }
-
-        auto context = m_deviceResources->GetD3DDeviceContext();
-        context->ResolveSubresource(resolveTexture, 0, source, subresource, textureDesc.Format);
-        resolveTexture->GetDesc(&textureDesc);
-
-        return resolveTexture;
-    }
-    else
-    {
-        source->AddRef();
-        return source;
-    }
-}
 
 
 
