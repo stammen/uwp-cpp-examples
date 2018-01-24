@@ -13,7 +13,8 @@ ANGLE::AngleResources::AngleResources(const std::shared_ptr<DX::DeviceResources>
     m_deviceResources(deviceResources),
     mEglDisplay(EGL_NO_DISPLAY),
     mEglContext(EGL_NO_CONTEXT),
-    mEglSurface(EGL_NO_SURFACE),
+    mLeftSurface(EGL_NO_SURFACE),
+    mRightSurface(EGL_NO_SURFACE),
     m_width(0.0f),
     m_height(0.0f)
 {
@@ -169,19 +170,13 @@ void ANGLE::AngleResources::InitializeEGL(float width, float height)
         throw Exception::CreateException(E_FAIL, L"Failed to create EGL context");
     }
 
-    mEglSurface = CreateSurface(width, height);
+    CreateSurfaces(width, height);
 
-    eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
+    eglMakeCurrent(mEglDisplay, mLeftSurface, mLeftSurface, mEglContext);
 }
 
 void ANGLE::AngleResources::CleanupEGL()
 {
-    if (mEglDisplay != EGL_NO_DISPLAY && mEglSurface != EGL_NO_SURFACE)
-    {
-        eglDestroySurface(mEglDisplay, mEglSurface);
-        mEglSurface = EGL_NO_SURFACE;
-    }
-
     if (mEglDisplay != EGL_NO_DISPLAY && mEglContext != EGL_NO_CONTEXT)
     {
         eglDestroyContext(mEglDisplay, mEglContext);
@@ -225,10 +220,10 @@ void ANGLE::AngleResources::UpdateWindowSize(float width, float height)
 {
     if (width != m_width || height != m_height)
     {
-        mEglSurface = CreateSurface(width, height);
+        CreateSurfaces(width, height);
         m_width = width;
         m_height = height;
-        eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
+        eglMakeCurrent(mEglDisplay, mLeftSurface, mLeftSurface, mEglContext);
     }
 }
 
@@ -236,22 +231,51 @@ void ANGLE::AngleResources::Submit(ID3D11DeviceContext* context, ID3D11Texture2D
 {
     if (eye == EyeIndex::Eye_Left)
     {
-        context->CopySubresourceRegion(texture, 0, 0, 0, 0, m_renderTexture.Get(), 0, nullptr);
+        context->CopySubresourceRegion(texture, 0, 0, 0, 0, m_leftTexture.Get(), 0, nullptr);
     }
     else
     {
-        context->CopySubresourceRegion(texture, 1, 0, 0, 0, m_renderTexture.Get(), 0, nullptr);
+        context->CopySubresourceRegion(texture, 1, 0, 0, 0, m_rightTexture.Get(), 0, nullptr);
     }
 }
 
-EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height)
+void ANGLE::AngleResources::DestroySurfaces()
 {
-    if (mEglDisplay != EGL_NO_DISPLAY && mEglSurface != EGL_NO_SURFACE)
+    if (mEglDisplay != EGL_NO_DISPLAY && mLeftSurface != EGL_NO_SURFACE)
     {
-        eglDestroySurface(mEglDisplay, mEglSurface);
-        mEglSurface = EGL_NO_SURFACE;
+        eglDestroySurface(mEglDisplay, mLeftSurface);
+        mLeftSurface = EGL_NO_SURFACE;
     }
 
+    if (mEglDisplay != EGL_NO_DISPLAY && mRightSurface != EGL_NO_SURFACE)
+    {
+        eglDestroySurface(mEglDisplay, mRightSurface);
+        mRightSurface = EGL_NO_SURFACE;
+    }
+}
+
+void ANGLE::AngleResources::PrepareEye(EyeIndex eye)
+{
+    if (eye == EyeIndex::Eye_Left)
+    {
+        eglMakeCurrent(mEglDisplay, mLeftSurface, mLeftSurface, mEglContext);
+    }
+    else
+    {
+        eglMakeCurrent(mEglDisplay, mRightSurface, mRightSurface, mEglContext);
+    }
+
+}
+
+void ANGLE::AngleResources::CreateSurfaces(float width, float height)
+{
+    DestroySurfaces();
+    mLeftSurface = CreateSurface(width, height, EyeIndex::Eye_Left);
+    mRightSurface = CreateSurface(width, height, EyeIndex::Eye_Right);
+}
+
+EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height, EyeIndex eye)
+{
     EGLSurface surface = EGL_NO_SURFACE;
 
     D3D11_TEXTURE2D_DESC texDesc = { 0 };
@@ -267,9 +291,10 @@ EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height)
     texDesc.CPUAccessFlags = 0;
     texDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
-    m_renderTexture.Reset();
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+
     auto device = m_deviceResources->GetD3DDevice();
-    HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, m_renderTexture.GetAddressOf());
+    HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, texture.GetAddressOf());
     if FAILED(hr)
     {
         // error handling code
@@ -277,7 +302,7 @@ EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height)
 
     ComPtr<IDXGIResource> dxgiResource;
     HANDLE sharedHandle;
-    hr = m_renderTexture.As(&dxgiResource);
+    hr = texture.As(&dxgiResource);
     if FAILED(hr)
     {
         // error handling code
@@ -298,6 +323,14 @@ EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height)
         EGL_NONE
     };
 
+    if (eye == EyeIndex::Eye_Left)
+    {
+        m_leftTexture = texture;
+    }
+    else
+    {
+        m_rightTexture = texture;
+    }
     return eglCreatePbufferFromClientBuffer(mEglDisplay, EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE, sharedHandle, mEGLConfig, pBufferAttributes);
 }
 

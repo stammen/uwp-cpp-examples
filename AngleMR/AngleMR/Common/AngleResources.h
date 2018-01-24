@@ -30,17 +30,22 @@ namespace ANGLE
         void CreateDeviceDependentResources();
         ID3D11Texture2D * ResolveTexture(ID3D11Texture2D *source, unsigned int subresource);
 
-        EGLSurface CreateSurface(float width, float height);
+        void CreateSurfaces(float width, float height);
+        EGLSurface CreateSurface(float width, float height, EyeIndex eye);
+        void DestroySurfaces();
 
         EGLDisplay mEglDisplay;
         EGLContext mEglContext;
-        EGLSurface mEglSurface;
+        EGLSurface mLeftSurface;
+        EGLSurface mRightSurface;
         EGLConfig mEGLConfig;
 
         std::shared_ptr<DX::DeviceResources> m_deviceResources;
 
 
-        Microsoft::WRL::ComPtr<ID3D11Texture2D> m_renderTexture;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> m_leftTexture;
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> m_rightTexture;
+
         float m_width;
         float m_height;
         float m_textureWidth;
