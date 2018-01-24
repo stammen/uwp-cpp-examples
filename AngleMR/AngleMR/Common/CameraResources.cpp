@@ -11,11 +11,10 @@ using namespace Windows::Graphics::DirectX::Direct3D11;
 using namespace Windows::Graphics::Holographic;
 using namespace Windows::Perception::Spatial;
 
-DX::CameraResources::CameraResources(HolographicCamera^ camera, std::shared_ptr<ANGLE::AngleResources> angleResources) :
+DX::CameraResources::CameraResources(HolographicCamera^ camera) :
     m_holographicCamera(camera),
     m_isStereo(camera->IsStereo),
-    m_d3dRenderTargetSize(camera->RenderTargetSize),
-    m_angleResources(angleResources)
+    m_d3dRenderTargetSize(camera->RenderTargetSize)
 {
     m_d3dViewport = CD3D11_VIEWPORT(
         0.f, 0.f,
@@ -82,9 +81,6 @@ void DX::CameraResources::CreateResourcesForBackBuffer(
             if SUCCEEDED(hr)
             {
                 m_backBuffers[m_d3dBackBuffer] = sharedHandle;
-                //m_angleResources->AddSharedTexture(sharedHandle, m_holographicCamera->RenderTargetSize.Width, m_holographicCamera->RenderTargetSize.Height);
-                m_angleResources->AddHolographicBackBuffer(pDeviceResources, m_d3dBackBuffer, m_holographicCamera->RenderTargetSize.Width, m_holographicCamera->RenderTargetSize.Height);
-
             }
         }
     
@@ -167,9 +163,6 @@ void DX::CameraResources::CreateResourcesForBackBuffer(
                 )
             );
     }
-
-    m_angleResources->MakeCurrent(m_d3dBackBuffer);
-
 }
 
 // Releases resources associated with a back buffer.
@@ -177,10 +170,6 @@ void DX::CameraResources::ReleaseResourcesForBackBuffer(DX::DeviceResources* pDe
 {
     const auto context = pDeviceResources->GetD3DDeviceContext();
 
-    for (auto it = m_backBuffers.begin(); it != m_backBuffers.end(); ++it)
-    {
-        m_angleResources->RemoveTexture(it->first);
-    }
     m_backBuffers.clear();
 
     // Release camera-specific resources.

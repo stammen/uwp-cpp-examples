@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AngleResources.h"
 #include <map>
 
 namespace DX
@@ -21,7 +20,7 @@ namespace DX
     class CameraResources
     {
     public:
-        CameraResources(Windows::Graphics::Holographic::HolographicCamera^ holographicCamera, std::shared_ptr<ANGLE::AngleResources> angleResources = nullptr);
+        CameraResources(Windows::Graphics::Holographic::HolographicCamera^ holographicCamera);
 
         void CreateResourcesForBackBuffer(
             DX::DeviceResources* pDeviceResources,
@@ -79,8 +78,6 @@ namespace DX
 
         // Pointer to the holographic camera these resources are for.
         Windows::Graphics::Holographic::HolographicCamera^  m_holographicCamera = nullptr;
-
-        std::shared_ptr<ANGLE::AngleResources>              m_angleResources;
 
         std::map<Microsoft::WRL::ComPtr<ID3D11Texture2D>, HANDLE> m_backBuffers;
 

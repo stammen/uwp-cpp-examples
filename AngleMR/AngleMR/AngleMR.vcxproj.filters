@@ -11,9 +11,6 @@
     <Filter Include="Content">
       <UniqueIdentifier>117dfc63-fea6-40a6-a4a5-0408f252ee55</UniqueIdentifier>
     </Filter>
-    <Filter Include="Content\Shaders">
-      <UniqueIdentifier>17cec7ff-4a34-470a-84f7-f75182c837c4</UniqueIdentifier>
-    </Filter>
     <ClInclude Include="Common\DirectXHelper.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -93,20 +90,6 @@
     <ClInclude Include="Content\MathHelper.h">
       <Filter>Content</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Content\VertexShader.hlsl">
-      <Filter>Content\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Content\GeometryShader.hlsl">
-      <Filter>Content\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Content\PixelShader.hlsl">
-      <Filter>Content\Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Content\VPRTVertexShader.hlsl">
-      <Filter>Content\Shaders</Filter>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

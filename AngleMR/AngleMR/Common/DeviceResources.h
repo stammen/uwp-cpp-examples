@@ -2,7 +2,6 @@
 #pragma once
 
 #include "CameraResources.h"
-#include "AngleResources.h"
 
 namespace DX
 {
@@ -18,8 +17,6 @@ namespace DX
     {
     public:
         DeviceResources();
-
-        void SetAngleResources(std::shared_ptr<ANGLE::AngleResources> angleResources);
 
         // Public methods related to Direct3D devices.
         void HandleDeviceLost();
@@ -92,8 +89,6 @@ namespace DX
         // Back buffer resources, etc. for attached holographic cameras.
         std::map<UINT32, std::unique_ptr<CameraResources>>      m_cameraResources;
         std::mutex                                              m_cameraResourcesLock;
-
-        std::shared_ptr<ANGLE::AngleResources>              m_angleResources;
     };
 }
 

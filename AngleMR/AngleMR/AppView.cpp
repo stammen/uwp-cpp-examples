@@ -82,28 +82,6 @@ void AppView::SetWindow(CoreWindow^ window)
     // swap chains.
     m_deviceResources->SetHolographicSpace(m_holographicSpace);
 
-    auto device = m_deviceResources->GetD3DDevice();
-
-    D3D11_TEXTURE2D_DESC texDesc = { 0 };
-    texDesc.Width = 256;
-    texDesc.Height = 256;
-    texDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    texDesc.MipLevels = 1;
-    texDesc.ArraySize = 1;
-    texDesc.SampleDesc.Count = 1;
-    texDesc.SampleDesc.Quality = 0;
-    texDesc.Usage = D3D11_USAGE_DEFAULT;
-    texDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-    texDesc.CPUAccessFlags = 0;
-    texDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
-
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> d3dTex;
-    HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, &d3dTex);
-
-
-    m_angleResources = std::make_shared<DX::ANGLE::AngleResources>(m_deviceResources.get(), d3dTex, 256.0f, 256.0f);
-    m_deviceResources->SetAngleResources(m_angleResources);
-
     // The main class uses the holographic space for updates and rendering.
     m_main->SetHolographicSpace(m_holographicSpace);
 }

@@ -248,7 +248,7 @@ void DX::DeviceResources::AddHolographicCamera(HolographicCamera^ camera)
 {
     UseHolographicCameraResources<void>([this, camera](std::map<UINT32, std::unique_ptr<CameraResources>>& cameraResourceMap)
     {
-        cameraResourceMap[camera->Id] = std::make_unique<CameraResources>(camera, m_angleResources);
+        cameraResourceMap[camera->Id] = std::make_unique<CameraResources>(camera);
     });
 }
 
@@ -350,7 +350,3 @@ void DX::DeviceResources::Present(HolographicFrame^ frame)
     }
 }
 
-void DX::DeviceResources::SetAngleResources(std::shared_ptr<ANGLE::AngleResources> angleResources)
-{
-    m_angleResources = angleResources;
-}

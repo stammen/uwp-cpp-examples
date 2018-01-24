@@ -11,6 +11,7 @@
 #define DRAW_SAMPLE_CONTENT
 
 #include "Common\DeviceResources.h"
+#include "Common\AngleResources.h"
 #include "Common\StepTimer.h"
 
 #ifdef DRAW_SAMPLE_CONTENT
@@ -66,6 +67,8 @@ namespace AngleMR
         // and when tearing down AppMain.
         void UnregisterHolographicEventHandlers();
 
+        void AngleMRMain::InitializeAngle();
+
 #ifdef DRAW_SAMPLE_CONTENT
         std::unique_ptr<SimpleRenderer>                                 m_renderer;
 
@@ -75,7 +78,7 @@ namespace AngleMR
 
         // Cached pointer to device resources.
         std::shared_ptr<DX::DeviceResources>                            m_deviceResources;
-        std::shared_ptr<DX::ANGLE::AngleResources>                          m_angleResources;
+        std::shared_ptr<DX::ANGLE::AngleResources>                      m_angleResources;
 
         // Render loop timer.
         DX::StepTimer                                                   m_timer;

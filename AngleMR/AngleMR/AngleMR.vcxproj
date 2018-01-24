@@ -180,24 +180,6 @@
     </AppxManifest>
     <None Include="AngleMR_TemporaryKey.pfx" />
   </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Content\PixelShader.hlsl">
-      <ShaderType>Pixel</ShaderType>
-      <ShaderModel>5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Content\VertexShader.hlsl">
-      <ShaderType>Vertex</ShaderType>
-      <ShaderModel>5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Content\VPRTVertexShader.hlsl">
-      <ShaderType>Vertex</ShaderType>
-      <ShaderModel>5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Content\GeometryShader.hlsl">
-      <ShaderType>Geometry</ShaderType>
-      <ShaderModel>5.0</ShaderModel>
-    </FxCompile>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\ImageContentTask.targets" />
