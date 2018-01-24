@@ -113,8 +113,7 @@ SimpleRenderer::SimpleRenderer() :
 
         void main()
         {
-            int arrayIndex = int(uProjectionArrayIndex); // % 2; // TODO: integer modulus operation supported on ES 3.00 only
-            gl_Position = uHolographicViewProjectionMatrix[arrayIndex] * uModelMatrix * aPosition;
+            gl_Position = uHolographicViewProjectionMatrix[uProjectionArrayIndex] * uModelMatrix * aPosition;
             vColor = aColor;
         }
     );
