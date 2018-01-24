@@ -2,27 +2,23 @@
 
 #include "pch.h"
 #include "..\Common\StepTimer.h"
+#include "..\Common\AngleResources.h"
 
 namespace AngleMR
 {
-    enum EVREye
-    {
-        Eye_Left = 0,
-        Eye_Right = 1
-    };
 
     class SimpleRenderer
     {
     public:
         SimpleRenderer();
         ~SimpleRenderer();
-        void Render(EVREye eye);
+        void Render(ANGLE::EyeIndex eye);
 
-        void Draw(EVREye eye);
+        void Draw(ANGLE::EyeIndex eye);
         void UpdateWindowSize(GLsizei width, GLsizei height);
 
         // Repositions the sample hologram.
-        void PositionHologram(Windows::UI::Input::Spatial::SpatialPointerPose^ pointerPose) {};
+        void PositionHologram(Windows::UI::Input::Spatial::SpatialPointerPose^ pointerPose);
         void Update(const DX::StepTimer& timer) {};
 
         void SetPosition(Windows::Foundation::Numerics::float3 pos) { m_position = pos; }

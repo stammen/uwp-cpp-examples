@@ -1,14 +1,12 @@
 ﻿
 #include "pch.h"
 #include "AngleResources.h"
-#include "DeviceResources.h"
 
 using namespace Microsoft::WRL;
 using namespace Windows::UI::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Platform;
-using namespace DX;
 
 // Constructor for AngleResources.
 ANGLE::AngleResources::AngleResources(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
@@ -238,11 +236,11 @@ void ANGLE::AngleResources::Submit(ID3D11DeviceContext* context, ID3D11Texture2D
 {
     if (eye == EyeIndex::Eye_Left)
     {
-        context->CopySubresourceRegion(texture, 0, 0, 0, 0, m_defaultSharedTexture.Get(), 0, nullptr);
+        context->CopySubresourceRegion(texture, 0, 0, 0, 0, m_renderTexture.Get(), 0, nullptr);
     }
     else
     {
-        context->CopySubresourceRegion(texture, 1, 0, 0, 0, m_defaultSharedTexture.Get(), 0, nullptr);
+        context->CopySubresourceRegion(texture, 1, 0, 0, 0, m_renderTexture.Get(), 0, nullptr);
     }
 }
 
@@ -269,9 +267,9 @@ EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height)
     texDesc.CPUAccessFlags = 0;
     texDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
-    m_defaultSharedTexture.Reset();
+    m_renderTexture.Reset();
     auto device = m_deviceResources->GetD3DDevice();
-    HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, m_defaultSharedTexture.GetAddressOf());
+    HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, m_renderTexture.GetAddressOf());
     if FAILED(hr)
     {
         // error handling code
@@ -279,7 +277,7 @@ EGLSurface ANGLE::AngleResources::CreateSurface(float width, float height)
 
     ComPtr<IDXGIResource> dxgiResource;
     HANDLE sharedHandle;
-    hr = m_defaultSharedTexture.As(&dxgiResource);
+    hr = m_renderTexture.As(&dxgiResource);
     if FAILED(hr)
     {
         // error handling code

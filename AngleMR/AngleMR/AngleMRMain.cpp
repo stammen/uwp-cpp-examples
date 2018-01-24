@@ -293,14 +293,13 @@ bool AngleMRMain::Render(Windows::Graphics::Holographic::HolographicFrame^ holog
                 // Draw the sample hologram.
                 auto projections = pCameraResources->getCameraProjections();
                 m_renderer->UpdateProjections(projections);
-
                 auto size = pCameraResources->GetRenderTargetSize();
                 m_angleResources->UpdateWindowSize(size.Width, size.Height);
                 m_renderer->UpdateWindowSize(static_cast<GLsizei>(size.Width), static_cast<GLsizei>(size.Height));
-                m_renderer->Render(EVREye::Eye_Left);
-                m_angleResources->Submit(context, pCameraResources->GetBackBufferTexture2D(), DX::ANGLE::EyeIndex::Eye_Left);
-                m_renderer->Render(EVREye::Eye_Right);
-                m_angleResources->Submit(context, pCameraResources->GetBackBufferTexture2D(), DX::ANGLE::EyeIndex::Eye_Right);
+                m_renderer->Render(ANGLE::EyeIndex::Eye_Left);
+                m_angleResources->Submit(context, pCameraResources->GetBackBufferTexture2D(), ANGLE::EyeIndex::Eye_Left);
+                m_renderer->Render(ANGLE::EyeIndex::Eye_Right);
+                m_angleResources->Submit(context, pCameraResources->GetBackBufferTexture2D(), ANGLE::EyeIndex::Eye_Right);
             }
 #endif
             atLeastOneCameraRendered = true;
@@ -436,6 +435,6 @@ void AngleMRMain::OnCameraRemoved(
 
 void AngleMRMain::InitializeAngle()
 {
-    m_angleResources = std::make_shared<DX::ANGLE::AngleResources>(m_deviceResources);
+    m_angleResources = std::make_shared<ANGLE::AngleResources>(m_deviceResources);
     m_angleResources->InitializeEGL(256.0f, 256.0f);
 }

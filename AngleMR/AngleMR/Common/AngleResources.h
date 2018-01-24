@@ -1,54 +1,53 @@
 ﻿
 #pragma once
 
-namespace DX
+
+#include "DeviceResources.h"
+
+namespace ANGLE
 {
-    class DeviceResources;
-
-    namespace ANGLE
+    enum EyeIndex
     {
-        enum EyeIndex
-        {
-            Eye_Left = 0,
-            Eye_Right = 1
-        };
+        Eye_Left = 0,
+        Eye_Right = 1
+    };
 
-        // Creates and manages a Direct3D device and immediate context, Direct2D device and context (for debug), and the holographic swap chain.
-        class AngleResources
-        {
-        public:
-            AngleResources(const std::shared_ptr<DX::DeviceResources>& deviceResources);
-            void InitializeEGL(float width, float height);
-            void PrepareEye(EyeIndex eye);
-            void UpdateWindowSize(float width, float height);
-            void Submit(ID3D11DeviceContext* context, ID3D11Texture2D* texture, EyeIndex eye);
+    // Creates and manages a Direct3D device and immediate context, Direct2D device and context (for debug), and the holographic swap chain.
+    class AngleResources
+    {
+    public:
+        AngleResources(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+        void InitializeEGL(float width, float height);
+        void PrepareEye(EyeIndex eye);
+        void UpdateWindowSize(float width, float height);
+        void Submit(ID3D11DeviceContext* context, ID3D11Texture2D* texture, EyeIndex eye);
 
-            // Public methods related to Direct3D devices.
-            void HandleDeviceLost();
-            void Present();
-            void CleanupEGL();
-        private:
-            void CreateDeviceDependentResources();
-            ID3D11Texture2D * ResolveTexture(ID3D11Texture2D *source, unsigned int subresource);
+        // Public methods related to Direct3D devices.
+        void HandleDeviceLost();
+        void Present();
+        void CleanupEGL();
+    private:
+        void CreateDeviceDependentResources();
+        ID3D11Texture2D * ResolveTexture(ID3D11Texture2D *source, unsigned int subresource);
 
-            EGLSurface CreateSurface(float width, float height);
+        EGLSurface CreateSurface(float width, float height);
 
-            EGLDisplay mEglDisplay;
-            EGLContext mEglContext;
-            EGLSurface mEglSurface;
-            EGLConfig mEGLConfig;
+        EGLDisplay mEglDisplay;
+        EGLContext mEglContext;
+        EGLSurface mEglSurface;
+        EGLConfig mEGLConfig;
 
-            std::shared_ptr<DX::DeviceResources> m_deviceResources;
+        std::shared_ptr<DX::DeviceResources> m_deviceResources;
 
 
-            Microsoft::WRL::ComPtr<ID3D11Texture2D> m_defaultSharedTexture;
-            float m_width;
-            float m_height;
-            float m_textureWidth;
-            float m_textureHeight;
-        };
-    }
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> m_renderTexture;
+        float m_width;
+        float m_height;
+        float m_textureWidth;
+        float m_textureHeight;
+    };
 }
+
 
 
 

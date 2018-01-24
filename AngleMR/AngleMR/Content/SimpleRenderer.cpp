@@ -14,6 +14,9 @@
 using namespace Platform;
 
 using namespace AngleMR;
+using namespace ANGLE;
+using namespace Windows::Foundation::Numerics;
+using namespace Windows::UI::Input::Spatial;
 
 #define STRING(s) #s
 
@@ -222,18 +225,18 @@ SimpleRenderer::~SimpleRenderer()
     }
 }
 
-void SimpleRenderer::Render(EVREye eye)
+void SimpleRenderer::Render(EyeIndex eye)
 {
     Draw(eye);
     glFlush();
     
-    if (eye == EVREye::Eye_Right)
+    if (eye == EyeIndex::Eye_Right)
     {
         mDrawCount += 1;
     }
 }
 
-void SimpleRenderer::Draw(EVREye eye)
+void SimpleRenderer::Draw(EyeIndex eye)
 {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.f, 0.f, 0.f);
@@ -255,7 +258,7 @@ void SimpleRenderer::Draw(EVREye eye)
     MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 50.0f);
     glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
 
-    glUniform1i(mRtvIndexUniformLocation, eye == EVREye::Eye_Left ? 0 : 1);
+    glUniform1i(mRtvIndexUniformLocation, eye == EyeIndex::Eye_Left ? 0 : 1);
     // Draw 36 indices: six faces, two triangles per face, 3 indices per triangle
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBuffer);
     glDrawElements(GL_TRIANGLES, (6 * 2) * 3, GL_UNSIGNED_SHORT, 0);
@@ -281,6 +284,24 @@ void SimpleRenderer::ReleaseDeviceDependentResources()
 void SimpleRenderer::CreateDeviceDependentResources()
 {
 
+}
+
+void SimpleRenderer::PositionHologram(SpatialPointerPose^ pointerPose)
+{
+    if (pointerPose != nullptr)
+    {
+        // Get the gaze direction relative to the given coordinate system.
+        const float3 headPosition = pointerPose->Head->Position;
+        const float3 headDirection = pointerPose->Head->ForwardDirection;
+
+        // The hologram is positioned two meters along the user's gaze direction.
+        constexpr float distanceFromUser = 2.0f; // meters
+        const float3 gazeAtTwoMeters = headPosition + (distanceFromUser * headDirection);
+
+        // This will be used as the translation component of the hologram's
+        // model transform.
+        SetPosition(gazeAtTwoMeters);
+    }
 }
 
 
