@@ -254,8 +254,10 @@ void SimpleRenderer::Draw(EyeIndex eye)
     glEnableVertexAttribArray(mColorAttribLocation);
     glVertexAttribPointer(mColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 50.0f);
+    MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -1.f);
+    MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 50.0f, position);
     glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
+
 
     glUniform1i(mRtvIndexUniformLocation, eye == EyeIndex::Eye_Left ? 0 : 1);
     // Draw 36 indices: six faces, two triangles per face, 3 indices per triangle

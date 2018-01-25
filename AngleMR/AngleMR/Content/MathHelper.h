@@ -24,16 +24,29 @@ struct Matrix4
     float m[4][4];
 };
 
-inline static Matrix4 SimpleModelMatrix(float radians)
+struct Vec3
+{
+    Vec3(float _x, float _y, float _z)
+    {
+        x = _x;
+        y = _y;
+        z = _z;
+    }
+
+    float x, y, z;
+};
+
+inline static Matrix4 SimpleModelMatrix(float radians, Vec3 position)
 {
     float cosine = cosf(radians);
     float sine = sinf(radians);
 
-    return Matrix4(cosine, 0.0f,  -sine, 0.0f,
-                     0.0f, 1.0f,   0.0f, 0.0f,
-                     sine, 0.0f, cosine, 0.0f,
-                     0.0f, 0.0f,   0.0f, 1.0f);
+    return Matrix4(cosine, 0.0f, -sine, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        sine, 0.0f, cosine, 0.0f,
+        position.x, position.y, position.z, 1.0f);
 }
+
 
 inline static Matrix4 SimpleViewMatrix()
 {
