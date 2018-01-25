@@ -30,6 +30,7 @@ namespace AngleMR
 
         // CoreWindow input event handlers.
         void OnKeyPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+        void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
 
     private:
         std::unique_ptr<AngleMRMain> m_main;

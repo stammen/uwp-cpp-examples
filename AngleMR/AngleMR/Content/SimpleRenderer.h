@@ -47,5 +47,6 @@ namespace AngleMR
 
         int mDrawCount;
         Windows::Foundation::Numerics::float3           m_position = { 0.f, 0.f, -2.f };
+        float                                           m_degreesPerSecond = 45.f;
     };
 }

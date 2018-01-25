@@ -46,6 +46,9 @@ namespace AngleMR
         virtual void OnDeviceLost();
         virtual void OnDeviceRestored();
 
+        // Handle mouse input.
+        void OnPointerPressed();
+
     private:
         // Asynchronously creates resources for new holographic cameras.
         void OnCameraAdded(
@@ -96,5 +99,8 @@ namespace AngleMR
         Windows::Foundation::EventRegistrationToken                     m_cameraAddedToken;
         Windows::Foundation::EventRegistrationToken                     m_cameraRemovedToken;
         Windows::Foundation::EventRegistrationToken                     m_locatabilityChangedToken;
+
+        bool m_pointerPressed = false;
+
     };
 }

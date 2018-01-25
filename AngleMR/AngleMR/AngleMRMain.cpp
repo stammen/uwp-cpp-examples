@@ -155,14 +155,24 @@ HolographicFrame^ AngleMRMain::Update()
 
 #ifdef DRAW_SAMPLE_CONTENT
     // Check for new input state since the last frame.
+
     SpatialInteractionSourceState^ pointerState = m_spatialInputHandler->CheckForInput();
+    SpatialPointerPose^ pose = nullptr;
     if (pointerState != nullptr)
+    {
+        pose = pointerState->TryGetPointerPose(currentCoordinateSystem);
+    }
+    else if (m_pointerPressed)
+    {
+        pose = SpatialPointerPose::TryGetAtTimestamp(currentCoordinateSystem, prediction->Timestamp);
+    }
+    m_pointerPressed = false;
+
+    if (pose != nullptr)
     {
         // When a Pressed gesture is detected, the sample hologram will be repositioned
         // two meters in front of the user.
-        m_renderer->PositionHologram(
-            pointerState->TryGetPointerPose(currentCoordinateSystem)
-            );
+        m_renderer->PositionHologram(pose);
     }
 #endif
 
@@ -438,4 +448,9 @@ void AngleMRMain::InitializeAngle()
 {
     m_angleResources = std::make_shared<ANGLE::AngleResources>(m_deviceResources);
     m_angleResources->InitializeEGL(256.0f, 256.0f);
+}
+
+void AngleMRMain::OnPointerPressed()
+{
+    m_pointerPressed = true;
 }

@@ -254,7 +254,7 @@ void SimpleRenderer::Draw(EyeIndex eye)
     glEnableVertexAttribArray(mColorAttribLocation);
     glVertexAttribPointer(mColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-    MathHelper::Vec3 position = MathHelper::Vec3(0.f, 0.f, -1.f);
+    MathHelper::Vec3 position = MathHelper::Vec3(m_position.x, m_position.y, m_position.z);
     MathHelper::Matrix4 modelMatrix = MathHelper::SimpleModelMatrix((float)mDrawCount / 50.0f, position);
     glUniformMatrix4fv(mModelUniformLocation, 1, GL_FALSE, &(modelMatrix.m[0][0]));
 
@@ -304,5 +304,7 @@ void SimpleRenderer::PositionHologram(SpatialPointerPose^ pointerPose)
         SetPosition(gazeAtTwoMeters);
     }
 }
+
+
 
 
