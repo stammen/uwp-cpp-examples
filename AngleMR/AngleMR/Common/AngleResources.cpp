@@ -177,6 +177,8 @@ void ANGLE::AngleResources::InitializeEGL(float width, float height)
 
 void ANGLE::AngleResources::CleanupEGL()
 {
+    DestroySurfaces();
+
     if (mEglDisplay != EGL_NO_DISPLAY && mEglContext != EGL_NO_CONTEXT)
     {
         eglDestroyContext(mEglDisplay, mEglContext);
