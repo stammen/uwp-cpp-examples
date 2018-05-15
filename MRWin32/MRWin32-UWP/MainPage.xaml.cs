@@ -35,8 +35,14 @@ namespace MRWin32_UWP
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+            // launch the Win32 Holographic App
             await LaunchApp("mrwin32:");
-            Application.Current.Exit();
+            var t = Task.Run(async delegate
+            {
+                // exit the UWP app
+                await Task.Delay(1000);
+                Application.Current.Exit();
+            });
         }
 
         private async Task LaunchDesktopExtension()
