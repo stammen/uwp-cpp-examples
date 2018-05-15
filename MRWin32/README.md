@@ -32,7 +32,7 @@ app is packaged with the Win32 App to allow the App to appear in the Windows Mix
 
 In order to replicate this scenario you will need to do the following:
 
-* Create a new Visual C++ | Windows Desktop | Windows Desktop Application. 
+* Create a new Visual C++ | Windows Desktop | Windows Desktop Application. Name the project MRWin32. 
 
 * Right click on the solution and select Add | New Project...
 
