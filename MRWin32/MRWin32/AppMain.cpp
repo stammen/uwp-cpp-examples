@@ -6,7 +6,6 @@
 #include <windows.ui.input.spatial.h>
 #include <..\um\HolographicSpaceInterop.h>
 #include <..\um\SpatialInteractionManagerInterop.h>
-
 #include <wrl.h>
 
 using namespace ABI::Windows::Foundation;
@@ -37,7 +36,6 @@ void AppMain::Initialize()
     m_main = std::make_unique<MRWin32::MRWin32Main>(m_deviceResources);
 }
 
-
 void AppMain::Activate(HWND hWnd)
 {
     if (m_activated)
@@ -48,11 +46,11 @@ void AppMain::Activate(HWND hWnd)
     m_hwnd = hWnd;
     m_activated = true;
 
+    // Set up the holographic space
     ComPtr<IHolographicSpaceStatics> spHolographicSpaceFactory;
     HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Holographic_HolographicSpace).Get(), &spHolographicSpaceFactory);
 
     ComPtr<IHolographicSpaceInterop> spHolographicSpaceInterop;
-
     if (SUCCEEDED(hr))
     {
         hr = spHolographicSpaceFactory.As(&spHolographicSpaceInterop);
@@ -81,7 +79,10 @@ void AppMain::Activate(HWND hWnd)
     if (SUCCEEDED(hr))
     {
         hr = spSpatialInterop->GetForWindow(hWnd, IID_PPV_ARGS(&spSpatialInteractionManager));
-        m_spatialInteractionManager = reinterpret_cast<Windows::UI::Input::Spatial::SpatialInteractionManager^>(spSpatialInteractionManager.Get());
+        if (SUCCEEDED(hr))
+        {
+            m_spatialInteractionManager = reinterpret_cast<Windows::UI::Input::Spatial::SpatialInteractionManager^>(spSpatialInteractionManager.Get());
+        }
     }
 
     CreateWindowForInteropAsync();
