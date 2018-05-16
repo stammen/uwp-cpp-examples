@@ -128,7 +128,9 @@ We now need to write some code to connect the the Holographic code to the Win32 
 
 #include "Common\DeviceResources.h"
 #include "MRWin32Main.h"
-#include <mutex>
+#include <thread>
+#include <memory>
+
 class AppMain sealed
 {
 public:
@@ -139,29 +141,17 @@ public:
     void Close();
 
 private:
-    static DWORD WINAPI WindowInteropThreadProcStatic(
-        LPVOID renderer);
 
-    static LRESULT CALLBACK WindowProcStatic(
-        HWND hwnd,
-        UINT uMsg,
-        WPARAM wParam,
-        LPARAM lParam);
-
-    void CreateWindowForInteropAsync();
-    DWORD WindowInteropThreadProc();
+    void HolographicThread();
 
     bool m_activated;
     bool m_close;
-    HANDLE m_hwndThread;
     HWND m_hwnd;
-    std::mutex m_mutex;
-    std::condition_variable m_condition;
+    std::thread m_thread;
     Windows::Graphics::Holographic::HolographicSpace^ m_holographicSpace;
     Windows::UI::Input::Spatial::SpatialInteractionManager^ m_spatialInteractionManager;
     std::shared_ptr<DX::DeviceResources> m_deviceResources;
     std::unique_ptr<MRWin32::MRWin32Main> m_main;
-
 };
 ```
 
@@ -255,52 +245,21 @@ void AppMain::Activate(HWND hWnd)
         }
     }
 
-    CreateWindowForInteropAsync();
+    // start the holographic presentation thread
+    m_thread = std::thread(&AppMain::HolographicThread, this);
 }
 
 void AppMain::Close()
 {
     m_close = true;
+
+    // wait for the holographic presentation thread to exit
+    m_thread.join();
 }
 
-DWORD WINAPI AppMain::WindowInteropThreadProcStatic(LPVOID renderer)
+
+void AppMain::HolographicThread()
 {
-    return static_cast<AppMain*>(renderer)->WindowInteropThreadProc();
-}
-
-LRESULT CALLBACK AppMain::WindowProcStatic(
-    HWND hwnd,
-    UINT uMsg,
-    WPARAM wParam,
-    LPARAM lParam)
-{
-    if (uMsg == WM_ACTIVATE && wParam != WA_INACTIVE)
-    {
-        // Post a message for the window message loop to pick up so it
-        // can give focus to the last active hwnd.
-        PostMessage(hwnd, WM_GIFTFOCUS, 0, 0);
-    }
-
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-
-void AppMain::CreateWindowForInteropAsync()
-{
-    HANDLE threadHandle = CreateThread(
-        nullptr /* default security attributes */,
-        0 /* default stack size*/,
-        &WindowInteropThreadProcStatic,
-        reinterpret_cast<LPVOID>(this),
-        0, /* default flags */
-        nullptr /* Don't care about our thread ID */
-    );
-
-    m_hwndThread = threadHandle;
-}
-
-DWORD AppMain::WindowInteropThreadProc()
-{
-    m_condition.notify_one();
     m_deviceResources->SetHolographicSpace(m_holographicSpace);
 
     // The main class uses the holographic space for updates and rendering.
@@ -321,10 +280,7 @@ DWORD AppMain::WindowInteropThreadProc()
         }
     }
 
-    CloseHandle(m_hwndThread);
     m_hwnd = nullptr;
-    
-    return EXIT_SUCCESS;
 }
 ```
 
@@ -458,8 +414,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     ...
     case WM_DESTROY:
-        PostQuitMessage(0);
         appMain->Close();
+        PostQuitMessage(0);
         break;
     ...
 ```
