@@ -115,9 +115,358 @@ Right click on the MRWin32 project and select Properties
 
 Try to build the solution. All projects should build without an error.
 
+### Connect the Holographic Code to the Win32 App
+
+We now need to write some code to connect the the Holographic code to the Win32 app.
+
+* Add a new class to your MRWin32 project. Call it AppMain.
+
+* Replace the contents of AppMain.h with
+
+```cpp
+#pragma once
+
+#include "Common\DeviceResources.h"
+#include "MRWin32Main.h"
+#include <mutex>
+class AppMain sealed
+{
+public:
+    AppMain();
+
+    void Initialize();
+    void Activate(HWND window);
+    void Close();
+
+private:
+    static DWORD WINAPI WindowInteropThreadProcStatic(
+        LPVOID renderer);
+
+    static LRESULT CALLBACK WindowProcStatic(
+        HWND hwnd,
+        UINT uMsg,
+        WPARAM wParam,
+        LPARAM lParam);
+
+    void CreateWindowForInteropAsync();
+    DWORD WindowInteropThreadProc();
+
+    bool m_activated;
+    bool m_close;
+    HANDLE m_hwndThread;
+    HWND m_hwnd;
+    std::mutex m_mutex;
+    std::condition_variable m_condition;
+    Windows::Graphics::Holographic::HolographicSpace^ m_holographicSpace;
+    Windows::UI::Input::Spatial::SpatialInteractionManager^ m_spatialInteractionManager;
+    std::shared_ptr<DX::DeviceResources> m_deviceResources;
+    std::unique_ptr<MRWin32::MRWin32Main> m_main;
+
+};
+```
+
+* Replace the contents of AppMain.cpp with
+
+```c++
+#include "pch.h"
+#include "AppMain.h"
+
+#include <..\winrt\WinRTBase.h>
+#include <windows.graphics.holographic.h>
+#include <windows.ui.input.spatial.h>
+#include <..\um\HolographicSpaceInterop.h>
+#include <..\um\SpatialInteractionManagerInterop.h>
+#include <wrl.h>
+
+using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::Graphics::Holographic;
+using namespace ABI::Windows::UI::Input::Spatial;
+using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;
+
+#define WM_TIE_FOREGROUNDS WM_APP+0
+#define WM_UNTIE_FOREGROUNDS WM_APP+1
+#define WM_FOREGROUND_WINDOW_CHANGED WM_APP+2
+#define WM_GIFTFOCUS WM_APP+3
+
+AppMain::AppMain() :
+    m_activated(false),
+    m_close(false),
+    m_holographicSpace(nullptr),
+    m_spatialInteractionManager(nullptr)
+{
+
+}
+
+void AppMain::Initialize()
+{
+    // At this point we have access to the device and we can create device-dependent
+    // resources.
+    m_deviceResources = std::make_shared<DX::DeviceResources>();
+    m_main = std::make_unique<MRWin32::MRWin32Main>(m_deviceResources);
+}
+
+void AppMain::Activate(HWND hWnd)
+{
+    if (m_activated)
+    {
+        return;
+    }
+
+    m_hwnd = hWnd;
+    m_activated = true;
+
+    // Set up the holographic space
+    ComPtr<IHolographicSpaceStatics> spHolographicSpaceFactory;
+    HRESULT hr = GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Holographic_HolographicSpace).Get(), &spHolographicSpaceFactory);
+
+    ComPtr<IHolographicSpaceInterop> spHolographicSpaceInterop;
+    if (SUCCEEDED(hr))
+    {
+        hr = spHolographicSpaceFactory.As(&spHolographicSpaceInterop);
+    }
+
+    ComPtr<ABI::Windows::Graphics::Holographic::IHolographicSpace> spHolographicSpace;
+    if (SUCCEEDED(hr))
+    {
+        hr = spHolographicSpaceInterop->CreateForWindow(hWnd, IID_PPV_ARGS(&spHolographicSpace));
+        if (SUCCEEDED(hr))
+        {
+            m_holographicSpace = reinterpret_cast<Windows::Graphics::Holographic::HolographicSpace^>(spHolographicSpace.Get());
+        }
+    }
+
+    ComPtr<ISpatialInteractionManagerStatics> spSpatialInteractionFactory;
+    hr = GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Input_Spatial_SpatialInteractionManager).Get(), &spSpatialInteractionFactory);
+
+    ComPtr<ISpatialInteractionManagerInterop> spSpatialInterop;
+    if (SUCCEEDED(hr))
+    {
+        hr = spSpatialInteractionFactory.As(&spSpatialInterop);
+    }
+
+    ComPtr<ISpatialInteractionManager> spSpatialInteractionManager;
+    if (SUCCEEDED(hr))
+    {
+        hr = spSpatialInterop->GetForWindow(hWnd, IID_PPV_ARGS(&spSpatialInteractionManager));
+        if (SUCCEEDED(hr))
+        {
+            m_spatialInteractionManager = reinterpret_cast<Windows::UI::Input::Spatial::SpatialInteractionManager^>(spSpatialInteractionManager.Get());
+        }
+    }
+
+    CreateWindowForInteropAsync();
+}
+
+void AppMain::Close()
+{
+    m_close = true;
+}
+
+DWORD WINAPI AppMain::WindowInteropThreadProcStatic(LPVOID renderer)
+{
+    return static_cast<AppMain*>(renderer)->WindowInteropThreadProc();
+}
+
+LRESULT CALLBACK AppMain::WindowProcStatic(
+    HWND hwnd,
+    UINT uMsg,
+    WPARAM wParam,
+    LPARAM lParam)
+{
+    if (uMsg == WM_ACTIVATE && wParam != WA_INACTIVE)
+    {
+        // Post a message for the window message loop to pick up so it
+        // can give focus to the last active hwnd.
+        PostMessage(hwnd, WM_GIFTFOCUS, 0, 0);
+    }
+
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void AppMain::CreateWindowForInteropAsync()
+{
+    HANDLE threadHandle = CreateThread(
+        nullptr /* default security attributes */,
+        0 /* default stack size*/,
+        &WindowInteropThreadProcStatic,
+        reinterpret_cast<LPVOID>(this),
+        0, /* default flags */
+        nullptr /* Don't care about our thread ID */
+    );
+
+    m_hwndThread = threadHandle;
+}
+
+DWORD AppMain::WindowInteropThreadProc()
+{
+    m_condition.notify_one();
+    m_deviceResources->SetHolographicSpace(m_holographicSpace);
+
+    // The main class uses the holographic space for updates and rendering.
+    m_main->SetHolographicSpace(m_holographicSpace, m_spatialInteractionManager);
+
+    // The last OpenVR client hwnd that got focus
+    HWND lastActiveClientHwnd = 0;
+
+    while (!m_close)
+    {
+        auto holographicFrame = m_main->Update();
+
+        if (m_main->Render(holographicFrame))
+        {
+            // The holographic frame has an API that presents the swap chain for each
+            // holographic camera.
+            m_deviceResources->Present(holographicFrame);
+        }
+    }
+
+    CloseHandle(m_hwndThread);
+    m_hwnd = nullptr;
+    
+    return EXIT_SUCCESS;
+}
+```
+
+* Take a look at AppMain::Activate(HWND hWnd). In this function, we obtain instances of the HolographicSpace and the SpatialInteractionManager and hand them off to the Hologrpahic code.
+
+### Modifying the Holographic Code to support Win32
+
+We need to make a few changes to the holographic code to support running in a Win32 app.
+
+* Build the solution, you will get the error 'MRWin32::MRWin32Main::SetHolographicSpace': function does not take 2 arguments.
+
+* Modify MRWin32Main.h to add the missing SpatialInteractionManager^ parameter to the SetHolographicSpace method
+
+```cpp
+public:
+    void SetHolographicSpace(Windows::Graphics::Holographic::HolographicSpace^ holographicSpace, Windows::UI::Input::Spatial::SpatialInteractionManager^ spatialInteractionManager);
+
+private:
+    Windows::UI::Input::Spatial::SpatialInteractionManager^ m_spatialInteractionManager;
+```
+
+* Modify MRWin32Main.cpp to add the missing SpatialInteractionManager^ parameter to the SetHolographicSpace method
+
+```cpp
+void MRWin32Main::SetHolographicSpace(HolographicSpace^ holographicSpace, SpatialInteractionManager^ spatialInteractionManager)
+{
+    UnregisterHolographicEventHandlers();
+
+    m_holographicSpace = holographicSpace;
+    m_spatialInteractionManager = spatialInteractionManager;
+```
+
+* Modify Content\SpatialInputHandler.h to add the missing SpatialInteractionManager^ parameter to the Constructor
+
+```cpp
+    public:
+        SpatialInputHandler(Windows::UI::Input::Spatial::SpatialInteractionManager^ manager);
+```
+
+* Modify Content\SpatialInputHandler.cpp to add the missing SpatialInteractionManager^ parameter to the Constructor
+
+```cpp
+SpatialInputHandler::SpatialInputHandler(Windows::UI::Input::Spatial::SpatialInteractionManager^ manager)
+{
+    // The interaction manager provides an event that informs the app when
+    // spatial interactions are detected.
+    m_interactionManager = manager;
+
+    // Bind a handler to the SourcePressed event.
+    m_sourcePressedEventToken =
+        m_interactionManager->SourcePressed +=
+            ref new TypedEventHandler<SpatialInteractionManager^, SpatialInteractionSourceEventArgs^>(
+                bind(&SpatialInputHandler::OnSourcePressed, this, _1, _2)
+                );
+
+    //
+    // TODO: Expand this class to use other gesture-based input events as applicable to
+    //       your app.
+    //
+}
+```
+
+* Modify the CreateDeviceDependentResources method in Content\SpinningCubeRenderer.cpp to load the shaders from the Win32 .exe folder
+
+```cpp
+void SpinningCubeRenderer::CreateDeviceDependentResources()
+{
+    WCHAR full_path[MAX_PATH + 1] = { 0 };
+    ::GetModuleFileName(nullptr, full_path, MAX_PATH + 1);
+
+    std::wstring path = full_path;
+    path = path.substr(0, path.rfind(L"\\") + 1);
 
 
+    m_usingVprtShaders = m_deviceResources->GetDeviceSupportsVprt();
+
+    // On devices that do support the D3D11_FEATURE_D3D11_OPTIONS3::
+    // VPAndRTArrayIndexFromAnyShaderFeedingRasterizer optional feature
+    // we can avoid using a pass-through geometry shader to set the render
+    // target array index, thus avoiding any overhead that would be 
+    // incurred by setting the geometry shader stage.
+    std::wstring vertexShaderFileName = m_usingVprtShaders ? L"VprtVertexShader.cso" : L"VertexShader.cso";
+
+    // Load shaders asynchronously.
+    task<std::vector<byte>> loadVSTask = DX::ReadDataAsync(path + vertexShaderFileName);
+    task<std::vector<byte>> loadPSTask = DX::ReadDataAsync(path + L"PixelShader.cso");
+
+    task<std::vector<byte>> loadGSTask;
+    if (!m_usingVprtShaders)
+    {
+        // Load the pass-through geometry shader.
+        loadGSTask = DX::ReadDataAsync(path + L"GeometryShader.cso");
+    }
+```
+
+* Modify MRWin32.cpp to add the methods to create the HolographicSpace.
+
+```cpp
+#include "AppMain.h"
+#include <memory>
+
+std::unique_ptr<AppMain> appMain;
+
+[Platform::MTAThread]
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+                     _In_opt_ HINSTANCE hPrevInstance,
+                     _In_ LPWSTR    lpCmdLine,
+                     _In_ int       nCmdShow)
+    
+    ...
+    MyRegisterClass(hInstance);
+
+    // Initialize app object
+    appMain = std::make_unique<AppMain>();
+    appMain->Initialize();                
+                     
+                     
+BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+{
+    ...
+    if (!hWnd)
+    {
+        return FALSE;
+    }
+
+   appMain->Activate(hWnd);
+   ShowWindow(hWnd, nCmdShow);
+   ...
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    ...
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        appMain->Close();
+        break;
+    ...
+```
 
 
+* Add pch.h to stdafx.hInstance
 
- 
+* Build and run the project. A spinning cube should appear in the display.
+
+
