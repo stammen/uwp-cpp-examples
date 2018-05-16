@@ -421,8 +421,95 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 ```
 
 
-* Add pch.h to stdafx.hInstance
+* Add pch.h to stdafx.h
 
 * Build and run the project. A spinning cube should appear in the display.
 
+### Add a Packaging Project to add a UWP Launcher App
 
+When you open the Start Menu in the Windows Mixed Reality Portal by pressing the Windows Key, you will notice that the MRWin32 app does not appear in the list of apps available
+in the holographic space. This is because MRWin32 is a Win32 app and the Start Menu in the holographic space only lists UWP apps. We will now create a UWP Launcher App that will 
+launch the Win32 MRWin32 app. We will package these apps together with a Packaging Project.
+
+* Right-click on the solution and select Add | New Project...
+
+* Select the Visual C# | Windows Universal | Windows Application Packaging Project
+
+* Name the project PackageProject and click OK.
+
+* In the PackageProject, right-click on the Applications item and select Add References\Windows
+
+* Add a reference to the MRWin32 and MRWin32-UWP projects anc click OK
+
+* Expand the Applications item and right-click on MRWin32-UWP. Select Set as Entry Point
+
+* Right click on the PackageProject project and select Set as StartUp Project
+
+* Build and run the solution. An empty UWP app should appear. 
+
+Note: The title bar  of the UWP app may be black. This is a known issue that will be fixed in an update to the project template.
+
+We will now modify the UWP app to launch the Win32 MRWin32 app
+
+* Right click on the package.appxmanifest file in the PackageProject project and select View Code
+
+* Add an Extensions section to the Application section. It should look like:
+
+```xml
+    <Application Id="App"
+      Executable="$targetnametoken$.exe"
+      EntryPoint="$targetentrypoint$">
+      <uap:VisualElements
+        DisplayName="MRWin32"
+        Description="MRWin32"
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile
+          Wide310x150Logo="Images\Wide310x150Logo.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <uap:Extension Category="windows.protocol" Executable="MRWin32\MRWin32.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap:Protocol Name="mrwin32" />
+        </uap:Extension>
+      </Extensions>
+    </Application>
+```
+ 
+* Build and run your solution to make sure you did not make any mistakes.
+
+We will now nodify the UWP app to launch the Win32 App
+
+* Open the MainPage.xaml.cs file in the MRWin32-UWP project
+
+* Add the following methods:
+
+```csharp
+
+using System.Threading.Tasks;
+using Windows.System;
+
+protected override async void OnNavigatedTo(NavigationEventArgs e)
+{
+    // launch the Win32 Holographic App
+    await LaunchApp("mrwin32:");
+    var t = Task.Run(async delegate
+    {
+        // exit the UWP app
+        await Task.Delay(1000);
+        Application.Current.Exit();
+    });
+}
+        
+private async Task LaunchApp(string protocol)
+{
+    // Launch the Win32 App
+    var uri = new Uri(protocol); // The protocol handled by the launched app
+    var options = new LauncherOptions();
+    await Launcher.LaunchUriAsync(uri, options);
+}
+```
+
+* Build and run the solution. The UWP app will start and launch the MRWin32 app. The UWP app will then exit after a second leaving the MRWin32 app running in the Holographic space.
+
+* If you check the start menu in the Windows Mixed Reality the MRWin32-UWP app should appear in the menu.
