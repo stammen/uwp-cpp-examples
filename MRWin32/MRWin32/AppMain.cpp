@@ -85,52 +85,21 @@ void AppMain::Activate(HWND hWnd)
         }
     }
 
-    CreateWindowForInteropAsync();
+    // start the holographic presentation thread
+    m_thread = std::thread(&AppMain::HolographicThread, this);
 }
 
 void AppMain::Close()
 {
     m_close = true;
+
+    // wait for the holographic presentation thread to exit
+    m_thread.join();
 }
 
-DWORD WINAPI AppMain::WindowInteropThreadProcStatic(LPVOID renderer)
+
+void AppMain::HolographicThread()
 {
-    return static_cast<AppMain*>(renderer)->WindowInteropThreadProc();
-}
-
-LRESULT CALLBACK AppMain::WindowProcStatic(
-    HWND hwnd,
-    UINT uMsg,
-    WPARAM wParam,
-    LPARAM lParam)
-{
-    if (uMsg == WM_ACTIVATE && wParam != WA_INACTIVE)
-    {
-        // Post a message for the window message loop to pick up so it
-        // can give focus to the last active hwnd.
-        PostMessage(hwnd, WM_GIFTFOCUS, 0, 0);
-    }
-
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-
-void AppMain::CreateWindowForInteropAsync()
-{
-    HANDLE threadHandle = CreateThread(
-        nullptr /* default security attributes */,
-        0 /* default stack size*/,
-        &WindowInteropThreadProcStatic,
-        reinterpret_cast<LPVOID>(this),
-        0, /* default flags */
-        nullptr /* Don't care about our thread ID */
-    );
-
-    m_hwndThread = threadHandle;
-}
-
-DWORD AppMain::WindowInteropThreadProc()
-{
-    m_condition.notify_one();
     m_deviceResources->SetHolographicSpace(m_holographicSpace);
 
     // The main class uses the holographic space for updates and rendering.
@@ -151,8 +120,5 @@ DWORD AppMain::WindowInteropThreadProc()
         }
     }
 
-    CloseHandle(m_hwndThread);
     m_hwnd = nullptr;
-    
-    return EXIT_SUCCESS;
 }

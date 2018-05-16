@@ -2,7 +2,9 @@
 
 #include "Common\DeviceResources.h"
 #include "MRWin32Main.h"
-#include <mutex>
+#include <thread>
+#include <memory>
+
 class AppMain sealed
 {
 public:
@@ -13,27 +15,15 @@ public:
     void Close();
 
 private:
-    static DWORD WINAPI WindowInteropThreadProcStatic(
-        LPVOID renderer);
 
-    static LRESULT CALLBACK WindowProcStatic(
-        HWND hwnd,
-        UINT uMsg,
-        WPARAM wParam,
-        LPARAM lParam);
-
-    void CreateWindowForInteropAsync();
-    DWORD WindowInteropThreadProc();
+    void HolographicThread();
 
     bool m_activated;
     bool m_close;
-    HANDLE m_hwndThread;
     HWND m_hwnd;
-    std::mutex m_mutex;
-    std::condition_variable m_condition;
+    std::thread m_thread;
     Windows::Graphics::Holographic::HolographicSpace^ m_holographicSpace;
     Windows::UI::Input::Spatial::SpatialInteractionManager^ m_spatialInteractionManager;
     std::shared_ptr<DX::DeviceResources> m_deviceResources;
     std::unique_ptr<MRWin32::MRWin32Main> m_main;
-
 };
