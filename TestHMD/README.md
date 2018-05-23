@@ -63,12 +63,13 @@ The Win32 console app calls a few UWP apis to launch the MR Portal App. In order
 
 **C/C++ | General | Addition #using Directives** needs to have the following added:
 
-$(VC_ReferencesPath_x86)\store\references;C:\Program Files (x86)\Windows Kits\10\UnionMetadata;C:\Program Files (x86)\Windows Kits\10\References\Windows.Foundation.UniversalApiContract\3.0.0.0;C:\Program Files (x86)\Windows Kits\10\References\Windows.Foundation.FoundationContract\3.0.0.0;%(AdditionalUsingDirectories)
+$(VC_LibraryPath_VC_x86_Store)\references;C:\Program Files (x86)\Windows Kits\10\UnionMetadata$(TargetPlatformVersion);C:\Program Files (x86)\Windows Kits\10\UnionMetadata;C:\Program Files (x86)\Windows Kits\10\References\Windows.Foundation.UniversalApiContract\3.0.0.0;C:\Program Files (x86)\Windows Kits\10\References\Windows.Foundation.FoundationContract\3.0.0.0;%(AdditionalUsingDirectories)
 
 **C/C++ | General | Consume Windows RunTime Support** should be **Yes(/ZW)**
 
 **C/C++ | Code Generation | Enable Minimal Rebuild** should be **No(/Gm-)** 
 
+If necessary, add /Zc:twoPhase- to the **C/C++ | Command line**
 Since our app is now consuming the Windows Runtime we also need to add Platform::MTAThread before our main() function:
 
 ```c++
