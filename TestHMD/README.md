@@ -69,7 +69,7 @@ $(VC_LibraryPath_VC_x86_Store)\references;C:\Program Files (x86)\Windows Kits\10
 
 **C/C++ | Code Generation | Enable Minimal Rebuild** should be **No(/Gm-)** 
 
-If necessary, add /Zc:twoPhase- to the **C/C++ | Command line**
+If necessary, add **/Zc:twoPhase-** to the **C/C++ | Command line**
 Since our app is now consuming the Windows Runtime we also need to add Platform::MTAThread before our main() function:
 
 ```c++
