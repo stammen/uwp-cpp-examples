@@ -1,18 +1,17 @@
 ﻿//
-// MainPage.xaml.cpp
-// Implementation of the MainPage class.
+// BlankPage.xaml.cpp
+// Implementation of the BlankPage class.
 //
 
 #include "pch.h"
-#include "MainPage.xaml.h"
-#include "AppView.h"
+#include "BlankPage.xaml.h"
 #include <string>
 #include <sstream> 
 #include <algorithm>
 #include <ppltasks.h>
 #include <robuffer.h> // IBufferByteAccess
 
-using namespace HolographicWebView;
+using namespace WindowsRuntimeComponent1;
 
 using namespace Platform;
 using namespace Concurrency;
@@ -36,19 +35,19 @@ using namespace Windows::UI::Xaml::Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-MainPage::MainPage()
+BlankPage::BlankPage()
     : OnImage(nullptr)
 {
     InitializeComponent();
     m_transform = ref new BitmapTransform();
     //webview1 = ref new WebView(WebViewExecutionMode::SeparateThread);
-    webview1->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &HolographicWebView::MainPage::OnWebContentLoaded);
+    webview1->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &WindowsRuntimeComponent1::BlankPage::OnWebContentLoaded);
 }
- 
-Concurrency::task<WindowsRuntimeComponent1::BlankPage^> MainPage::CreatePage()
+
+Concurrency::task<BlankPage^> BlankPage::CreatePage()
 {
-    task_completion_event<WindowsRuntimeComponent1::BlankPage ^> tce;
-    task<WindowsRuntimeComponent1::BlankPage ^> event_set(tce);
+    task_completion_event<BlankPage ^> tce;
+    task<BlankPage ^> event_set(tce);
 
     CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([tce]()
     {
@@ -67,7 +66,7 @@ Concurrency::task<WindowsRuntimeComponent1::BlankPage^> MainPage::CreatePage()
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
-                rootFrame->Navigate(TypeName(WindowsRuntimeComponent1::BlankPage::typeid), nullptr);
+                rootFrame->Navigate(TypeName(BlankPage::typeid), nullptr);
             }
             // Place the frame in the current Window
             Window::Current->Content = rootFrame;
@@ -75,14 +74,14 @@ Concurrency::task<WindowsRuntimeComponent1::BlankPage^> MainPage::CreatePage()
             Window::Current->Activate();
         }
 
-        WindowsRuntimeComponent1::BlankPage^ page = dynamic_cast<WindowsRuntimeComponent1::BlankPage^>(rootFrame->Content);
+        BlankPage^ page = dynamic_cast<BlankPage^>(rootFrame->Content);
         tce.set(page);
     }));
 
     return event_set;
 }
 
-void MainPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height)
+void BlankPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height)
 {
     CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, url, width, height]()
     {
@@ -99,7 +98,7 @@ void MainPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigne
     }));
 }
 
-void MainPage::OnClick(int x, int y)
+void BlankPage::OnClick(int x, int y)
 {
     CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, x, y]()
     {
@@ -111,21 +110,24 @@ void MainPage::OnClick(int x, int y)
     }));
 }
 
-void MainPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
+void BlankPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
 {
     UpdateWebView();
 }
 
 
-void MainPage::UpdateWebView()
+void BlankPage::UpdateWebView()
 {
+    UpdateWebViewBitmap(m_requestedWebViewWidth, m_requestedWebViewHeight);
+#if 0
     m_timer.Tick([&]()
     {
         UpdateWebViewBitmap(m_requestedWebViewWidth, m_requestedWebViewHeight);
     });
+#endif
 }
 
-task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
+task<void> BlankPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
 {
     InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
 
@@ -154,7 +156,7 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
             info->Format = BitmapPixelFormat::Bgra8;
             info->Width = width;
             info->Height = height;
-            info->framesPerSecond = m_timer.GetFramesPerSecond();
+//            info->framesPerSecond = m_timer.GetFramesPerSecond();
             if (OnImage != nullptr)
             {
                 OnImage(this, info);
@@ -163,9 +165,11 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
     }).then([this]()
     {
         UpdateWebView();
+#if 0
         std::wstringstream w;
         w << L" FPS:" << m_timer.GetFramesPerSecond() << std::endl;
         OutputDebugString(w.str().c_str());
+#endif
     });
 }
 

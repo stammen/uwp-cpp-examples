@@ -1,18 +1,18 @@
 ﻿//
-// MainPage.xaml.h
-// Declaration of the MainPage class.
+// BlankPage.xaml.h
+// Declaration of the BlankPage class.
 //
 
 #pragma once
 
-#include "MainPage.g.h"
-#include "Common/StepTimer.h"
+#include "BlankPage.g.h"
+//#include "Common/StepTimer.h"
 #include <vector>
 #include <ppltasks.h>
 #include <functional>
 #include <collection.h>
 
-namespace HolographicWebView
+namespace WindowsRuntimeComponent1
 {
     public ref class WebViewImageInfo sealed
     {
@@ -26,15 +26,15 @@ namespace HolographicWebView
     };
 
 
-    ref class MainPage;
+    ref class BlankPage;
 
-	/// <summary>
-	/// An empty page that can be used on its own or navigated to within a Frame.
-	/// </summary>
-	public ref class MainPage sealed
-	{
-	public:
-		MainPage();
+    /// <summary>
+    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public ref class BlankPage sealed
+    {
+    public:
+        BlankPage();
 
 
         void DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height);
@@ -42,8 +42,8 @@ namespace HolographicWebView
         void OnClick(int x, int y);
 
     internal:
-        static Concurrency::task<WindowsRuntimeComponent1::BlankPage^> CreatePage();
-        std::function<void(MainPage^, WebViewImageInfo^)> OnImage;
+        static Concurrency::task<BlankPage^> CreatePage();
+        std::function<void(BlankPage^, WebViewImageInfo^)> OnImage;
 
     private:
 
@@ -53,7 +53,7 @@ namespace HolographicWebView
         void OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
 
         Platform::Agile<Windows::ApplicationModel::Core::CoreApplicationView> m_holographicView;
-        DX::StepTimer m_timer;
+        //DX::StepTimer m_timer;
         Windows::Graphics::Imaging::BitmapTransform^ m_transform;
 
         int m_requestedWebViewWidth;
