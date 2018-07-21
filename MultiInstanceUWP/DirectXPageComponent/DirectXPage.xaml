@@ -7,6 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <SwapChainPanel x:Name="swapChainPanel"/>
-
+    <SwapChainPanel x:Name="swapChainPanel">
+        <Button Content="Start WebView"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Top"
+               Click="Button_Click" />
+    </SwapChainPanel>
 </Page>

@@ -33,6 +33,9 @@ namespace DirectXPageComponent
 		WebViewPage();
         virtual Windows::Foundation::Collections::ValueSet^ OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args);
 
+    protected:
+        virtual void OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e) override;
+
     private:
         void UpdateWebView();
         Concurrency::task<void> UpdateWebViewBitmap(unsigned int width, unsigned int height);

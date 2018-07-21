@@ -43,22 +43,31 @@ WebViewPage::WebViewPage()
     m_webView->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &WebViewPage::OnWebContentLoaded);
     mainGrid->Children->Append(m_webView);
 
-    m_appServiceListener = ref new AppServiceListener(L"WebView");
-    auto connectTask = m_appServiceListener->ConnectToAppService(APPSERVICE_ID, Windows::ApplicationModel::Package::Current->Id->FamilyName);
-    connectTask.then([this](AppServiceConnectionStatus response)
-    {
-        if (response == AppServiceConnectionStatus::Success)
-        {
-            auto listenerTask = m_appServiceListener->RegisterListener(this).then([this](AppServiceResponse^ response)
-            {
-                if (response->Status == AppServiceResponseStatus::Success)
-                {
-                    OutputDebugString(L"WebViewPage is connected to the App Service");
-                }
-            });
-        }
-    });
+
 }
+
+void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e)
+{
+    if (m_appServiceListener == nullptr)
+    {
+        m_appServiceListener = ref new AppServiceListener(L"WebView");
+        auto connectTask = m_appServiceListener->ConnectToAppService(APPSERVICE_ID, Windows::ApplicationModel::Package::Current->Id->FamilyName);
+        connectTask.then([this](AppServiceConnectionStatus response)
+        {
+            if (response == AppServiceConnectionStatus::Success)
+            {
+                auto listenerTask = m_appServiceListener->RegisterListener(this).then([this](AppServiceResponse^ response)
+                {
+                    if (response->Status == AppServiceResponseStatus::Success)
+                    {
+                        OutputDebugString(L"WebViewPage is connected to the App Service");
+                    }
+                });
+            }
+        });
+    }
+}
+
 
 void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
 {
@@ -128,10 +137,34 @@ task<void> WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int hei
 
 void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
+#if 0
     auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
     Platform::String^ ScrollToTopString = L"window.scrollTo(0, 0); ";
     scripts->Append(ScrollToTopString);
     m_webView->InvokeScriptAsync("eval", scripts);
+#endif
+
+    if (m_appServiceListener == nullptr || !m_appServiceListener->IsConnected())
+    {
+        OutputDebugString(L"Not connected to AppService");
+        return;
+    }
+
+    auto message = ref new ValueSet();
+    message->Clear(); // using empty message for now
+    message->Insert(L"Hello", L"Hello");
+
+    m_appServiceListener->SendAppServiceMessage(L"DirectXPage", message).then([this](AppServiceResponse^ response)
+    {
+        auto responseMessage = response->Message;
+
+        if (response->Status == AppServiceResponseStatus::Success)
+        {
+        }
+        else
+        {
+        }
+    });
 }
 
 ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)

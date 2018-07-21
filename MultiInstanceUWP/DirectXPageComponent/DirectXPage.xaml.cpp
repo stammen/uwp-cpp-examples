@@ -8,11 +8,14 @@
 
 using namespace DirectXPageComponent;
 
+using namespace concurrency;
 using namespace Platform;
+using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Display;
+using namespace Windows::System;
 using namespace Windows::System::Threading;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input;
@@ -23,7 +26,7 @@ using namespace Windows::UI::Xaml::Data;
 using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
-using namespace concurrency;
+
 
 DirectXPage::DirectXPage():
 	m_windowVisible(true),
@@ -78,22 +81,28 @@ DirectXPage::DirectXPage():
 
 	m_main = std::unique_ptr<DirectXMain>(new DirectXMain(m_deviceResources));
 	m_main->StartRenderLoop();
+}
 
-    m_appServiceListener = ref new AppServiceListener(L"DirectXPage");
-    auto connectTask = m_appServiceListener->ConnectToAppService(APPSERVICE_ID, Windows::ApplicationModel::Package::Current->Id->FamilyName);
-    connectTask.then([this](AppServiceConnectionStatus response)
+void DirectXPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e)
+{
+    if (m_appServiceListener == nullptr)
     {
-        if (response == AppServiceConnectionStatus::Success)
+        m_appServiceListener = ref new AppServiceListener(L"DirectXPage");
+        auto connectTask = m_appServiceListener->ConnectToAppService(APPSERVICE_ID, Windows::ApplicationModel::Package::Current->Id->FamilyName);
+        connectTask.then([this](AppServiceConnectionStatus response)
         {
-            auto listenerTask = m_appServiceListener->RegisterListener(this).then([this](AppServiceResponse^ response)
+            if (response == AppServiceConnectionStatus::Success)
             {
-                if (response->Status == AppServiceResponseStatus::Success)
+                auto listenerTask = m_appServiceListener->RegisterListener(this).then([this](AppServiceResponse^ response)
                 {
-                    OutputDebugString(L"WebViewPage is connected to the App Service");
-                }
-            });
-        }
-    });
+                    if (response->Status == AppServiceResponseStatus::Success)
+                    {
+                        OutputDebugString(L"DirectXPage is connected to the App Service");
+                    }
+                });
+            }
+        });
+    }
 }
 
 DirectXPage::~DirectXPage()
@@ -191,3 +200,15 @@ ValueSet^ DirectXPage::OnRequestReceived(AppServiceConnection^ sender, AppServic
     return ref new ValueSet();
 }
 
+
+void DirectXPageComponent::DirectXPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    LaunchAppInstance();
+}
+
+Concurrency::task<bool> DirectXPage::LaunchAppInstance()
+{
+    auto uri = ref new Uri("stammen-multi-instance-uwp:?id=1234&apptype=webview"); // The protocol handled by the launched app
+    auto options = ref new LauncherOptions();
+    return create_task(Launcher::LaunchUriAsync(uri, options));
+}

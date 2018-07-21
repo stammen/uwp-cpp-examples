@@ -22,6 +22,7 @@ using namespace Windows::Security::Cryptography;
 // Application::Start with a new App object. Beyond that, you may delete the
 // rest of the example code and replace it with your custom code if you wish.
 
+
 int __cdecl main(::Platform::Array<::Platform::String^>^ args)
 {
     (void)args; // Unused parameter.
@@ -31,14 +32,14 @@ int __cdecl main(::Platform::Array<::Platform::String^>^ args)
     // logic for generating the key for this instance.
     IActivatedEventArgs^ activatedArgs = AppInstance::GetActivatedEventArgs();
 
-    Platform::String^ key = L"unity";
+    Platform::String^ key = L"directxpage";
 
     if (activatedArgs->Kind == ActivationKind::Protocol)
     {
         ProtocolActivatedEventArgs^ protocolArgs = (ProtocolActivatedEventArgs^)activatedArgs;
         auto queryParsed = protocolArgs->Uri->QueryParsed;
         DirectXPageComponent::ProtocolArgs args(queryParsed);
-        key = args.GetParameter(L"apptype", L"unity");
+        key = args.GetParameter(L"apptype", L"directxpage");
     }
 
     // In some scenarios, the platform might indicate a recommended instance.
