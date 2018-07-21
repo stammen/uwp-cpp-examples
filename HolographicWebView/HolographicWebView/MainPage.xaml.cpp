@@ -36,13 +36,15 @@ using namespace Windows::UI::Xaml::Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
+
 MainPage::MainPage()
     : OnImage(nullptr)
 {
     InitializeComponent();
     m_transform = ref new BitmapTransform();
-    //webview1 = ref new WebView(WebViewExecutionMode::SeparateThread);
-    webview1->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &HolographicWebView::MainPage::OnWebContentLoaded);
+    m_webView = ref new WebView(WebViewExecutionMode::SeparateThread);
+    m_webView->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &HolographicWebView::MainPage::OnWebContentLoaded);
+    gridMain->Children->Append(m_webView.Get());
 }
  
 Concurrency::task<MainPage^> MainPage::CreatePage()
@@ -52,30 +54,16 @@ Concurrency::task<MainPage^> MainPage::CreatePage()
 
     CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([tce]()
     {
-        Controls::Frame^ rootFrame = dynamic_cast<Windows::UI::Xaml::Controls::Frame^>(Window::Current->Content);
+        Controls::Frame^ frame = ref new Controls::Frame();
+        frame->Navigate(TypeName(MainPage::typeid), nullptr);
+    
+        // Place the frame in the current Window
+        Window::Current->Content = frame;
+        // Ensure the current window is active
+        Window::Current->Activate();
 
-        // Do not repeat app initialization when the Window already has content,
-        // just ensure that the window is active
-        if (rootFrame == nullptr)
-        {
-            // Create a Frame to act as the navigation context and associate it with
-            // a SuspensionManager key
-            rootFrame = ref new Windows::UI::Xaml::Controls::Frame();
+        MainPage^ page = dynamic_cast<MainPage^>(frame->Content);
 
-            if (rootFrame->Content == nullptr)
-            {
-                // When the navigation stack isn't restored navigate to the first page,
-                // configuring the new page by passing required information as a navigation
-                // parameter
-                rootFrame->Navigate(TypeName(MainPage::typeid), nullptr);
-            }
-            // Place the frame in the current Window
-            Window::Current->Content = rootFrame;
-            // Ensure the current window is active
-            Window::Current->Activate();
-        }
-
-        MainPage^ page = dynamic_cast<MainPage^>(rootFrame->Content);
         tce.set(page);
     }));
 
@@ -87,10 +75,10 @@ void MainPage::DisplayWebView(Platform::String^ url, unsigned int width, unsigne
     CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, url, width, height]()
     {
         Windows::Foundation::Uri^ uri = ref new Windows::Foundation::Uri(url);
-        webview1->Visibility = Windows::UI::Xaml::Visibility::Visible;
-        webview1->Source = uri;
-        webview1->Width = width;
-        webview1->Height = height;
+        m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
+        m_webView->Source = uri;
+        m_webView->Width = width;
+        m_webView->Height = height;
 
         m_requestedWebViewWidth = width;
         m_requestedWebViewHeight = height;
@@ -107,7 +95,7 @@ void MainPage::OnClick(int x, int y)
         std::wstringstream w;
         w << L"document.elementFromPoint(" << x << "," << y << L").click()";
         scripts->Append(ref new Platform::String(w.str().c_str()));
-        webview1->InvokeScriptAsync(ref new Platform::String(L"eval"), scripts);
+        m_webView->InvokeScriptAsync(ref new Platform::String(L"eval"), scripts);
     }));
 }
 
@@ -130,7 +118,7 @@ task<void> MainPage::UpdateWebViewBitmap(unsigned int width, unsigned int height
     InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
 
     // capture the WebView
-    return create_task(webview1->CapturePreviewToStreamAsync(stream))
+    return create_task(m_webView->CapturePreviewToStreamAsync(stream))
         .then([this, width, height, stream]()
     {
         return create_task(BitmapDecoder::CreateAsync(stream));

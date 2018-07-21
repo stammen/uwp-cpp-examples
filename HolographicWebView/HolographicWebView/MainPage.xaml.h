@@ -36,7 +36,6 @@ namespace HolographicWebView
 	public:
 		MainPage();
 
-
         void DisplayWebView(Platform::String^ url, unsigned int width, unsigned int height);
 
         void OnClick(int x, int y);
@@ -58,5 +57,7 @@ namespace HolographicWebView
 
         int m_requestedWebViewWidth;
         int m_requestedWebViewHeight;
+
+        Platform::Agile<Windows::UI::Xaml::Controls::WebView> m_webView;
     };
 }
