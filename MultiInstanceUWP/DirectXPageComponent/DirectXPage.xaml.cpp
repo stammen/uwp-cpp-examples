@@ -9,6 +9,7 @@
 using namespace DirectXPageComponent;
 
 using namespace Platform;
+using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Display;
@@ -77,6 +78,22 @@ DirectXPage::DirectXPage():
 
 	m_main = std::unique_ptr<DirectXMain>(new DirectXMain(m_deviceResources));
 	m_main->StartRenderLoop();
+
+    m_appServiceListener = ref new AppServiceListener(L"DirectXPage");
+    auto connectTask = m_appServiceListener->ConnectToAppService(APPSERVICE_ID, Windows::ApplicationModel::Package::Current->Id->FamilyName);
+    connectTask.then([this](AppServiceConnectionStatus response)
+    {
+        if (response == AppServiceConnectionStatus::Success)
+        {
+            auto listenerTask = m_appServiceListener->RegisterListener(this).then([this](AppServiceResponse^ response)
+            {
+                if (response->Status == AppServiceResponseStatus::Success)
+                {
+                    OutputDebugString(L"WebViewPage is connected to the App Service");
+                }
+            });
+        }
+    });
 }
 
 DirectXPage::~DirectXPage()
@@ -168,3 +185,9 @@ void DirectXPage::OnSwapChainPanelSizeChanged(Object^ sender, SizeChangedEventAr
 	m_deviceResources->SetLogicalSize(e->NewSize);
 	m_main->CreateWindowSizeDependentResources();
 }
+
+ValueSet^ DirectXPage::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)
+{
+    return ref new ValueSet();
+}
+

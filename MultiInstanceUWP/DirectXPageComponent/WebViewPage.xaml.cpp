@@ -13,6 +13,7 @@ using namespace DirectXPageComponent;
 
 using namespace Concurrency;
 using namespace Platform;
+using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Imaging;
@@ -41,6 +42,22 @@ WebViewPage::WebViewPage()
     m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
     m_webView->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &WebViewPage::OnWebContentLoaded);
     mainGrid->Children->Append(m_webView);
+
+    m_appServiceListener = ref new AppServiceListener(L"WebView");
+    auto connectTask = m_appServiceListener->ConnectToAppService(APPSERVICE_ID, Windows::ApplicationModel::Package::Current->Id->FamilyName);
+    connectTask.then([this](AppServiceConnectionStatus response)
+    {
+        if (response == AppServiceConnectionStatus::Success)
+        {
+            auto listenerTask = m_appServiceListener->RegisterListener(this).then([this](AppServiceResponse^ response)
+            {
+                if (response->Status == AppServiceResponseStatus::Success)
+                {
+                    OutputDebugString(L"WebViewPage is connected to the App Service");
+                }
+            });
+        }
+    });
 }
 
 void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
@@ -109,10 +126,15 @@ task<void> WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int hei
 }
 
 
-void DirectXPageComponent::WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
     Platform::String^ ScrollToTopString = L"window.scrollTo(0, 0); ";
     scripts->Append(ScrollToTopString);
     m_webView->InvokeScriptAsync("eval", scripts);
+}
+
+ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)
+{
+    return ref new ValueSet();
 }

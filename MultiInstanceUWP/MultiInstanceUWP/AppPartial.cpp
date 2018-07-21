@@ -23,9 +23,9 @@ using namespace Windows::UI::Xaml::Interop;
 /// <param name="args"></param>
 bool App::OnAppActivated(IActivatedEventArgs^ args)
 {
-    Platform::String^ apptype = L"unity";
     if (args->Kind == ActivationKind::Protocol)
     {
+        Platform::String^ apptype = L"unity";
         auto eventArgs = safe_cast<ProtocolActivatedEventArgs^>(args);
         auto queryParsed = eventArgs->Uri->QueryParsed;
         DirectXPageComponent::ProtocolArgs args(queryParsed);

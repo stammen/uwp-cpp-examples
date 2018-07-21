@@ -9,6 +9,8 @@
 
 #include "Common\DeviceResources.h"
 #include "DirectXMain.h"
+#include "AppServiceListener.h"
+
 #include <memory>
 
 namespace DirectXPageComponent
@@ -16,7 +18,7 @@ namespace DirectXPageComponent
 	/// <summary>
 	/// A page that hosts a DirectX SwapChainPanel.
 	/// </summary>
-	public ref class DirectXPage sealed
+    public ref class DirectXPage sealed : IAppServiceListenerDelegate
 	{
 	public:
 		DirectXPage();
@@ -24,9 +26,11 @@ namespace DirectXPageComponent
 
 		void SaveInternalState(Windows::Foundation::Collections::IPropertySet^ state);
 		void LoadInternalState(Windows::Foundation::Collections::IPropertySet^ state);
+        virtual Windows::Foundation::Collections::ValueSet^ OnRequestReceived(Windows::ApplicationModel::AppService::AppServiceConnection^ sender, Windows::ApplicationModel::AppService::AppServiceRequestReceivedEventArgs^ args);
 
 	private:
-		// XAML low-level rendering event handler.
+        
+        // XAML low-level rendering event handler.
 		void OnRendering(Platform::Object^ sender, Platform::Object^ args);
 
 		// Window event handlers.
@@ -50,6 +54,8 @@ namespace DirectXPageComponent
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
 		std::unique_ptr<DirectXMain> m_main; 
 		bool m_windowVisible;
+
+        AppServiceListener^ m_appServiceListener;
 	};
 }
 

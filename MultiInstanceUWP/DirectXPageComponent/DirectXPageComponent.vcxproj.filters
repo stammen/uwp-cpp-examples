@@ -14,7 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Class1.cpp" />
     <ClCompile Include="Common\DeviceResources.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -23,10 +22,11 @@
     </ClCompile>
     <ClCompile Include="DirectXMain.cpp" />
     <ClCompile Include="ProtocolArgs.cpp" />
+    <ClCompile Include="AppService.cpp" />
+    <ClCompile Include="AppServiceListener.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Class1.h" />
     <ClInclude Include="Common\DeviceResources.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -41,6 +41,8 @@
     </ClInclude>
     <ClInclude Include="DirectXMain.h" />
     <ClInclude Include="ProtocolArgs.h" />
+    <ClInclude Include="AppService.h" />
+    <ClInclude Include="AppServiceListener.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="DirectXPage.xaml" />

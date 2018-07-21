@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "AppPartial.h" 
 #include "App.g.h"
 
 namespace MultiInstanceUWP

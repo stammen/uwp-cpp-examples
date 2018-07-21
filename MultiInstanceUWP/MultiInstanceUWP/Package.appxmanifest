@@ -46,6 +46,9 @@
         <uap:Extension Category="windows.protocol">
           <uap:Protocol Name="stammen-multi-instance-uwp" />
         </uap:Extension>
+        <uap:Extension Category="windows.appService" EntryPoint="DirectXPageComponent.AppService">
+          <uap:AppService Name="com.stammen.multiinstanceapp.appservice" />
+        </uap:Extension>
       </Extensions>
     </Application>
   </Applications>
