@@ -40,8 +40,9 @@ namespace DirectXPageComponent
 
     private:
         void UpdateWebView();
-        Concurrency::task<void> UpdateWebViewBitmap(unsigned int width, unsigned int height);
+        void UpdateWebViewBitmap(unsigned int width, unsigned int height);
         void Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void OnNavigatedStarting(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ e);
         void OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
         void CreateDirectxTextures(Windows::Foundation::Collections::ValueSet^ info);
         void UpdateDirectxTextures(const void *buffer, int width, int height);
@@ -59,6 +60,6 @@ namespace DirectXPageComponent
         int m_textureHeight;
         unsigned int m_sleepInterval;
         unsigned int m_desiredFPS;
-
+        bool m_contentLoaded;
     };
 }

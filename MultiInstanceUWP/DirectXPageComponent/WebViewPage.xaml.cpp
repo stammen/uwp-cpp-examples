@@ -33,6 +33,7 @@ using namespace Windows::UI::Xaml::Navigation;
 WebViewPage::WebViewPage()
 {
 	InitializeComponent();
+    m_contentLoaded = false;
     m_deviceResources = std::make_shared<DX::DeviceResources>();
     m_transform = ref new BitmapTransform();
     m_webView = ref new WebView(WebViewExecutionMode::SeparateThread);
@@ -44,10 +45,16 @@ WebViewPage::WebViewPage()
     m_webView->Width = m_requestedWebViewWidth;
     m_webView->Height = m_requestedWebViewHeight;
     m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
+    m_webView->NavigationStarting += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^>(this, &WebViewPage::OnNavigatedStarting);
     m_webView->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &WebViewPage::OnWebContentLoaded);
     mainGrid->Children->Append(m_webView);
     m_desiredFPS = 60;
     m_sleepInterval = 1000 / m_desiredFPS;
+}
+
+void WebViewPage::OnNavigatedStarting(WebView^ sender, WebViewNavigationStartingEventArgs^ e)
+{
+    m_contentLoaded = false;
 }
 
 void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e)
@@ -87,6 +94,7 @@ void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webv
 
     OutputDebugString(L"OnWebContentLoaded");
     CreateDirectxTextures(ref new ValueSet());
+    m_contentLoaded = true;
     UpdateWebView();
 }
 
@@ -98,12 +106,17 @@ void WebViewPage::UpdateWebView()
     });
 }
 
-task<void> WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
+void WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
 {
+    if (!m_contentLoaded)
+    {
+        return;
+    }
+
     InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
 
     // capture the WebView
-    return create_task(m_webView->CapturePreviewToStreamAsync(stream))
+   auto task = create_task(m_webView->CapturePreviewToStreamAsync(stream))
         .then([this, width, height, stream]()
     {
         return create_task(BitmapDecoder::CreateAsync(stream));
@@ -145,7 +158,10 @@ task<void> WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int hei
         w << L" FPS:" << fps << L" Sleep:" << m_sleepInterval << std::endl;
         OutputDebugString(w.str().c_str());
         Sleep(m_sleepInterval);
-        UpdateWebView();
+        if (m_contentLoaded)
+        {
+            UpdateWebView();
+        }
     });
 }
 
@@ -153,7 +169,7 @@ void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::Rout
 {
 #if 1
     auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
-    Platform::String^ ScrollToTopString = L"window.scrollTo(0, 100); ";
+    Platform::String^ ScrollToTopString = L"window.scrollTo(0, 10000); ";
     scripts->Append(ScrollToTopString);
     m_webView->InvokeScriptAsync("eval", scripts);
 #else
