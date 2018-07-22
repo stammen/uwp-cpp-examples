@@ -46,8 +46,8 @@ WebViewPage::WebViewPage()
     m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
     m_webView->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &WebViewPage::OnWebContentLoaded);
     mainGrid->Children->Append(m_webView);
-    m_desiredFPS = 30;
-    m_sleepInterval = 33;
+    m_desiredFPS = 60;
+    m_sleepInterval = 1000 / m_desiredFPS;
 }
 
 void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e)
@@ -77,6 +77,13 @@ void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webv
     auto status = args->WebErrorStatus;
     auto success = args->IsSuccess;
     m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
+
+    auto width = m_webView->ActualWidth;
+
+    auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
+    Platform::String^ hideScroll = L"function SetBodyOverFlowHidden(){document.body.style.overflow = 'hidden'; return 'Set Style to hidden';} SetBodyOverFlowHidden();";
+    scripts->Append(hideScroll);
+    m_webView->InvokeScriptAsync("eval", scripts);
 
     OutputDebugString(L"OnWebContentLoaded");
     CreateDirectxTextures(ref new ValueSet());
@@ -144,13 +151,12 @@ task<void> WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int hei
 
 void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-#if 0
+#if 1
     auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
-    Platform::String^ ScrollToTopString = L"window.scrollTo(0, 0); ";
+    Platform::String^ ScrollToTopString = L"window.scrollTo(0, 100); ";
     scripts->Append(ScrollToTopString);
     m_webView->InvokeScriptAsync("eval", scripts);
-#endif
-
+#else
     if (m_appServiceListener == nullptr || !m_appServiceListener->IsConnected())
     {
         OutputDebugString(L"Not connected to AppService");
@@ -172,6 +178,7 @@ void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::Rout
         {
         }
     });
+#endif
 }
 
 ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)
