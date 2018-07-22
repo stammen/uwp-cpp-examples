@@ -68,8 +68,6 @@ void SceneRenderer::CreateWindowSizeDependentResources()
     m_sprites->SetRotation( m_deviceResources->ComputeDisplayRotation() );
 }
 
-
-
 void SceneRenderer::Update(DX::StepTimer const& timer)
 {
     Vector3 eye(0.0f, 0.7f, 1.5f);
@@ -79,7 +77,6 @@ void SceneRenderer::Update(DX::StepTimer const& timer)
     m_batchEffect->SetView(m_view);
     m_batchEffect->SetWorld(Matrix::Identity);
 }
-
 
 void SceneRenderer::Render()
 {

@@ -7,7 +7,9 @@
 
 #include "WebViewPage.g.h"
 #include "Common/StepTimer.h"
+#include "Common\DeviceResources.h"
 #include "AppServiceListener.h"
+#include <memory>
 #include <ppltasks.h>
 
 namespace DirectXPageComponent
@@ -41,12 +43,19 @@ namespace DirectXPageComponent
         Concurrency::task<void> UpdateWebViewBitmap(unsigned int width, unsigned int height);
         void Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
+        void CreateDirectxTextures(Windows::Foundation::Collections::ValueSet^ info);
+        void UpdateDirectxTextures(const void *buffer, int width, int height);
+
         Windows::UI::Xaml::Controls::WebView^ m_webView;
         DX::StepTimer m_timer;
         Windows::Graphics::Imaging::BitmapTransform^ m_transform;
         int m_requestedWebViewWidth;
         int m_requestedWebViewHeight;
         AppServiceListener^ m_appServiceListener;
-
+        std::shared_ptr<DX::DeviceResources> m_deviceResources;
+        Microsoft::WRL::ComPtr<ID3D11Resource>  m_quadTexture;
+        Microsoft::WRL::ComPtr<ID3D11Resource>  m_stagingTexture;
+        int m_textureWidth;
+        int m_textureHeight;
     };
 }

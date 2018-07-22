@@ -5,6 +5,7 @@
 
 #include "pch.h"
 #include "DirectXPage.xaml.h"
+#include "ProtocolArgs.h"
 
 using namespace DirectXPageComponent;
 
@@ -208,7 +209,8 @@ void DirectXPageComponent::DirectXPage::Button_Click(Platform::Object^ sender, W
 
 Concurrency::task<bool> DirectXPage::LaunchAppInstance()
 {
-    auto uri = ref new Uri("stammen-multi-instance-uwp:?id=1234&apptype=webview"); // The protocol handled by the launched app
+    Platform::String^ protocol = APP_PROTOCOL + ":?id=1234&apptype=webview";
+    auto uri = ref new Uri(protocol); 
     auto options = ref new LauncherOptions();
     return create_task(Launcher::LaunchUriAsync(uri, options));
 }

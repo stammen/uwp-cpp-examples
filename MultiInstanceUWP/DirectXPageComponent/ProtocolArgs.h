@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 
+#define APP_PROTOCOL L"stammen-multi-instance-uwp"
+
 namespace DirectXPageComponent
 {
     public ref class ProtocolArgs sealed

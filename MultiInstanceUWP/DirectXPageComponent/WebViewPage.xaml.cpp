@@ -5,6 +5,7 @@
 
 #include "pch.h"
 #include "WebViewPage.xaml.h"
+#include "common/DirectXHelper.h"
 #include <string> 
 #include <sstream> 
 #include <algorithm>
@@ -32,6 +33,7 @@ using namespace Windows::UI::Xaml::Navigation;
 WebViewPage::WebViewPage()
 {
 	InitializeComponent();
+    m_deviceResources = std::make_shared<DX::DeviceResources>();
     m_transform = ref new BitmapTransform();
     m_webView = ref new WebView(WebViewExecutionMode::SeparateThread);
     m_webView->Source = ref new Windows::Foundation::Uri(L"https://www.microsoft.com");
@@ -42,8 +44,6 @@ WebViewPage::WebViewPage()
     m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
     m_webView->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &WebViewPage::OnWebContentLoaded);
     mainGrid->Children->Append(m_webView);
-
-
 }
 
 void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e)
@@ -67,7 +67,6 @@ void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventAr
         });
     }
 }
-
 
 void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
 {
@@ -109,21 +108,8 @@ task<void> WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int hei
             ColorManagementMode::DoNotColorManage))
             .then([width, height, this](PixelDataProvider^ pixelDataProvider)
         {
-            Platform::Array<byte>^ pixelData = pixelDataProvider->DetachPixelData();
-
-            WebViewImageInfo^ info = ref new WebViewImageInfo;
-            info->PixelData = pixelData;
-            info->Format = BitmapPixelFormat::Bgra8;
-            info->Width = width;
-            info->Height = height;
-            info->framesPerSecond = m_timer.GetFramesPerSecond();
-
-#if 0
-            if (OnImage != nullptr)
-            {
-                OnImage(this, info);
-            }
-#endif
+            auto pixelData = pixelDataProvider->DetachPixelData();
+            UpdateDirectxTextures(pixelData->Data, width, height);
         });
     }).then([this]()
     {
@@ -133,7 +119,6 @@ task<void> WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int hei
         OutputDebugString(w.str().c_str());
     });
 }
-
 
 void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
@@ -170,4 +155,68 @@ void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::Rout
 ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)
 {
     return ref new ValueSet();
+}
+
+void WebViewPage::CreateDirectxTextures(ValueSet^ info)
+{
+    m_stagingTexture.Reset();
+    m_quadTexture.Reset();
+
+    HANDLE sharedTextureHandle = (HANDLE)static_cast<uintptr_t>(info->Lookup(L"SharedTextureHandle"));
+    m_textureWidth = (int)info->Lookup(L"Width");
+    m_textureHeight = (int)info->Lookup(L"Height");
+
+    ID3D11Texture2D *pTexture = NULL;
+    DX::ThrowIfFailed(
+        m_deviceResources->GetD3DDevice()->OpenSharedResource(sharedTextureHandle, __uuidof(ID3D11Texture2D), (LPVOID*)&pTexture)
+    );
+
+    m_quadTexture = pTexture;
+
+    D3D11_TEXTURE2D_DESC desc;
+    ZeroMemory(&desc, sizeof(desc));
+    desc.Width = m_textureWidth;
+    desc.Height = m_textureHeight;
+    desc.MipLevels = desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    pTexture = NULL;
+
+    DX::ThrowIfFailed(
+        m_deviceResources->GetD3DDevice()->CreateTexture2D(&desc, nullptr, &pTexture)
+    );
+
+    m_stagingTexture = pTexture;
+}
+
+void WebViewPage::UpdateDirectxTextures(const void *buffer, int width, int height)
+{
+    if (m_quadTexture.Get() == nullptr || m_stagingTexture.Get() == nullptr)
+    {
+        return;
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    const auto context = m_deviceResources->GetD3DDeviceContext();
+
+    DX::ThrowIfFailed(
+        context->Map(m_stagingTexture.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)
+    );
+
+    byte* data1 = (byte*)mapped.pData;
+    byte* data2 = (byte*)buffer;
+    unsigned int length = width * 4;
+    for (int i = 0; i < height; ++i)
+    {
+        memcpy((void*)data1, (void*)data2, length);
+        data1 += mapped.RowPitch;
+        data2 += length;
+    }
+
+    context->Unmap(m_stagingTexture.Get(), 0);
+    context->CopyResource(m_quadTexture.Get(), m_stagingTexture.Get());
 }

@@ -27,7 +27,6 @@ namespace DirectXPageComponent
         SceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources);
         void CreateDeviceDependentResources();
         void CreateWindowSizeDependentResources();
-        void CreateAudioResources();
         void ReleaseDeviceDependentResources();
         void Update(DX::StepTimer const& timer);
         void Render();
