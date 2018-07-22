@@ -57,5 +57,8 @@ namespace DirectXPageComponent
         Microsoft::WRL::ComPtr<ID3D11Resource>  m_stagingTexture;
         int m_textureWidth;
         int m_textureHeight;
+        unsigned int m_sleepInterval;
+        unsigned int m_desiredFPS;
+
     };
 }

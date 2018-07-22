@@ -46,6 +46,8 @@ WebViewPage::WebViewPage()
     m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
     m_webView->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &WebViewPage::OnWebContentLoaded);
     mainGrid->Children->Append(m_webView);
+    m_desiredFPS = 30;
+    m_sleepInterval = 33;
 }
 
 void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e)
@@ -116,10 +118,27 @@ task<void> WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int hei
         });
     }).then([this]()
     {
-        UpdateWebView();
         std::wstringstream w;
-        w << L" FPS:" << m_timer.GetFramesPerSecond() << std::endl;
+        auto fps = m_timer.GetFramesPerSecond();
+        if ((m_timer.GetFrameCount() % m_desiredFPS) == 0)
+        {
+            if (fps < m_desiredFPS)
+            {
+                if (m_sleepInterval > 2)
+                {
+                    m_sleepInterval--;
+                }
+            }
+            else if (fps > m_desiredFPS)
+            {
+                m_sleepInterval++;
+            }
+        }
+
+        w << L" FPS:" << fps << L" Sleep:" << m_sleepInterval << std::endl;
         OutputDebugString(w.str().c_str());
+        Sleep(m_sleepInterval);
+        UpdateWebView();
     });
 }
 
