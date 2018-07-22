@@ -30,6 +30,8 @@ using namespace Windows::Foundation;
 SceneRenderer::SceneRenderer(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
     m_deviceResources(deviceResources)
 {
+    m_textureWidth = 512;
+    m_textureHeight = 512;
     CreateDeviceDependentResources();
     CreateWindowSizeDependentResources();
 }
@@ -92,7 +94,7 @@ void SceneRenderer::Render()
         
     // Draw sprite
     m_sprites->Begin();
-    m_sprites->Draw(m_texture.Get(), XMFLOAT2(x, y), nullptr, Colors::White);
+    m_sprites->Draw(m_textureShaderResourceView.Get(), XMFLOAT2(x, y), nullptr, Colors::White);
     m_sprites->End();
 }
 
@@ -129,16 +131,14 @@ void SceneRenderer::CreateDeviceDependentResources()
 
     ComPtr<ID3D11Resource> res;
 
+#if 0
     DX::ThrowIfFailed(
-        CreateWICTextureFromFile(device, L"assets\\Square150x150Logo.scale-200.png", res.GetAddressOf(), m_texture.ReleaseAndGetAddressOf())
+        CreateWICTextureFromFile(device, L"assets\\Square150x150Logo.scale-200.png", res.GetAddressOf(), m_textureShaderResourceView.ReleaseAndGetAddressOf())
         );
+#endif
 
-    ComPtr<ID3D11Texture2D> tex;
-    DX::ThrowIfFailed(res.As(&tex));
-    D3D11_TEXTURE2D_DESC desc;
-    tex->GetDesc(&desc);
-    m_textureWidth = (float)desc.Width;
-    m_textureHeight = (float)desc.Height;
+    CreateSharedTexture();
+
 }
 
 void SceneRenderer::ReleaseDeviceDependentResources()
@@ -147,7 +147,58 @@ void SceneRenderer::ReleaseDeviceDependentResources()
     m_fxFactory.reset();
     m_sprites.reset();
     m_batch.reset();
-    m_batchEffect.reset();
+    m_batchEffect.reset();    
+    m_textureShaderResourceView.Reset();
     m_texture.Reset();
     m_batchInputLayout.Reset();
+}
+
+void SceneRenderer::CreateSharedTexture()
+{
+    m_texture.Reset();
+    m_textureShaderResourceView.Reset();
+
+    D3D11_TEXTURE2D_DESC desc;
+    ZeroMemory(&desc, sizeof(desc));
+    desc.Width = static_cast<UINT>(m_textureWidth);
+    desc.Height = static_cast<UINT>(m_textureHeight);
+    desc.MipLevels = desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_NTHANDLE;
+    ID3D11Texture2D *pTexture = NULL;
+    DX::ThrowIfFailed(
+        m_deviceResources->GetD3DDevice()->CreateTexture2D(&desc, nullptr, &pTexture)
+    );
+
+    m_texture = pTexture;
+
+    // QI IDXGIResource interface to synchronized shared surface.
+    m_sharedTextureHandle = NULL;
+    IDXGIResource1* pDXGIResource1 = NULL;
+    DX::ThrowIfFailed(
+        m_texture->QueryInterface(__uuidof(IDXGIResource), (LPVOID*)&pDXGIResource1)
+    );
+
+    // obtain handle to IDXGIResource object.
+    DX::ThrowIfFailed(
+        pDXGIResource1->CreateSharedHandle(NULL,
+            DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE,
+            L"DirectXPageHandleName",
+            &m_sharedTextureHandle)
+    );
+
+    pDXGIResource1->Release();
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+    SRVDesc.Format = desc.Format;
+    SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    SRVDesc.Texture2D.MipLevels = 1;
+
+    DX::ThrowIfFailed(
+        m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_texture.Get(), &SRVDesc, m_textureShaderResourceView.GetAddressOf())
+    );
 }

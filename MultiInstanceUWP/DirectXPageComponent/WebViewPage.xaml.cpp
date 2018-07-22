@@ -39,6 +39,8 @@ WebViewPage::WebViewPage()
     m_webView->Source = ref new Windows::Foundation::Uri(L"https://www.microsoft.com");
     m_requestedWebViewWidth = 512;
     m_requestedWebViewHeight = 512;
+    m_textureWidth = 512;
+    m_textureHeight = 512;
     m_webView->Width = m_requestedWebViewWidth;
     m_webView->Height = m_requestedWebViewHeight;
     m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
@@ -75,6 +77,7 @@ void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webv
     m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
 
     OutputDebugString(L"OnWebContentLoaded");
+    CreateDirectxTextures(ref new ValueSet());
     UpdateWebView();
 }
 
@@ -162,13 +165,10 @@ void WebViewPage::CreateDirectxTextures(ValueSet^ info)
     m_stagingTexture.Reset();
     m_quadTexture.Reset();
 
-    HANDLE sharedTextureHandle = (HANDLE)static_cast<uintptr_t>(info->Lookup(L"SharedTextureHandle"));
-    m_textureWidth = (int)info->Lookup(L"Width");
-    m_textureHeight = (int)info->Lookup(L"Height");
-
     ID3D11Texture2D *pTexture = NULL;
+
     DX::ThrowIfFailed(
-        m_deviceResources->GetD3DDevice()->OpenSharedResource(sharedTextureHandle, __uuidof(ID3D11Texture2D), (LPVOID*)&pTexture)
+        m_deviceResources->GetD3DDevice()->OpenSharedResourceByName(L"DirectXPageHandleName", DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE, __uuidof(ID3D11Texture2D), (LPVOID*)&pTexture)
     );
 
     m_quadTexture = pTexture;

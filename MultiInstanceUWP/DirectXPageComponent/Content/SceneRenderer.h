@@ -31,12 +31,11 @@ namespace DirectXPageComponent
         void Update(DX::StepTimer const& timer);
         void Render();
 
-
     private:
+        void CreateSharedTexture();
+
         // Cached pointer to device resources.
         std::shared_ptr<DX::DeviceResources> m_deviceResources;
-
-        void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis, DirectX::FXMVECTOR yAxis, DirectX::FXMVECTOR origin, size_t xdivs, size_t ydivs, DirectX::GXMVECTOR color);
 
         std::unique_ptr<DirectX::CommonStates>                                  m_states;
         std::unique_ptr<DirectX::BasicEffect>                                   m_batchEffect;
@@ -44,8 +43,11 @@ namespace DirectXPageComponent
         std::unique_ptr<DirectX::PrimitiveBatch<DirectX::VertexPositionColor>>  m_batch;
         std::unique_ptr<DirectX::SpriteBatch>                                   m_sprites;
 
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture;
         Microsoft::WRL::ComPtr<ID3D11InputLayout>                               m_batchInputLayout;
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_textureShaderResourceView;
+        Microsoft::WRL::ComPtr<ID3D11Resource>                                  m_texture;
+
+        HANDLE                                                                  m_sharedTextureHandle;
 
         bool                                                                    m_retryDefault;
 
