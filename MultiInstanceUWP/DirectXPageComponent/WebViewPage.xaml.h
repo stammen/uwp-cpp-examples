@@ -49,6 +49,7 @@ namespace DirectXPageComponent
         void CreateWebView(Windows::Foundation::Collections::ValueSet^ info);
         void CreateDirectxTextures();
         void UpdateDirectxTextures(const void *buffer, int width, int height);
+        void WebViewPage::OnClick(int x, int y);
 
         Windows::UI::Xaml::Controls::WebView^ m_webView;
         DX::StepTimer m_timer;

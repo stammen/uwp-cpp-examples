@@ -15,10 +15,12 @@ using namespace DirectXPageComponent;
 using namespace Concurrency;
 using namespace Platform;
 using namespace Windows::ApplicationModel::AppService;
+using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Imaging;
 using namespace Windows::Storage::Streams;
+using namespace Windows::UI::Core;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Media;
@@ -115,6 +117,16 @@ void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webv
     UpdateWebView();
 }
 
+void WebViewPage::OnClick(int x, int y)
+{
+    auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
+    std::wstringstream w;
+    w << L"document.elementFromPoint(" << x << "," << y << L").click()";
+    scripts->Append(ref new Platform::String(w.str().c_str()));
+    m_webView->InvokeScriptAsync(ref new Platform::String(L"eval"), scripts);
+}
+
+
 void WebViewPage::CreateWebView(ValueSet^ info)
 {
 
@@ -198,7 +210,30 @@ void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::Rout
 
 ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)
 {
-    return ref new ValueSet();
+    ValueSet^ request = args->Request->Message;
+    ValueSet^ message = safe_cast<ValueSet^>(request->Lookup(L"Data"));
+
+    if (message->HasKey("PointerMessage"))
+    {
+        Platform::String^ pointerEvent = safe_cast<Platform::String^>(message->Lookup(L"PointerMessage"));
+
+        if (pointerEvent == L"OnPointerReleased")
+        {
+            float x = (float)(message->Lookup(L"x"));
+            float y = (float)(message->Lookup(L"y"));
+
+            CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, x, y]()
+            {
+                auto element_Visual_Relative = Window::Current->Content->TransformToVisual(m_webView);
+                auto point = element_Visual_Relative->TransformPoint(Point(x, y));
+                OnClick((int)point.X, (int)point.Y);
+            }));
+        }
+    }
+
+    auto response = ref new ValueSet();
+    response->Insert(L"Status", L"OK");
+    return response;
 }
 
 void WebViewPage::CreateDirectxTextures()

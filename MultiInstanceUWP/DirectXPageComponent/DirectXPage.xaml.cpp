@@ -80,6 +80,12 @@ DirectXPage::DirectXPage():
 			Windows::UI::Core::CoreInputDeviceTypes::Pen
 			);
 
+
+        // Register for pointer events, which will be raised on the background thread.
+        m_coreInput->PointerPressed += ref new TypedEventHandler<Object^, PointerEventArgs^>(this, &DirectXPage::OnPointerPressed);
+        m_coreInput->PointerMoved += ref new TypedEventHandler<Object^, PointerEventArgs^>(this, &DirectXPage::OnPointerMoved);
+        m_coreInput->PointerReleased += ref new TypedEventHandler<Object^, PointerEventArgs^>(this, &DirectXPage::OnPointerReleased);
+
 		// Begin processing input messages as they're delivered.
 		m_coreInput->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessUntilQuit);
 	});
@@ -118,6 +124,63 @@ DirectXPage::~DirectXPage()
 	// Stop rendering and processing events on destruction.
 	m_main->StopRenderLoop();
 	m_coreInput->Dispatcher->StopProcessEvents();
+}
+
+void DirectXPage::OnPointerPressed(Object^ sender, PointerEventArgs^ e)
+{
+    ValueSet^ message = ref new ValueSet();
+    message->Insert(L"PointerMessage", "OnPointerPressed");
+    message->Insert(L"x", e->CurrentPoint->Position.X);
+    message->Insert(L"y", e->CurrentPoint->Position.Y);
+    m_appServiceListener->SendAppServiceMessage(L"WebView", message).then([this](AppServiceResponse^ response)
+    {
+        auto responseMessage = response->Message;
+
+        if (response->Status == AppServiceResponseStatus::Success)
+        {
+        }
+        else
+        {
+        }
+    });
+}
+
+void DirectXPage::OnPointerMoved(Object^ sender, PointerEventArgs^ e)
+{
+    ValueSet^ message = ref new ValueSet();
+    message->Insert(L"PointerMessage", "OnPointerMoved");
+    message->Insert(L"x", e->CurrentPoint->Position.X);
+    message->Insert(L"y", e->CurrentPoint->Position.Y);
+    m_appServiceListener->SendAppServiceMessage(L"WebView", message).then([this](AppServiceResponse^ response)
+    {
+        auto responseMessage = response->Message;
+
+        if (response->Status == AppServiceResponseStatus::Success)
+        {
+        }
+        else
+        {
+        }
+    });
+}
+
+void DirectXPage::OnPointerReleased(Object^ sender, PointerEventArgs^ e)
+{
+    ValueSet^ message = ref new ValueSet();
+    message->Insert(L"PointerMessage", "OnPointerReleased");
+    message->Insert(L"x", e->CurrentPoint->Position.X);
+    message->Insert(L"y", e->CurrentPoint->Position.Y);
+    m_appServiceListener->SendAppServiceMessage(L"WebView", message).then([this](AppServiceResponse^ response)
+    {
+        auto responseMessage = response->Message;
+
+        if (response->Status == AppServiceResponseStatus::Success)
+        {
+        }
+        else
+        {
+        }
+    });
 }
 
 // Saves the current state of the app for suspend and terminate events.
