@@ -70,11 +70,14 @@ void App::InitializePage(Platform::Type^ pageType, Uri^ uri)
 {
     //ApplicationView::GetForCurrentView()->SuppressSystemOverlays = false;
     Frame^ rootFrame = CreateRootFrame();
-    bool result = rootFrame->Navigate(TypeName(pageType));
-
-    if (!result)
+    if (rootFrame->Content == nullptr)
     {
-        throw ref new Platform::Exception(-1, "Failed to create XAML page");
+        bool result = rootFrame->Navigate(TypeName(pageType));
+
+        if (!result)
+        {
+            throw ref new Platform::Exception(-1, "Failed to create XAML page");
+        }
     }
 
     Window::Current->Activate();

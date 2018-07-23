@@ -40,16 +40,7 @@ int __cdecl main(::Platform::Array<::Platform::String^>^ args)
         auto queryParsed = protocolArgs->Uri->QueryParsed;
         DirectXPageComponent::ProtocolArgs args(queryParsed);
         key = args.GetParameter(L"apptype", L"directxpage");
-    }
 
-    // In some scenarios, the platform might indicate a recommended instance.
-    // If so, we can redirect this activation to that instance instead, if we wish.
-    if (AppInstance::RecommendedInstance != nullptr)
-    {
-        AppInstance::RecommendedInstance->RedirectActivationTo();
-    }
-    else
-    {
         AppInstance^ instance = AppInstance::FindOrRegisterInstanceForKey(key);
         if (instance->IsCurrentInstance)
         {
@@ -57,7 +48,7 @@ int __cdecl main(::Platform::Array<::Platform::String^>^ args)
             // go ahead and do normal XAML initialization.
             ::Windows::UI::Xaml::Application::Start(
                 ref new ::Windows::UI::Xaml::ApplicationInitializationCallback(
-                [](::Windows::UI::Xaml::ApplicationInitializationCallbackParams^ p) {
+                    [](::Windows::UI::Xaml::ApplicationInitializationCallbackParams^ p) {
                 (void)p; // Unused parameter.
                 auto app = ref new ::MultiInstanceUWP::App();
             }));
@@ -69,5 +60,24 @@ int __cdecl main(::Platform::Array<::Platform::String^>^ args)
             instance->RedirectActivationTo();
         }
     }
+    else
+    {
+        // In some scenarios, the platform might indicate a recommended instance.
+        // If so, we can redirect this activation to that instance instead, if we wish.
+        if (AppInstance::RecommendedInstance != nullptr)
+        {
+            AppInstance::RecommendedInstance->RedirectActivationTo();
+        }
+        else
+        {
+            ::Windows::UI::Xaml::Application::Start(
+                ref new ::Windows::UI::Xaml::ApplicationInitializationCallback(
+                    [](::Windows::UI::Xaml::ApplicationInitializationCallbackParams^ p) {
+                (void)p; // Unused parameter.
+                auto app = ref new ::MultiInstanceUWP::App();
+            }));
+        }
+    }
+
     return 0;
 }
