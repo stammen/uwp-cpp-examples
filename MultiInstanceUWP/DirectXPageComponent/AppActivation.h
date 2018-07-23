@@ -10,10 +10,12 @@ namespace DirectXPageComponent
     public:
         static bool OnAppActivated(Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
 
+    internal:
+        static Concurrency::task<bool> LaunchAppWithProtocol(Platform::String^ protocol);
+
     private:
         static Windows::UI::Xaml::Controls::Frame^ CreateRootFrame();
         static void InitializePage(Platform::Type^ pageType, Windows::Foundation::Uri^ uri);
-        static Concurrency::task<bool> LaunchXamlApp();
     };
 
 }

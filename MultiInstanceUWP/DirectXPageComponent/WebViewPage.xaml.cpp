@@ -21,12 +21,8 @@ using namespace Windows::Graphics::Imaging;
 using namespace Windows::Storage::Streams;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::UI::Xaml::Controls::Primitives;
-using namespace Windows::UI::Xaml::Data;
-using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Media::Imaging;
-using namespace Windows::UI::Xaml::Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -66,6 +62,8 @@ void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventAr
         throw ref new Platform::Exception(-1, L"invalid protocol query paramter");
     }
 
+    m_sleepInterval = 1000 / m_fps;
+
     // create the requested WebView
     m_transform = ref new BitmapTransform();
     m_webView = ref new WebView(WebViewExecutionMode::SeparateThread);
@@ -76,7 +74,6 @@ void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventAr
     m_webView->NavigationStarting += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^>(this, &WebViewPage::OnNavigatedStarting);
     m_webView->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &WebViewPage::OnWebContentLoaded);
     mainGrid->Children->Append(m_webView);
-    m_sleepInterval = 1000 / m_fps;
 
     // open connection to App Service
     if (m_appServiceListener == nullptr)
@@ -193,34 +190,10 @@ void WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
 
 void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-#if 1
     auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
     Platform::String^ ScrollToTopString = L"window.scrollTo(0, 10000); ";
     scripts->Append(ScrollToTopString);
     m_webView->InvokeScriptAsync("eval", scripts);
-#else
-    if (m_appServiceListener == nullptr || !m_appServiceListener->IsConnected())
-    {
-        OutputDebugString(L"Not connected to AppService");
-        return;
-    }
-
-    auto message = ref new ValueSet();
-    message->Clear(); // using empty message for now
-    message->Insert(L"Hello", L"Hello");
-
-    m_appServiceListener->SendAppServiceMessage(L"DirectXPage", message).then([this](AppServiceResponse^ response)
-    {
-        auto responseMessage = response->Message;
-
-        if (response->Status == AppServiceResponseStatus::Success)
-        {
-        }
-        else
-        {
-        }
-    });
-#endif
 }
 
 ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)

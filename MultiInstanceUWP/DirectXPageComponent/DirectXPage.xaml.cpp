@@ -7,6 +7,7 @@
 #include "DirectXPage.xaml.h"
 #include "WebViewPage.xaml.h"
 #include "ProtocolArgs.h"
+#include "AppActivation.h"
 
 using namespace DirectXPageComponent;
 
@@ -216,7 +217,5 @@ void DirectXPageComponent::DirectXPage::Button_Click(Platform::Object^ sender, W
 Concurrency::task<bool> DirectXPage::LaunchAppInstance()
 {
     Platform::String^ protocol = APP_PROTOCOL + ":?id=1&apptype=" + WebViewPage::PageName() + "&sharedtexture=DirectXPageSharedTexture&width=512&height=512&source=https://www.microsoft.com&fps=60";
-    auto uri = ref new Uri(protocol); 
-    auto options = ref new LauncherOptions();
-    return create_task(Launcher::LaunchUriAsync(uri, options));
+    return AppActivation::LaunchAppWithProtocol(protocol);
 }

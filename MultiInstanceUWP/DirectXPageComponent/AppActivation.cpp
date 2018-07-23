@@ -85,9 +85,9 @@ void AppActivation::InitializePage(Platform::Type^ pageType, Uri^ uri)
     Window::Current->Activate();
 }
 
-Concurrency::task<bool> AppActivation::LaunchXamlApp()
+Concurrency::task<bool> AppActivation::LaunchAppWithProtocol(Platform::String^ protocol)
 {
-    auto uri = ref new Uri("stammen-multi-instance-uwp:?id=1234&apptype=xaml"); // The protocol handled by the launched app
+    auto uri = ref new Uri(protocol); 
     auto options = ref new LauncherOptions();
     return create_task(Launcher::LaunchUriAsync(uri, options));
 }
