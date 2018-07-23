@@ -24,6 +24,9 @@
     <ClCompile Include="ProtocolArgs.cpp" />
     <ClCompile Include="AppService.cpp" />
     <ClCompile Include="AppServiceListener.cpp" />
+    <ClCompile Include="DirectXPage.xaml.cpp" />
+    <ClCompile Include="WebViewPage.xaml.cpp" />
+    <ClCompile Include="AppActivation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -43,6 +46,9 @@
     <ClInclude Include="ProtocolArgs.h" />
     <ClInclude Include="AppService.h" />
     <ClInclude Include="AppServiceListener.h" />
+    <ClInclude Include="DirectXPage.xaml.h" />
+    <ClInclude Include="WebViewPage.xaml.h" />
+    <ClInclude Include="AppActivation.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="DirectXPage.xaml" />

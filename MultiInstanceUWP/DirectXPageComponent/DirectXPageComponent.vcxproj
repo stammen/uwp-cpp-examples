@@ -206,6 +206,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AppActivation.h" />
     <ClInclude Include="AppService.h" />
     <ClInclude Include="AppServiceListener.h" />
     <ClInclude Include="Common\DeviceResources.h" />
@@ -223,6 +224,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AppActivation.cpp" />
     <ClCompile Include="AppService.cpp" />
     <ClCompile Include="AppServiceListener.cpp" />
     <ClCompile Include="Common\DeviceResources.cpp" />

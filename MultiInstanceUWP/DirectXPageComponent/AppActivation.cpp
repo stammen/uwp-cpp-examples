@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 #include "pch.h"
-#include "AppPartial.h"
-#include "MainPage.xaml.h"
+#include "AppActivation.h"
+#include "ProtocolArgs.h"
+#include "WebViewPage.xaml.h"
+#include "DirectXPage.xaml.h"
 #include <string>
 #include <ppltasks.h>
 
-using namespace MultiInstanceUWP;
+using namespace DirectXPageComponent;
 
 using namespace Concurrency;
 using namespace Windows::ApplicationModel::Activation;
@@ -21,14 +23,14 @@ using namespace Windows::UI::Xaml::Interop;
 /// Read more - http://msdn.microsoft.com/library/windows/apps/br224742
 /// </summary>
 /// <param name="args"></param>
-bool App::OnAppActivated(IActivatedEventArgs^ args)
+bool AppActivation::OnAppActivated(IActivatedEventArgs^ args)
 {
     if (args->Kind == ActivationKind::Protocol)
     {
         Platform::String^ apptype = L"directxpage";
         auto eventArgs = safe_cast<ProtocolActivatedEventArgs^>(args);
         auto queryParsed = eventArgs->Uri->QueryParsed;
-        DirectXPageComponent::ProtocolArgs args(queryParsed);
+        ProtocolArgs args(queryParsed);
         apptype = args.GetStringParameter(L"apptype", L"directxpage");
 
         if (apptype != L"directxpage")
@@ -46,7 +48,7 @@ bool App::OnAppActivated(IActivatedEventArgs^ args)
     return false;
 }
 
-Frame^ App::CreateRootFrame()
+Frame^ AppActivation::CreateRootFrame()
 {
     auto rootFrame = dynamic_cast<Frame^>(Window::Current->Content);
 
@@ -66,7 +68,7 @@ Frame^ App::CreateRootFrame()
     return rootFrame;
 }
 
-void App::InitializePage(Platform::Type^ pageType, Uri^ uri)
+void AppActivation::InitializePage(Platform::Type^ pageType, Uri^ uri)
 {
     //ApplicationView::GetForCurrentView()->SuppressSystemOverlays = false;
     Frame^ rootFrame = CreateRootFrame();
@@ -83,7 +85,7 @@ void App::InitializePage(Platform::Type^ pageType, Uri^ uri)
     Window::Current->Activate();
 }
 
-Concurrency::task<bool> App::LaunchXamlApp()
+Concurrency::task<bool> AppActivation::LaunchXamlApp()
 {
     auto uri = ref new Uri("stammen-multi-instance-uwp:?id=1234&apptype=xaml"); // The protocol handled by the launched app
     auto options = ref new LauncherOptions();
