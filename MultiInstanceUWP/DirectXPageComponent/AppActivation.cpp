@@ -27,13 +27,13 @@ bool AppActivation::OnAppActivated(IActivatedEventArgs^ args)
 {
     if (args->Kind == ActivationKind::Protocol)
     {
-        Platform::String^ apptype = L"directxpage";
+        Platform::String^ apptype = DirectXPageComponent::DirectXPage::PageName();
         auto eventArgs = safe_cast<ProtocolActivatedEventArgs^>(args);
         auto queryParsed = eventArgs->Uri->QueryParsed;
         ProtocolArgs args(queryParsed);
-        apptype = args.GetStringParameter(L"apptype", L"directxpage");
+        apptype = args.GetStringParameter(L"apptype", DirectXPageComponent::DirectXPage::PageName());
 
-        if (apptype != L"directxpage")
+        if (apptype != DirectXPageComponent::DirectXPage::PageName())
         {
             InitializePage(DirectXPageComponent::WebViewPage::typeid, eventArgs->Uri);
             return true;

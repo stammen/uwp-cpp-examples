@@ -32,14 +32,14 @@ int __cdecl main(::Platform::Array<::Platform::String^>^ args)
     // logic for generating the key for this instance.
     IActivatedEventArgs^ activatedArgs = AppInstance::GetActivatedEventArgs();
 
-    Platform::String^ key = L"directxpage";
+    Platform::String^ key = DirectXPageComponent::DirectXPage::PageName();
 
     if (activatedArgs->Kind == ActivationKind::Protocol)
     {
         ProtocolActivatedEventArgs^ protocolArgs = (ProtocolActivatedEventArgs^)activatedArgs;
         auto queryParsed = protocolArgs->Uri->QueryParsed;
         DirectXPageComponent::ProtocolArgs args(queryParsed);
-        key = args.GetStringParameter(L"apptype", L"directxpage");
+        key = args.GetStringParameter(L"apptype", DirectXPageComponent::DirectXPage::PageName());
 
         AppInstance^ instance = AppInstance::FindOrRegisterInstanceForKey(key);
         if (instance->IsCurrentInstance)

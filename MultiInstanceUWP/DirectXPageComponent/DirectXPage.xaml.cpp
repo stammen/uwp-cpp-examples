@@ -5,6 +5,7 @@
 
 #include "pch.h"
 #include "DirectXPage.xaml.h"
+#include "WebViewPage.xaml.h"
 #include "ProtocolArgs.h"
 
 using namespace DirectXPageComponent;
@@ -28,6 +29,11 @@ using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
 
+
+Platform::String^ DirectXPage::PageName()
+{
+    return L"directxpage";
+}
 
 DirectXPage::DirectXPage():
 	m_windowVisible(true),
@@ -209,7 +215,7 @@ void DirectXPageComponent::DirectXPage::Button_Click(Platform::Object^ sender, W
 
 Concurrency::task<bool> DirectXPage::LaunchAppInstance()
 {
-    Platform::String^ protocol = APP_PROTOCOL + ":?id=1&apptype=webview&sharedtexture=DirectXPageSharedTexture&width=512&height=512&source=https://www.microsoft.com&fps=60";
+    Platform::String^ protocol = APP_PROTOCOL + ":?id=1&apptype=" + WebViewPage::PageName() + "&sharedtexture=DirectXPageSharedTexture&width=512&height=512&source=https://www.microsoft.com&fps=60";
     auto uri = ref new Uri(protocol); 
     auto options = ref new LauncherOptions();
     return create_task(Launcher::LaunchUriAsync(uri, options));
