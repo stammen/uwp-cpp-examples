@@ -126,12 +126,17 @@ DirectXPage::~DirectXPage()
 	m_coreInput->Dispatcher->StopProcessEvents();
 }
 
-void DirectXPage::OnPointerPressed(Object^ sender, PointerEventArgs^ e)
+void DirectXPage::SendPointerMessage(Platform::String^ pointerEvent, float x, float y)
 {
+    if (!m_appServiceListener)
+    {
+        return;
+    }
+
     ValueSet^ message = ref new ValueSet();
-    message->Insert(L"PointerMessage", "OnPointerPressed");
-    message->Insert(L"x", e->CurrentPoint->Position.X);
-    message->Insert(L"y", e->CurrentPoint->Position.Y);
+    message->Insert(L"PointerMessage", pointerEvent);
+    message->Insert(L"x", x);
+    message->Insert(L"y", y);
     m_appServiceListener->SendAppServiceMessage(L"WebView", message).then([this](AppServiceResponse^ response)
     {
         auto responseMessage = response->Message;
@@ -143,44 +148,21 @@ void DirectXPage::OnPointerPressed(Object^ sender, PointerEventArgs^ e)
         {
         }
     });
+}
+
+void DirectXPage::OnPointerPressed(Object^ sender, PointerEventArgs^ e)
+{
+    SendPointerMessage(L"OnPointerPressed", e->CurrentPoint->Position.X, e->CurrentPoint->Position.Y);
 }
 
 void DirectXPage::OnPointerMoved(Object^ sender, PointerEventArgs^ e)
 {
-    ValueSet^ message = ref new ValueSet();
-    message->Insert(L"PointerMessage", "OnPointerMoved");
-    message->Insert(L"x", e->CurrentPoint->Position.X);
-    message->Insert(L"y", e->CurrentPoint->Position.Y);
-    m_appServiceListener->SendAppServiceMessage(L"WebView", message).then([this](AppServiceResponse^ response)
-    {
-        auto responseMessage = response->Message;
-
-        if (response->Status == AppServiceResponseStatus::Success)
-        {
-        }
-        else
-        {
-        }
-    });
+    SendPointerMessage(L"OnPointerMoved", e->CurrentPoint->Position.X, e->CurrentPoint->Position.Y);
 }
 
 void DirectXPage::OnPointerReleased(Object^ sender, PointerEventArgs^ e)
 {
-    ValueSet^ message = ref new ValueSet();
-    message->Insert(L"PointerMessage", "OnPointerReleased");
-    message->Insert(L"x", e->CurrentPoint->Position.X);
-    message->Insert(L"y", e->CurrentPoint->Position.Y);
-    m_appServiceListener->SendAppServiceMessage(L"WebView", message).then([this](AppServiceResponse^ response)
-    {
-        auto responseMessage = response->Message;
-
-        if (response->Status == AppServiceResponseStatus::Success)
-        {
-        }
-        else
-        {
-        }
-    });
+    SendPointerMessage(L"OnPointerReleased", e->CurrentPoint->Position.X, e->CurrentPoint->Position.Y);
 }
 
 // Saves the current state of the app for suspend and terminate events.

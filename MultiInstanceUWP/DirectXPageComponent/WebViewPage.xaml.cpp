@@ -9,6 +9,7 @@
 #include <string> 
 #include <sstream> 
 #include <algorithm>
+#include <cmath>
 
 using namespace DirectXPageComponent;
 
@@ -18,6 +19,7 @@ using namespace Windows::ApplicationModel::AppService;
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Windows::Graphics::Display;
 using namespace Windows::Graphics::Imaging;
 using namespace Windows::Storage::Streams;
 using namespace Windows::UI::Core;
@@ -43,6 +45,7 @@ WebViewPage::WebViewPage()
 void WebViewPage::OnNavigatedStarting(WebView^ sender, WebViewNavigationStartingEventArgs^ args)
 {
     m_contentLoaded = false;
+    m_pointerTracking = false;
 }
 
 void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ args)
@@ -117,15 +120,12 @@ void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webv
     UpdateWebView();
 }
 
-void WebViewPage::OnClick(int x, int y)
+// Converts a length in device-independent pixels (DIPs) to a length in physical pixels.
+inline float ConvertDipsToPixels(float dips, float dpi)
 {
-    auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
-    std::wstringstream w;
-    w << L"document.elementFromPoint(" << x << "," << y << L").click()";
-    scripts->Append(ref new Platform::String(w.str().c_str()));
-    m_webView->InvokeScriptAsync(ref new Platform::String(L"eval"), scripts);
+    static const float dipsPerInch = 96.0f;
+    return floorf(dips * dpi / dipsPerInch + 0.5f); // Round to nearest integer.
 }
-
 
 void WebViewPage::CreateWebView(ValueSet^ info)
 {
@@ -191,7 +191,7 @@ void WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
         }
 
         w << L" FPS:" << fps << L" Sleep:" << m_sleepInterval << std::endl;
-        OutputDebugString(w.str().c_str());
+        //OutputDebugString(w.str().c_str());
         Sleep(m_sleepInterval);
         if (m_contentLoaded)
         {
@@ -208,27 +208,85 @@ void WebViewPage::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::Rout
     m_webView->InvokeScriptAsync("eval", scripts);
 }
 
+void WebViewPage::GetOffsets()
+{
+
+}
+
+void WebViewPage::OnClick(int x, int y)
+{
+    DisplayInformation^ displayInformation = DisplayInformation::GetForCurrentView();
+    auto dpi = displayInformation->LogicalDpi;
+
+    auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
+    std::wstringstream w;
+    w << L"document.elementFromPoint(" << x << "," << y  << L").click()";
+    std::wstring ws = w.str();
+    OutputDebugString(ws.c_str());
+    scripts->Append(ref new Platform::String(w.str().c_str()));
+    m_webView->InvokeScriptAsync(ref new Platform::String(L"eval"), scripts);
+}
+
+void WebViewPage::OnScroll(int x, int y)
+{
+    auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
+    std::wstringstream w;
+    w << L"window.scrollBy(" << x << L"," << y << L");";
+    scripts->Append(ref new Platform::String(w.str().c_str()));
+    m_webView->InvokeScriptAsync("eval", scripts);
+}
+
 ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)
 {
     ValueSet^ request = args->Request->Message;
     ValueSet^ message = safe_cast<ValueSet^>(request->Lookup(L"Data"));
 
-    if (message->HasKey("PointerMessage"))
+    if (message->HasKey("PointerMessage") && m_contentLoaded)
     {
-        Platform::String^ pointerEvent = safe_cast<Platform::String^>(message->Lookup(L"PointerMessage"));
-
-        if (pointerEvent == L"OnPointerReleased")
+        CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, message]()
         {
+            Platform::String^ pointerEvent = safe_cast<Platform::String^>(message->Lookup(L"PointerMessage"));
             float x = (float)(message->Lookup(L"x"));
             float y = (float)(message->Lookup(L"y"));
 
-            CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, x, y]()
+            auto ttv = m_webView->TransformToVisual(Window::Current->Content);
+            Point location = ttv->TransformPoint(Point(0, 0));
+
+            if (x >= location.X && x <= location.X + m_width && y >= location.Y && y <= location.Y + m_height)
             {
-                auto element_Visual_Relative = Window::Current->Content->TransformToVisual(m_webView);
-                auto point = element_Visual_Relative->TransformPoint(Point(x, y));
-                OnClick((int)point.X, (int)point.Y);
-            }));
-        }
+                auto relative = Window::Current->Content->TransformToVisual(m_webView);
+                auto point = relative->TransformPoint(Point(x, y));
+                
+                if (pointerEvent == L"OnPointerPressed")
+                {
+                    m_pointerTracking = true;
+                    m_currentPointerPosition.X = m_startPointerPosition.X = point.X;
+                    m_currentPointerPosition.Y = m_startPointerPosition.Y = point.Y;
+                }
+                else if (pointerEvent == L"OnPointerReleased")
+                {
+                    m_pointerTracking = false;
+                    if (std::abs(point.X - m_startPointerPosition.X) < 10 && std::abs(point.Y - m_startPointerPosition.Y) < 10)
+                    {
+                        OnClick((int)point.X, (int)point.Y);
+                    }
+                }
+                else if (pointerEvent == L"OnPointerMoved")
+                {
+                    if (m_pointerTracking)
+                    {
+                        float xoffset = m_currentPointerPosition.X - point.X;
+                        float yoffset = m_currentPointerPosition.Y - point.Y;
+                        m_currentPointerPosition = point;
+                        OnScroll((int)xoffset, (int)yoffset);
+                    }
+                }
+            }
+            else
+            {
+                m_pointerTracking = false;
+            }
+        }));
     }
 
     auto response = ref new ValueSet();

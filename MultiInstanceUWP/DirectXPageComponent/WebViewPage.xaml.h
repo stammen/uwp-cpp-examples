@@ -49,7 +49,9 @@ namespace DirectXPageComponent
         void CreateWebView(Windows::Foundation::Collections::ValueSet^ info);
         void CreateDirectxTextures();
         void UpdateDirectxTextures(const void *buffer, int width, int height);
-        void WebViewPage::OnClick(int x, int y);
+        void OnClick(int x, int y);
+        void OnScroll(int x, int y);
+        void GetOffsets();
 
         Windows::UI::Xaml::Controls::WebView^ m_webView;
         DX::StepTimer m_timer;
@@ -65,5 +67,8 @@ namespace DirectXPageComponent
         unsigned int m_sleepInterval;
         unsigned int m_fps;
         bool m_contentLoaded;
+        bool m_pointerTracking;
+        Windows::Foundation::Point m_startPointerPosition;
+        Windows::Foundation::Point m_currentPointerPosition;
     };
 }
