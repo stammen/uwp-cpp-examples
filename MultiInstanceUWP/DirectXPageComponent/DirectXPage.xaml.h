@@ -36,9 +36,6 @@ namespace DirectXPageComponent
 	private:
         Concurrency::task<bool> LaunchAppInstance();
 
-        // XAML low-level rendering event handler.
-		void OnRendering(Platform::Object^ sender, Platform::Object^ args);
-
 		// Window event handlers.
 		void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args);
 
@@ -67,6 +64,7 @@ namespace DirectXPageComponent
 		std::shared_ptr<DX::DeviceResources> m_deviceResources;
 		std::unique_ptr<DirectXMain> m_main; 
 		bool m_windowVisible;
+        bool m_appServiceConnected;
 
         AppServiceListener^ m_appServiceListener;
         void Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);

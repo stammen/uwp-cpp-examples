@@ -38,6 +38,7 @@ Platform::String^ DirectXPage::PageName()
 
 DirectXPage::DirectXPage():
 	m_windowVisible(true),
+    m_appServiceConnected(false),
 	m_coreInput(nullptr)
 {
 	InitializeComponent();
@@ -111,6 +112,7 @@ void DirectXPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventAr
                 {
                     if (response->Status == AppServiceResponseStatus::Success)
                     {
+                        m_appServiceConnected = true;
                         OutputDebugString(L"DirectXPage is connected to the App Service");
                     }
                 });
@@ -128,7 +130,7 @@ DirectXPage::~DirectXPage()
 
 void DirectXPage::SendPointerMessage(Platform::String^ pointerEvent, float x, float y)
 {
-    if (!m_appServiceListener)
+    if (!m_appServiceConnected)
     {
         return;
     }
