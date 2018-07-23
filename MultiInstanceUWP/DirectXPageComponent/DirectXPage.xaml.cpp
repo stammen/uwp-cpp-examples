@@ -209,7 +209,7 @@ void DirectXPageComponent::DirectXPage::Button_Click(Platform::Object^ sender, W
 
 Concurrency::task<bool> DirectXPage::LaunchAppInstance()
 {
-    Platform::String^ protocol = APP_PROTOCOL + ":?id=1234&apptype=webview";
+    Platform::String^ protocol = APP_PROTOCOL + ":?id=1&apptype=webview&sharedtexture=DirectXPageSharedTexture&width=512&height=512&source=https://www.microsoft.com&fps=60";
     auto uri = ref new Uri(protocol); 
     auto options = ref new LauncherOptions();
     return create_task(Launcher::LaunchUriAsync(uri, options));

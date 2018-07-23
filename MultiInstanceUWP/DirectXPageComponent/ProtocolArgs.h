@@ -11,7 +11,9 @@ namespace DirectXPageComponent
     {
     public:
         ProtocolArgs(Windows::Foundation::WwwFormUrlDecoder^ args);
-        Platform::String^ GetParameter(Platform::String^ key, Platform::String^ defaultValue);
+        Platform::String^ GetStringParameter(Platform::String^ key, Platform::String^ defaultValue);
+        int GetIntParameter(Platform::String^ key, int defaultValue);
+        double GetDoubleParameter(Platform::String^ key, double defaultValue);
 
     private:
         std::map<Platform::String^, Platform::String^> m_args;

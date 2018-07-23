@@ -39,7 +39,7 @@ int __cdecl main(::Platform::Array<::Platform::String^>^ args)
         ProtocolActivatedEventArgs^ protocolArgs = (ProtocolActivatedEventArgs^)activatedArgs;
         auto queryParsed = protocolArgs->Uri->QueryParsed;
         DirectXPageComponent::ProtocolArgs args(queryParsed);
-        key = args.GetParameter(L"apptype", L"directxpage");
+        key = args.GetStringParameter(L"apptype", L"directxpage");
 
         AppInstance^ instance = AppInstance::FindOrRegisterInstanceForKey(key);
         if (instance->IsCurrentInstance)

@@ -187,7 +187,7 @@ void SceneRenderer::CreateSharedTexture()
     DX::ThrowIfFailed(
         pDXGIResource1->CreateSharedHandle(NULL,
             DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE,
-            L"DirectXPageHandleName",
+            L"DirectXPageSharedTexture",
             &m_sharedTextureHandle)
     );
 

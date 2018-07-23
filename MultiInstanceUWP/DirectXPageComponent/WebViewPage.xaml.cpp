@@ -33,32 +33,40 @@ using namespace Windows::UI::Xaml::Navigation;
 WebViewPage::WebViewPage()
 {
 	InitializeComponent();
-    m_contentLoaded = false;
     m_deviceResources = std::make_shared<DX::DeviceResources>();
+    m_contentLoaded = false;
+}
+
+void WebViewPage::OnNavigatedStarting(WebView^ sender, WebViewNavigationStartingEventArgs^ args)
+{
+    m_contentLoaded = false;
+}
+
+void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ args)
+{
+    // :?id=1&apptype=webview&sharedtextue=DirectXPageSharedTexture&width=512&height=512&source=https://www.microsoft.com&fps=60
+    auto uri = safe_cast<Uri^>(args->Parameter);
+    auto queryParsed = uri->QueryParsed;
+    DirectXPageComponent::ProtocolArgs pa(queryParsed);
+    auto apptype = pa.GetStringParameter(L"apptype", L"webviewpage");
+    m_fps = pa.GetIntParameter(L"fps", 30);
+    m_width = pa.GetIntParameter(L"width", 512);
+    m_height = pa.GetIntParameter(L"height", 512);
+    m_sharedTextureHandleName = pa.GetStringParameter(L"sharedtexture", "");
+    m_id = pa.GetStringParameter(L"id", "");
+    auto source = pa.GetStringParameter(L"source", "");
+
     m_transform = ref new BitmapTransform();
     m_webView = ref new WebView(WebViewExecutionMode::SeparateThread);
-    m_webView->Source = ref new Windows::Foundation::Uri(L"https://www.microsoft.com");
-    m_requestedWebViewWidth = 512;
-    m_requestedWebViewHeight = 512;
-    m_textureWidth = 512;
-    m_textureHeight = 512;
-    m_webView->Width = m_requestedWebViewWidth;
-    m_webView->Height = m_requestedWebViewHeight;
+    m_webView->Source = ref new Windows::Foundation::Uri(source);
+    m_webView->Width = m_width;
+    m_webView->Height = m_height;
     m_webView->Visibility = Windows::UI::Xaml::Visibility::Visible;
     m_webView->NavigationStarting += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^>(this, &WebViewPage::OnNavigatedStarting);
     m_webView->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &WebViewPage::OnWebContentLoaded);
     mainGrid->Children->Append(m_webView);
-    m_desiredFPS = 60;
-    m_sleepInterval = 1000 / m_desiredFPS;
-}
+    m_sleepInterval = 1000 / m_fps;
 
-void WebViewPage::OnNavigatedStarting(WebView^ sender, WebViewNavigationStartingEventArgs^ e)
-{
-    m_contentLoaded = false;
-}
-
-void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e)
-{
     if (m_appServiceListener == nullptr)
     {
         m_appServiceListener = ref new AppServiceListener(L"WebView");
@@ -93,16 +101,22 @@ void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webv
     m_webView->InvokeScriptAsync("eval", scripts);
 
     OutputDebugString(L"OnWebContentLoaded");
-    CreateDirectxTextures(ref new ValueSet());
+    CreateDirectxTextures();
     m_contentLoaded = true;
     UpdateWebView();
+}
+
+void WebViewPage::CreateWebView(ValueSet^ info)
+{
+
+
 }
 
 void WebViewPage::UpdateWebView()
 {
     m_timer.Tick([&]()
     {
-        UpdateWebViewBitmap(m_requestedWebViewWidth, m_requestedWebViewHeight);
+        UpdateWebViewBitmap(m_width, m_height);
     });
 }
 
@@ -140,16 +154,16 @@ void WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
     {
         std::wstringstream w;
         auto fps = m_timer.GetFramesPerSecond();
-        if ((m_timer.GetFrameCount() % m_desiredFPS) == 0)
+        if ((m_timer.GetFrameCount() % m_fps) == 0)
         {
-            if (fps < m_desiredFPS)
+            if (fps < m_fps)
             {
                 if (m_sleepInterval > 2)
                 {
                     m_sleepInterval--;
                 }
             }
-            else if (fps > m_desiredFPS)
+            else if (fps > m_fps)
             {
                 m_sleepInterval++;
             }
@@ -202,7 +216,7 @@ ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServic
     return ref new ValueSet();
 }
 
-void WebViewPage::CreateDirectxTextures(ValueSet^ info)
+void WebViewPage::CreateDirectxTextures()
 {
     m_stagingTexture.Reset();
     m_quadTexture.Reset();
@@ -210,15 +224,15 @@ void WebViewPage::CreateDirectxTextures(ValueSet^ info)
     ID3D11Texture2D *pTexture = NULL;
 
     DX::ThrowIfFailed(
-        m_deviceResources->GetD3DDevice()->OpenSharedResourceByName(L"DirectXPageHandleName", DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE, __uuidof(ID3D11Texture2D), (LPVOID*)&pTexture)
+        m_deviceResources->GetD3DDevice()->OpenSharedResourceByName(m_sharedTextureHandleName->Data(), DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE, __uuidof(ID3D11Texture2D), (LPVOID*)&pTexture)
     );
 
     m_quadTexture = pTexture;
 
     D3D11_TEXTURE2D_DESC desc;
     ZeroMemory(&desc, sizeof(desc));
-    desc.Width = m_textureWidth;
-    desc.Height = m_textureHeight;
+    desc.Width = m_width;
+    desc.Height = m_height;
     desc.MipLevels = desc.ArraySize = 1;
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.SampleDesc.Count = 1;

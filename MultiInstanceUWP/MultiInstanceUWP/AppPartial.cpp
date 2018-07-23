@@ -29,7 +29,7 @@ bool App::OnAppActivated(IActivatedEventArgs^ args)
         auto eventArgs = safe_cast<ProtocolActivatedEventArgs^>(args);
         auto queryParsed = eventArgs->Uri->QueryParsed;
         DirectXPageComponent::ProtocolArgs args(queryParsed);
-        apptype = args.GetParameter(L"apptype", L"directxpage");
+        apptype = args.GetStringParameter(L"apptype", L"directxpage");
 
         if (apptype != L"directxpage")
         {
@@ -72,7 +72,7 @@ void App::InitializePage(Platform::Type^ pageType, Uri^ uri)
     Frame^ rootFrame = CreateRootFrame();
     if (rootFrame->Content == nullptr)
     {
-        bool result = rootFrame->Navigate(TypeName(pageType));
+        bool result = rootFrame->Navigate(TypeName(pageType), uri);
 
         if (!result)
         {

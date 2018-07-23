@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ProtocolArgs.h"
+#include <stdlib.h>
 
 using namespace DirectXPageComponent;
 using namespace Windows::Foundation;
@@ -13,8 +14,7 @@ ProtocolArgs::ProtocolArgs(WwwFormUrlDecoder^ args)
     }
 }
 
-Platform::String^ ProtocolArgs::GetParameter(Platform::String^ key, Platform::String^ defaultValue)
-
+Platform::String^ ProtocolArgs::GetStringParameter(Platform::String^ key, Platform::String^ defaultValue)
 {
     auto it = m_args.find(key);
     if (it != m_args.end())
@@ -24,4 +24,29 @@ Platform::String^ ProtocolArgs::GetParameter(Platform::String^ key, Platform::St
 
     return defaultValue;
 }
+
+int ProtocolArgs::GetIntParameter(Platform::String^ key, int defaultValue)
+{
+    auto it = m_args.find(key);
+    if (it != m_args.end())
+    {
+        return _wtoi(it->second->Data());
+    }
+
+    return defaultValue;
+}
+
+double ProtocolArgs::GetDoubleParameter(Platform::String^ key, double defaultValue)
+{
+    auto it = m_args.find(key);
+    if (it != m_args.end())
+    {
+        return _wtof(it->second->Data());
+    }
+
+    return defaultValue;
+}
+
+
+
 

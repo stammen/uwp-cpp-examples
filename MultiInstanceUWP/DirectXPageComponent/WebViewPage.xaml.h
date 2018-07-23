@@ -9,6 +9,7 @@
 #include "Common/StepTimer.h"
 #include "Common\DeviceResources.h"
 #include "AppServiceListener.h"
+#include "ProtocolArgs.h"
 #include <memory>
 #include <ppltasks.h>
 
@@ -41,25 +42,26 @@ namespace DirectXPageComponent
     private:
         void UpdateWebView();
         void UpdateWebViewBitmap(unsigned int width, unsigned int height);
-        void Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
-        void OnNavigatedStarting(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ e);
+        void Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args);
+        void OnNavigatedStarting(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ args);
         void OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
-        void CreateDirectxTextures(Windows::Foundation::Collections::ValueSet^ info);
+        void CreateWebView(Windows::Foundation::Collections::ValueSet^ info);
+        void CreateDirectxTextures();
         void UpdateDirectxTextures(const void *buffer, int width, int height);
 
         Windows::UI::Xaml::Controls::WebView^ m_webView;
         DX::StepTimer m_timer;
         Windows::Graphics::Imaging::BitmapTransform^ m_transform;
-        int m_requestedWebViewWidth;
-        int m_requestedWebViewHeight;
         AppServiceListener^ m_appServiceListener;
         std::shared_ptr<DX::DeviceResources> m_deviceResources;
         Microsoft::WRL::ComPtr<ID3D11Resource>  m_quadTexture;
         Microsoft::WRL::ComPtr<ID3D11Resource>  m_stagingTexture;
-        int m_textureWidth;
-        int m_textureHeight;
+        int m_width;
+        int m_height;
+        Platform::String^ m_sharedTextureHandleName;
+        Platform::String^ m_id;
         unsigned int m_sleepInterval;
-        unsigned int m_desiredFPS;
+        unsigned int m_fps;
         bool m_contentLoaded;
     };
 }
