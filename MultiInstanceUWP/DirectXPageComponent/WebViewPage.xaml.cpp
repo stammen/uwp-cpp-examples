@@ -48,14 +48,20 @@ void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventAr
     auto uri = safe_cast<Uri^>(args->Parameter);
     auto queryParsed = uri->QueryParsed;
     DirectXPageComponent::ProtocolArgs pa(queryParsed);
-    auto apptype = pa.GetStringParameter(L"apptype", L"webviewpage");
+    auto apptype = pa.GetStringParameter(L"apptype", L"");
     m_fps = pa.GetIntParameter(L"fps", 30);
-    m_width = pa.GetIntParameter(L"width", 512);
-    m_height = pa.GetIntParameter(L"height", 512);
+    m_width = pa.GetIntParameter(L"width", 0);
+    m_height = pa.GetIntParameter(L"height", 0);
     m_sharedTextureHandleName = pa.GetStringParameter(L"sharedtexture", "");
     m_id = pa.GetStringParameter(L"id", "");
     auto source = pa.GetStringParameter(L"source", "");
 
+    if (source->IsEmpty() || apptype != L"webview" || m_sharedTextureHandleName->IsEmpty() || m_id->IsEmpty() || m_width == 0 || m_height == 0)
+    {
+        throw ref new Platform::Exception(-1, L"invalid protocol query paramter");
+    }
+
+    // create the requested WebView
     m_transform = ref new BitmapTransform();
     m_webView = ref new WebView(WebViewExecutionMode::SeparateThread);
     m_webView->Source = ref new Windows::Foundation::Uri(source);
@@ -67,6 +73,7 @@ void WebViewPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventAr
     mainGrid->Children->Append(m_webView);
     m_sleepInterval = 1000 / m_fps;
 
+    // open connection to App Service
     if (m_appServiceListener == nullptr)
     {
         m_appServiceListener = ref new AppServiceListener(L"WebView");
