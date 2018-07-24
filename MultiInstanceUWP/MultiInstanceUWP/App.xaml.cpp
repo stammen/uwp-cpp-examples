@@ -96,7 +96,10 @@ void App::OnActivated(IActivatedEventArgs^ args)
 
     if (args->Kind == ActivationKind::Protocol)
     {
-        DirectXPageComponent::AppActivation::OnAppActivated(args);
+        if (DirectXPageComponent::AppActivation::OnAppActivated(args))
+        {
+            return;
+        }
     }
 }
 
