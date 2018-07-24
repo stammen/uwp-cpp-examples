@@ -22,6 +22,7 @@ using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Display;
 using namespace Windows::Graphics::Imaging;
 using namespace Windows::Storage::Streams;
+using namespace Windows::System;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
@@ -298,7 +299,14 @@ ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServic
             wchar_t keyChar = (wchar_t)key;
             auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
             std::wstringstream w;
-            w << L"document.activeElement.value=document.activeElement.value+'" << keyChar << "';";
+            if (key == (unsigned int)VirtualKey::Back)
+            {
+                 w << L"document.activeElement.value=document.activeElement.value.slice(0, -1);";
+            }
+            else
+            {
+                w << L"document.activeElement.value=document.activeElement.value+'" << keyChar << "';";
+            }
             scripts->Append(ref new Platform::String(w.str().c_str()));
             m_webView->InvokeScriptAsync("eval", scripts);
         }));

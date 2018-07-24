@@ -133,6 +133,40 @@ DirectXPage::~DirectXPage()
 	m_coreInput->Dispatcher->StopProcessEvents();
 }
 
+
+void DirectXPage::SendKeyboardEvent(Platform::String^ eventType, unsigned int keyCode)
+{
+    ValueSet^ message = ref new ValueSet();
+    message->Insert(L"KeyboardMessage", eventType);
+    message->Insert(L"Key", keyCode);
+    m_appServiceListener->SendAppServiceMessage(L"WebView", message).then([this](AppServiceResponse^ response)
+    {
+        auto responseMessage = response->Message;
+
+        if (response->Status == AppServiceResponseStatus::Success)
+        {
+        }
+        else
+        {
+        }
+    });
+}
+
+void DirectXPage::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args)
+{
+    SendKeyboardEvent(L"OnKeyPressed", args->KeyCode);
+}
+
+void DirectXPage::OnKeyPressed(CoreWindow^ sender, KeyEventArgs^ args)
+{
+    switch (args->VirtualKey)
+    {
+    case VirtualKey::Back:
+        SendKeyboardEvent(L"OnKeyPressed", (unsigned int)args->VirtualKey);
+        break;
+    }
+}
+
 void DirectXPage::SendPointerMessage(Platform::String^ pointerEvent, float x, float y)
 {
     if (!m_appServiceConnected)
@@ -157,30 +191,6 @@ void DirectXPage::SendPointerMessage(Platform::String^ pointerEvent, float x, fl
     });
 }
 
-void DirectXPage::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args)
-{
-    auto key = args->KeyCode;
-    ValueSet^ message = ref new ValueSet();
-    message->Insert(L"KeyboardMessage", L"OnKeyPressed");
-    message->Insert(L"Key", key);
-    m_appServiceListener->SendAppServiceMessage(L"WebView", message).then([this](AppServiceResponse^ response)
-    {
-        auto responseMessage = response->Message;
-
-        if (response->Status == AppServiceResponseStatus::Success)
-        {
-        }
-        else
-        {
-        }
-    });
-}
-
-
-void DirectXPage::OnKeyPressed(CoreWindow^ sender, KeyEventArgs^ args)
-{
-
-}
 
 void DirectXPage::OnPointerPressed(Object^ sender, PointerEventArgs^ e)
 {
