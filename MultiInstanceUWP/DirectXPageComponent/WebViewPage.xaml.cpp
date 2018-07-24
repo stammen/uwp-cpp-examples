@@ -288,6 +288,21 @@ ValueSet^ WebViewPage::OnRequestReceived(AppServiceConnection^ sender, AppServic
             }
         }));
     }
+    if (message->HasKey("KeyboardMessage") && m_contentLoaded)
+    {
+        Platform::String^ keyboardEvent = safe_cast<Platform::String^>(message->Lookup(L"KeyboardMessage"));
+        CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, message]()
+        {
+            Platform::String^ keyboardEvent = safe_cast<Platform::String^>(message->Lookup(L"KeyboardMessage"));
+            unsigned int key = (unsigned int)(message->Lookup(L"Key"));
+            wchar_t keyChar = (wchar_t)key;
+            auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
+            std::wstringstream w;
+            w << L"document.activeElement.value=document.activeElement.value+'" << keyChar << "';";
+            scripts->Append(ref new Platform::String(w.str().c_str()));
+            m_webView->InvokeScriptAsync("eval", scripts);
+        }));
+    }
 
     auto response = ref new ValueSet();
     response->Insert(L"Status", L"OK");

@@ -51,6 +51,9 @@ DirectXPage::DirectXPage():
 	window->VisibilityChanged +=
 		ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &DirectXPage::OnVisibilityChanged);
 
+    window->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &DirectXPage::OnKeyPressed);
+    window->CharacterReceived += ref new TypedEventHandler<CoreWindow^, CharacterReceivedEventArgs^>(this, &DirectXPage::OnCharacterReceived);
+
 	DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
 
 	currentDisplayInformation->DpiChanged +=
@@ -152,6 +155,31 @@ void DirectXPage::SendPointerMessage(Platform::String^ pointerEvent, float x, fl
         {
         }
     });
+}
+
+void DirectXPage::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args)
+{
+    auto key = args->KeyCode;
+    ValueSet^ message = ref new ValueSet();
+    message->Insert(L"KeyboardMessage", L"OnKeyPressed");
+    message->Insert(L"Key", key);
+    m_appServiceListener->SendAppServiceMessage(L"WebView", message).then([this](AppServiceResponse^ response)
+    {
+        auto responseMessage = response->Message;
+
+        if (response->Status == AppServiceResponseStatus::Success)
+        {
+        }
+        else
+        {
+        }
+    });
+}
+
+
+void DirectXPage::OnKeyPressed(CoreWindow^ sender, KeyEventArgs^ args)
+{
+
 }
 
 void DirectXPage::OnPointerPressed(Object^ sender, PointerEventArgs^ e)
@@ -281,6 +309,6 @@ void DirectXPageComponent::DirectXPage::Button_Click(Platform::Object^ sender, W
 
 Concurrency::task<bool> DirectXPage::LaunchAppInstance()
 {
-    Platform::String^ protocol = APP_PROTOCOL + ":?id=1&apptype=" + WebViewPage::PageName() + "&sharedtexture=DirectXPageSharedTexture&width=512&height=512&source=https://www.microsoft.com&fps=60";
+    Platform::String^ protocol = APP_PROTOCOL + ":?id=1&apptype=" + WebViewPage::PageName() + "&sharedtexture=DirectXPageSharedTexture&width=512&height=512&source=https://www.google.com&fps=60";
     return AppActivation::LaunchAppWithProtocol(protocol);
 }

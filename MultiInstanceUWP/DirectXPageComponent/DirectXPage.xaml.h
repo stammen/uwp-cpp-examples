@@ -48,6 +48,9 @@ namespace DirectXPageComponent
         void OnPointerMoved(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
         void OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ e);
 
+        void OnKeyPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+       void OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args);
+
         void SendPointerMessage(Platform::String^ pointerEvent, float x, float y);
 
 		// Other event handlers.
