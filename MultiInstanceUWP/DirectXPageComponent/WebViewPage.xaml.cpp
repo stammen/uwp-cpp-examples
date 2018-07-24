@@ -117,6 +117,7 @@ void WebViewPage::OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webv
     OutputDebugString(L"OnWebContentLoaded");
     CreateDirectxTextures();
     m_contentLoaded = true;
+    m_timer.ResetElapsedTime();
     UpdateWebView();
 }
 
@@ -125,12 +126,6 @@ inline float ConvertDipsToPixels(float dips, float dpi)
 {
     static const float dipsPerInch = 96.0f;
     return floorf(dips * dpi / dipsPerInch + 0.5f); // Round to nearest integer.
-}
-
-void WebViewPage::CreateWebView(ValueSet^ info)
-{
-
-
 }
 
 void WebViewPage::UpdateWebView()
@@ -173,7 +168,6 @@ void WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
         });
     }).then([this]()
     {
-        std::wstringstream w;
         auto fps = m_timer.GetFramesPerSecond();
         if ((m_timer.GetFrameCount() % m_fps) == 0)
         {
@@ -188,8 +182,16 @@ void WebViewPage::UpdateWebViewBitmap(unsigned int width, unsigned int height)
             {
                 m_sleepInterval++;
             }
+
+            ValueSet^ message = ref new ValueSet();
+            message->Insert(L"fps", fps);
+            m_appServiceListener->SendAppServiceMessage(L"DirectXPage", message).then([this](AppServiceResponse^ response)
+            {
+                auto responseMessage = response->Message;
+            });
         }
 
+        std::wstringstream w;
         w << L" FPS:" << fps << L" Sleep:" << m_sleepInterval << std::endl;
         //OutputDebugString(w.str().c_str());
         Sleep(m_sleepInterval);
@@ -221,8 +223,6 @@ void WebViewPage::OnClick(int x, int y)
     auto scripts = ref new Platform::Collections::Vector<Platform::String^>();
     std::wstringstream w;
     w << L"document.elementFromPoint(" << x << "," << y  << L").click()";
-    std::wstring ws = w.str();
-    OutputDebugString(ws.c_str());
     scripts->Append(ref new Platform::String(w.str().c_str()));
     m_webView->InvokeScriptAsync(ref new Platform::String(L"eval"), scripts);
 }

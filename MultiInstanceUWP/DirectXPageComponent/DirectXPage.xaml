@@ -11,6 +11,11 @@
         <Button Content="Start WebView"
                HorizontalAlignment="Left"
                VerticalAlignment="Top"
-               Click="Button_Click" />
+               Click="Button_Click" 
+               Margin="10,10"/>
+        <TextBlock x:Name="fpsText"
+               HorizontalAlignment="Left"
+               VerticalAlignment="Bottom"
+               Margin="10"/>
     </SwapChainPanel>
 </Page>

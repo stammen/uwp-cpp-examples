@@ -8,6 +8,7 @@
 #include "WebViewPage.xaml.h"
 #include "ProtocolArgs.h"
 #include "AppActivation.h"
+#include <sstream> 
 
 using namespace DirectXPageComponent;
 
@@ -15,6 +16,7 @@ using namespace concurrency;
 using namespace Platform;
 using namespace Windows::ApplicationModel::Activation;
 using namespace Windows::ApplicationModel::AppService;
+using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Display;
@@ -252,7 +254,23 @@ void DirectXPage::OnSwapChainPanelSizeChanged(Object^ sender, SizeChangedEventAr
 
 ValueSet^ DirectXPage::OnRequestReceived(AppServiceConnection^ sender, AppServiceRequestReceivedEventArgs^ args)
 {
-    return ref new ValueSet();
+    ValueSet^ request = args->Request->Message;
+    ValueSet^ message = safe_cast<ValueSet^>(request->Lookup(L"Data"));
+
+    if (message->HasKey("fps"))
+    {
+        CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, message]()
+        {
+            unsigned int fps = (unsigned int)(message->Lookup(L"fps"));
+            std::wstringstream w;
+            w << L"WebView texture updated at " << fps << L" FPS" << std::endl;
+            fpsText->Text = ref new Platform::String(w.str().c_str());
+        }));
+    }
+
+    auto response = ref new ValueSet();
+    response->Insert(L"Status", L"OK");
+    return response;
 }
 
 

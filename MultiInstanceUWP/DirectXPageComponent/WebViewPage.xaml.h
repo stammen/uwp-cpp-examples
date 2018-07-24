@@ -6,7 +6,7 @@
 #pragma once
 
 #include "WebViewPage.g.h"
-#include "Common/StepTimer.h"
+#include "Common\StepTimer.h"
 #include "Common\DeviceResources.h"
 #include "AppServiceListener.h"
 #include "ProtocolArgs.h"
@@ -46,7 +46,6 @@ namespace DirectXPageComponent
         void Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args);
         void OnNavigatedStarting(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ args);
         void OnWebContentLoaded(Windows::UI::Xaml::Controls::WebView ^ webview, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
-        void CreateWebView(Windows::Foundation::Collections::ValueSet^ info);
         void CreateDirectxTextures();
         void UpdateDirectxTextures(const void *buffer, int width, int height);
         void OnClick(int x, int y);
