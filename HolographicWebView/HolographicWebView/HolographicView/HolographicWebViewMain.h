@@ -142,6 +142,6 @@ namespace HolographicWebView
         int                                                             m_width;
         int                                                             m_height;
                                     
-        MainPage^                                                       m_webViewPage;
+        WindowsRuntimeComponent1::BlankPage^                            m_webViewPage;
     };
 }

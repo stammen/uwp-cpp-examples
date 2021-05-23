@@ -42,7 +42,7 @@ namespace HolographicWebView
         void OnClick(int x, int y);
 
     internal:
-        static Concurrency::task<MainPage^> CreatePage();
+        static Concurrency::task<WindowsRuntimeComponent1::BlankPage^> CreatePage();
         std::function<void(MainPage^, WebViewImageInfo^)> OnImage;
 
     private:

@@ -56,7 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="HolographicAppMain.cpp" />
     <ClCompile Include="AppView.cpp" />
     <ClCompile Include="Content\SpatialInputHandler.cpp">
       <Filter>Content</Filter>
@@ -64,10 +63,10 @@
     <ClCompile Include="Content\SpinningCubeRenderer.cpp">
       <Filter>Content</Filter>
     </ClCompile>
+    <ClCompile Include="TestHMDAppMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="HolographicAppMain.h" />
     <ClInclude Include="AppView.h" />
     <ClInclude Include="Content\SpatialInputHandler.h">
       <Filter>Content</Filter>
@@ -78,6 +77,7 @@
     <ClInclude Include="Content\ShaderStructures.h">
       <Filter>Content</Filter>
     </ClInclude>
+    <ClInclude Include="TestHMDAppMain.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Content\VertexShaderShared.hlsl">

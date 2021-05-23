@@ -45,10 +45,10 @@ MainPage::MainPage()
     webview1->NavigationCompleted += ref new Windows::Foundation::TypedEventHandler<Windows::UI::Xaml::Controls::WebView ^, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^>(this, &HolographicWebView::MainPage::OnWebContentLoaded);
 }
  
-Concurrency::task<MainPage^> MainPage::CreatePage()
+Concurrency::task<WindowsRuntimeComponent1::BlankPage^> MainPage::CreatePage()
 {
-    task_completion_event<MainPage ^> tce;
-    task<MainPage ^> event_set(tce);
+    task_completion_event<WindowsRuntimeComponent1::BlankPage ^> tce;
+    task<WindowsRuntimeComponent1::BlankPage ^> event_set(tce);
 
     CoreApplication::MainView->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([tce]()
     {
@@ -67,7 +67,7 @@ Concurrency::task<MainPage^> MainPage::CreatePage()
                 // When the navigation stack isn't restored navigate to the first page,
                 // configuring the new page by passing required information as a navigation
                 // parameter
-                rootFrame->Navigate(TypeName(MainPage::typeid), nullptr);
+                rootFrame->Navigate(TypeName(WindowsRuntimeComponent1::BlankPage::typeid), nullptr);
             }
             // Place the frame in the current Window
             Window::Current->Content = rootFrame;
@@ -75,7 +75,7 @@ Concurrency::task<MainPage^> MainPage::CreatePage()
             Window::Current->Activate();
         }
 
-        MainPage^ page = dynamic_cast<MainPage^>(rootFrame->Content);
+        WindowsRuntimeComponent1::BlankPage^ page = dynamic_cast<WindowsRuntimeComponent1::BlankPage^>(rootFrame->Content);
         tce.set(page);
     }));
 
