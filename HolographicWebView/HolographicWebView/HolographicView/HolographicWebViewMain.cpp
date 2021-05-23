@@ -51,10 +51,10 @@ HolographicWebViewMain::HolographicWebViewMain(const std::shared_ptr<DX::DeviceR
     }
 
     // create and load the WebView
-    auto task = MainPage::CreatePage().then([this](MainPage ^ page)
+    auto task = MainPage::CreatePage().then([this](WindowsRuntimeComponent1::BlankPage ^ page)
     {
         m_webViewPage = page;
-        m_webViewPage->OnImage = std::bind(&HolographicWebViewMain::OnWebViewImage, this, _1, _2);
+        //m_webViewPage->OnImage = std::bind(&HolographicWebViewMain::OnWebViewImage, this, _1, _2);
         m_webViewPage->DisplayWebView(L"https://www.time.gov/", m_width, m_height);
     });
 }
